@@ -33,14 +33,14 @@ static void xml_parse_element(XML_node *node, const char *data, int lg)
 
   // Check start and finish
   if (!memcmp(data, "</", 2)) {
-    node->build_flags_ = XML_BLD_CLOSING;
+    node->build_flags = XML_BLD_CLOSING;
     start = 2;
   } else if (!memcmp(data, "<?", 2)) {
-    node->build_flags_ = XML_BLD_CLOSED;
+    node->build_flags = XML_BLD_CLOSED;
     start = 2;
     finish = 2;
   } else if (!memcmp(&data[lg - 2], "/>", 2)) {
-    node->build_flags_ = XML_BLD_CLOSED;
+    node->build_flags = XML_BLD_CLOSED;
     finish = 2;
   }
 
@@ -49,12 +49,12 @@ static void xml_parse_element(XML_node *node, const char *data, int lg)
   }
 
   // Extract the name
-  node->node_name_ = malloc(end - data);
-  memcpy(node->node_name_, &data[start], end - data - start);
-  node->node_name_[end - data - start] = '\0';
+  node->node_name = malloc(end - data);
+  memcpy(node->node_name, &data[start], end - data - start);
+  node->node_name[end - data - start] = '\0';
 
   // Extract attribute
-  if (!(node->build_flags_ & XML_BLD_CLOSING)) {
+  if (!(node->build_flags & XML_BLD_CLOSING)) {
     xml_parse_attributes(node, end, lg - (end - data) - finish);
   }
 }
@@ -63,16 +63,16 @@ static XML_node *xml_add_parsed_node(XML_node *cursor, XML_node *node, void* par
 {
   ((void)param);
 
-  if (node->type_ != XML_ELEMENT) {
+  if (node->type != XML_ELEMENT) {
     xml_add_child_node(cursor, node);
-  } else if (node->build_flags_ & XML_BLD_CLOSING) {
-    if (strcmp(cursor->node_name_, node->node_name_)) {
+  } else if (node->build_flags & XML_BLD_CLOSING) {
+    if (strcmp(cursor->node_name, node->node_name)) {
       xml_error(XML_ERR_CLOSING);
     }
-    return cursor->parent_;
+    return cursor->parent;
   } else {
     xml_add_child_node(cursor, node);
-    if (!(node->build_flags_ & XML_BLD_CLOSED)) {
+    if (!(node->build_flags & XML_BLD_CLOSED)) {
       return node;
     }
   }
@@ -133,47 +133,47 @@ static void xml_indent(FILE *stream, int depth)
 
 static void xml_write_attributes(FILE *stream, XML_node *node)
 {
-  XML_attribute *a = node->first_attribute_;
+  XML_attribute *a = node->first_attribute;
   while (a) {
-    fprintf(stream, " %s=\"%s\"", a->key_, a->value_);
-    a = a->next_;
+    fprintf(stream, " %s=\"%s\"", a->key, a->value);
+    a = a->next;
   }
 }
 
 static void xml_write(FILE *stream, XML_node *node, int depth)
 {
   XML_node *child;
-  switch (node->type_) {
+  switch (node->type) {
     case XML_DECLARATION:
       xml_indent(stream, depth);
-      fprintf(stream, "<?%s", node->node_name_);
+      fprintf(stream, "<?%s", node->node_name);
       xml_write_attributes(stream, node);
       fprintf(stream, "?>\n");
       return;
     case XML_ELEMENT:
         xml_indent(stream, depth);
-        fprintf(stream, "<%s", node->node_name_);
+        fprintf(stream, "<%s", node->node_name);
         xml_write_attributes(stream, node);
-        fprintf(stream, node->first_child_ ? ">\n" : "/>\n");
+        fprintf(stream, node->first_child ? ">\n" : "/>\n");
       break;
     // case XML_TEXT:
-    //   printf("%s", node->litteral_);
+    //   printf("%s", node->litteral);
   }
 
-  if (!node->first_child_) {
+  if (!node->first_child) {
     return;
   }
 
-  child = node->first_child_;
+  child = node->first_child;
   while (child) {
     xml_write(stream, child, depth + 1);
-    child = child->next_sibling_;
+    child = child->next_sibling;
   }
 
-  switch (node->type_) {
+  switch (node->type) {
     case XML_ELEMENT:
         xml_indent(stream, depth);
-        fprintf(stream, "</%s>\n", node->node_name_);
+        fprintf(stream, "</%s>\n", node->node_name);
       break;
   }
 }
@@ -183,22 +183,22 @@ static void xml_write(FILE *stream, XML_node *node, int depth)
 /* Add a new attribute to a XML node, XML_ELEMENT or XML_DECLARATION */
 void xml_add_attribute(XML_node *node, const char* key, const char* value)
 {
-  if (node->type_ != XML_ELEMENT && node->type_ != XML_DECLARATION) {
+  if (node->type != XML_ELEMENT && node->type != XML_DECLARATION) {
     return;
   }
 
   XML_attribute *attribute = (XML_attribute*)malloc(sizeof(XML_attribute));
-  attribute->key_ = strdup(key);
-  attribute->value_ = strdup(value);
-  attribute->next_ = NULL;
-  if (node->first_attribute_ == NULL) {
-    attribute->previous_ = NULL;
-    node->first_attribute_ = attribute;
+  attribute->key = strdup(key);
+  attribute->value = strdup(value);
+  attribute->next = NULL;
+  if (node->first_attribute == NULL) {
+    attribute->previous = NULL;
+    node->first_attribute = attribute;
   } else {
-    node->last_attribute_->next_ = attribute;
-    attribute->previous_ = node->last_attribute_;
+    node->last_attribute->next = attribute;
+    attribute->previous = node->last_attribute;
   }
-  node->last_attribute_ = attribute;
+  node->last_attribute = attribute;
 }
 
 XML_node *xml_create_node(int type, const char *name, const char *content)
@@ -206,20 +206,20 @@ XML_node *xml_create_node(int type, const char *name, const char *content)
   // Create node
   XML_node *node = (XML_node*)malloc(sizeof(XML_node));
   memset(node, 0, sizeof(*node));
-  node->type_ = type;
+  node->type = type;
 
   // Set name and content
   switch (type) {
     case XML_TEXT:
     case XML_COMMENT:
     case XML_CDATA:
-      node->content_ = strdup(content);
+      node->content = strdup(content);
     case XML_DOCTYPE:
-      node->node_name_ = strdup(XML_NODE_NAMES[type]);
+      node->node_name = strdup(XML_NODE_NAMES[type]);
       break;
     case XML_DECLARATION:
     case XML_ELEMENT:
-      node->node_name_ = strdup(name);
+      node->node_name = strdup(name);
       break;
   }
   return node;
@@ -227,39 +227,39 @@ XML_node *xml_create_node(int type, const char *name, const char *content)
 
 void xml_add_child_node(XML_node *parent, XML_node *child)
 {
-  child->parent_ = parent;
-  child->previous_sibling_ = parent->last_child_;
-  if (parent->last_child_ != NULL) {
-    parent->last_child_->next_sibling_ = child;
+  child->parent = parent;
+  child->previous_sibling = parent->last_child;
+  if (parent->last_child != NULL) {
+    parent->last_child->next_sibling = child;
   } else {
-    parent->first_child_ = child;
+    parent->first_child = child;
   }
-  parent->last_child_ = child;
-  parent->children_count_++;
+  parent->last_child = child;
+  parent->children_count++;
 }
 
 void xml_remove_node(XML_node *node)
 {
-  if (!node->parent_) {
+  if (!node->parent) {
     return;
   }
 
-  if (node->previous_sibling_) {
-    node->previous_sibling_->next_sibling_ = node->next_sibling_;
+  if (node->previous_sibling) {
+    node->previous_sibling->next_sibling = node->next_sibling;
   } else {
-    node->parent_->first_child_ = node->next_sibling_;
+    node->parent->first_child = node->next_sibling;
   }
 
-  if (node->next_sibling_) {
-    node->next_sibling_->previous_sibling_ = node->previous_sibling_;
+  if (node->next_sibling) {
+    node->next_sibling->previous_sibling = node->previous_sibling;
   } else {
-    node->parent_->last_child_ = node->previous_sibling_;
+    node->parent->last_child = node->previous_sibling;
   }
 
-  node->parent_->children_count_--;
-  node->parent_ = NULL;
-  node->previous_sibling_ = NULL;
-  node->next_sibling_ = NULL;
+  node->parent->children_count--;
+  node->parent = NULL;
+  node->previous_sibling = NULL;
+  node->next_sibling = NULL;
 }
 
 /* ---------------------------- */
@@ -319,16 +319,16 @@ XML_node *xml_parse_node(int nodetype, const char *data, int lg)
   // Create node
   XML_node *node = (XML_node*)malloc(sizeof(XML_node));
   memset(node, 0, sizeof(*node));
-  node->type_ = nodetype;
+  node->type = nodetype;
 
   // Set name and content
   if (nodetype == XML_ELEMENT || nodetype == XML_DECLARATION) {
     xml_parse_element(node, data, lg);
   } else {
-    node->node_name_ = strdup(XML_NODE_NAMES[nodetype]);
-    node->content_ = (char*)malloc(lg+1);
-    memcpy(node->content_, data, lg);
-    node->content_[lg] = '\0';
+    node->node_name = strdup(XML_NODE_NAMES[nodetype]);
+    node->content = (char*)malloc(lg+1);
+    memcpy(node->content, data, lg);
+    node->content[lg] = '\0';
   }
 
   return node;
@@ -387,17 +387,17 @@ XML_node *xml_read_file_with(FILE *stream, XML_pusher pusher, void *param)
     }
 
     // Handler stream cursor position
-    node->row_ = row;
-    node->col_ = col;
-    node->rows_ = memcnt(buffer, '\n', size);
-    if (node->rows_) {
+    node->row = row;
+    node->col = col;
+    node->rows = memcnt(buffer, '\n', size);
+    if (node->rows) {
       const char *eol = memrchr(buffer, '\n', size);
-      node->ecol_ = size - (eol - buffer);
+      node->ecol = size - (eol - buffer);
     } else {
-      node->ecol_ += size;
+      node->ecol += size;
     }
-    row += node->rows_;
-    col = node->ecol_;
+    row += node->rows;
+    col = node->ecol;
 
     // Shift buffer
     memmove(buffer, &buffer[size], XML_BUF_SIZE - size);
@@ -412,7 +412,7 @@ XML_node *xml_read_file_with(FILE *stream, XML_pusher pusher, void *param)
 /* Write XML DOM to stream */
 void xml_write_file(FILE *stream, XML_node *node, int opt) {
   ((void)opt);
-  xml_write(stream, node, node->type_ == XML_DOCUMENT ? -1 : 0);
+  xml_write(stream, node, node->type == XML_DOCUMENT ? -1 : 0);
 }
 
 /* ---------------------------- */
@@ -420,26 +420,26 @@ void xml_write_file(FILE *stream, XML_node *node, int opt) {
 /* Free all memory block occupied for the DOM */
 void xml_free_node (XML_node *node) {
   XML_attribute *a, *b;
-  a = node->first_attribute_;
+  a = node->first_attribute;
   while (a) {
-    b = a->next_;
-    free(a->key_);
-    free(a->value_);
+    b = a->next;
+    free(a->key);
+    free(a->value);
     free(a);
     a = b;
   }
 
   XML_node *s, *t;
-  s = node->first_child_;
+  s = node->first_child;
   while (s) {
-    t = s->next_sibling_;
+    t = s->next_sibling;
     xml_free_node(s);
     s = t;
   }
 
-  free(node->node_name_);
-  if (node->content_) {
-    free(node->content_);
+  free(node->node_name);
+  if (node->content) {
+    free(node->content);
   }
   free(node);
 }

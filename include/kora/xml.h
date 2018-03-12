@@ -38,31 +38,31 @@ typedef struct XML_attribute XML_attribute;
 typedef struct XML_builder XML_builder;
 
 struct XML_node {
-  int type_;
-  int length_;
-  int children_count_;
-  char *litteral_;
-  XML_node *parent_;
-  XML_node *next_sibling_;
-  XML_node *previous_sibling_;
-  XML_node *first_child_;
-  XML_node *last_child_;
-  XML_attribute *first_attribute_;
-  XML_attribute *last_attribute_;
-  char *node_name_;
-  char *content_;
-  int build_flags_;
-  int row_;
-  int col_;
-  int rows_;
-  int ecol_;
+  int type;
+  int length;
+  int children_count;
+  char *litteral;
+  XML_node *parent;
+  XML_node *next_sibling;
+  XML_node *previous_sibling;
+  XML_node *first_child;
+  XML_node *last_child;
+  XML_attribute *first_attribute;
+  XML_attribute *last_attribute;
+  char *node_name;
+  char *content;
+  int build_flags;
+  int row;
+  int col;
+  int rows;
+  int ecol;
 };
 
 struct XML_attribute {
-  char *key_;
-  char *value_;
-  XML_attribute *next_;
-  XML_attribute *previous_;
+  char *key;
+  char *value;
+  XML_attribute *next;
+  XML_attribute *previous;
 };
 
 typedef XML_node * (*XML_pusher)(XML_node *cursor, XML_node *node, void *param);

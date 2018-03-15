@@ -22,5 +22,7 @@
 # Source files
 !include/**/*.h
 !src/**/*.c
+!resx/**/*.css
+!resx/**/*.xml
 
 # Exceptions

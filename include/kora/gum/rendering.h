@@ -19,6 +19,8 @@ struct GUM_box
     int x, y, w, h;
     int minw, minh;
     int cx, cy, cw, ch;
+    int mincw, minch;
+    int sx, sy;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -52,6 +54,9 @@ enum {
 
     GUM_CELL_SOLID = (1 << 3),
     GUM_CELL_EDITABLE = (1 << 4),
+
+    GUM_CELL_OVERFLOW_X = (1 << 5),
+    GUM_CELL_OVERFLOW_Y = (1 << 6),
 };
 
 struct GUM_cell
@@ -85,7 +90,7 @@ struct GUM_cell
 struct GUM_layout
 {
     // int padleft, padright, padtop, padbottom;
-    int pad_width, pad_height;
+    // int pad_width, pad_height;
     int width; int height;
     int dpi;
     float dsp;
@@ -121,12 +126,12 @@ GUM_skin *gum_style_find(GUM_skins *skins, const char* name);
 
 
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
-void gum_paint(GUM_surface *win, GUM_cell *cell);
+void gum_paint(void *win, GUM_cell *cell);
 void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp);
 
 
 GUM_skin *gum_skin(GUM_cell *cell);
-void gum_invalid_cell(GUM_cell *cell, GUM_surface *win);
+void gum_invalid_cell(GUM_cell *cell, void *win);
 GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
 void gum_cell_dettach(GUM_cell *cell);
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);

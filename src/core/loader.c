@@ -1,4 +1,4 @@
-#include <kora/gum/display.h>
+// #include <kora/gum/display.h>
 #include <kora/gum/rendering.h>
 #include <kora/xml.h>
 #include <kora/css.h>
@@ -86,6 +86,12 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     } else if (!strcmp("solid", key)) {
         if (!strcmp("true", value)) cell->state |= GUM_CELL_SOLID;
         else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_SOLID;
+    } else if (!strcmp("overflow-x", key)) {
+        if (!strcmp("true", value)) cell->state |= GUM_CELL_OVERFLOW_X;
+        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_OVERFLOW_X;
+    } else if (!strcmp("overflow-y", key)) {
+        if (!strcmp("true", value)) cell->state |= GUM_CELL_OVERFLOW_Y;
+        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_OVERFLOW_Y;
     }
 }
 
@@ -144,10 +150,8 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
 GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins)
 {
     FILE *fp = fopen(filename, "r");
-    if (fp == NULL) {
-        gum_log("Unable to open xml file.");
+    if (fp == NULL)
         return NULL;
-    }
 
     struct GUM_cellbuilder builder;
     builder.cursor = NULL;

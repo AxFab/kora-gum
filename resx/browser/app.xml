@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<panel min-width="320px" min-height="220px" width="wrap" height="wrap">
+
+    <!-- Onglets
+    <group width="wrap" top="0dp" height="40dp">
+        <label left="0" width="40dp" height="wrap" image="@logo" />
+
+        <labelLinkFa left="40dp" height="wrap" top="0" text="&lg;" />
+        <group left="80dp" right="180dp" bottom="0" height="30dp" layout="HGroupExtend">
+            <onglet width="120dp" height="wrap" text="File Browser"/>
+        </group>
+        <labelLinkFa right="140dp" height="wrap" text="&rg;" />
+        <labelLinkFa right="100dp" height="wrap" text="+" />
+
+        <labelLinkFa right="40dp" height="wrap" text="_" />
+        <labelLinkFa right="0" height="wrap" text="x" />
+    </group> -->
+
+    <!-- Toolbar -->
+    <toolBar width="wrap" top="0" height="40px" padding="5px">
+        <group left="0" height="wrap" width="120px" gap="5px" layout="HGroupMiddle">
+            <toolBtn width="26px" height="26px" image="@previous" text="P" solid="true" />
+            <toolBtn width="26px" height="26px" image="@next" text="N" solid="true" />
+            <toolBtn width="26px" height="26px" image="@parent" text="T" solid="true" />
+            <toolBtn width="26px" height="26px" image="@refresh" text="R" solid="true" />
+        </group>
+        <input left="125px" top="5px" height="20px" right="155px" text="/home/fabien" editable="true" padding="2px" solid="true" />
+        <group right="0" height="wrap" width="150px" gap="5px" layout="HGroupMiddle">
+            <toolBtn width="26px" height="26px" image="@newFolder" text="F" solid="true" />
+            <toolBtn width="26px" height="26px" image="@fileOperation" text="O" solid="true" />
+            <toolBtn width="26px" height="26px" image="@properties" text="P" solid="true" />
+            <toolBtn width="26px" height="26px" image="@share" text="S" solid="true" />
+            <toolBtn width="26px" height="26px" image="@viewSettings" text="V" solid="true" />
+        </group>
+    </toolBar>
+
+    <!-- Shortcut Navbar -->
+    <toolBar left="0px" width="140px" top="40px" bottom="0px" padding="3px" gap="2px" layout="VGroupExtend">
+        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Home" />
+        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Desktop" />
+        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Download" />
+        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Cloud storage" />
+        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Devices" />
+    </toolBar>
+
+    <!-- File view -->
+    <group padding="10px" left="140px" right="0px" top="40px" bottom="0px">
+
+        <group width="wrap" height="wrap" layout="VGroupLeft" id="view" overflow-y="true">
+
+            <menuItem id="icon" left="0" top="20px" height="20px" padding="2px">
+                <img id="icon-img" left="3px" top="0" width="16px" height="16px" />
+                <menuLabel id="icon-text" left="28px" top="0" right="2px" height="16px" text="Documents" min-width="80px"/>
+            </menuItem>
+
+        </group>
+
+        <menu left="100px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-file">
+            <menuVRuler left="25px" top="0" bottom="0" width="1px" />
+            <group width="wrap" height="wrap" layout="VGroupExtend" >
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" width="16px" height="wrap" />
+                    <menuLabel left="28px" right="0" height="wrap" text="New"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="View in Dropbox"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Share"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Paste"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + V"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Paste shortcut"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Undo"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + Z"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Refresh"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="F5"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="New folder"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Create shortcut"/>
+                </menuItem>
+
+                <menuSeparator height="5px">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Properties"/>
+                </menuItem>
+
+            </group>
+<!--
+            ContextMenu menuDir = new ContextMenu();
+            menuDir.AddItem("New");
+            menuDir.AddSepartor();
+            ContextMenuAddPlugin(menuDir);
+            menuDir.AddItem("Share");
+            menuDir.AddSepartor();
+            menuDir.AddItem("Paste", "Ctrl + V");
+            menuDir.AddItem("Paste shortcut");
+            menuDir.AddItem("Undo", "Ctrl + Z");
+            menuDir.AddSepartor();
+            menuDir.AddItem("Refresh", "F5");
+            menuDir.AddSepartor();
+            menuDir.AddItem("New folder");
+            menuDir.AddItem("Create shortcut");
+            menuDir.AddSepartor();
+            menuDir.AddItem("Properties");
+            ShowContextMenu(menuDir);
+        }
+
+        public void ShowFileContextMenu(Event e) {
+            ContextMenu menuCnt = new ContextMenu();
+            menuCnt = new ContextMenu();
+            menuCnt.AddItem("Open", "Ctrl + O", null, null);
+            menuCnt.AddSepartor();
+            ContextMenuAddPlugin(menuCnt);
+            menuCnt.AddItem("Share");
+            menuCnt.AddItem("E-mail");
+            menuCnt.AddSepartor();
+            menuCnt.AddItem("Cut", "Ctrl + X");
+            menuCnt.AddItem("Copy", "Ctrl + C");
+            menuCnt.AddSepartor();
+            menuCnt.AddItem("Send to");
+            menuCnt.AddSepartor();
+            menuCnt.AddItem("Delete");
+            menuCnt.AddItem("Rename");
+            menuCnt.AddItem("Undo", "Ctrl + Z");
+            menuCnt.AddSepartor();
+            menuCnt.AddItem("Properties");
+            ShowContextMenu(menuCnt);
+        -->
+
+        </menu>
+
+
+
+        <menu left="300px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-view">
+            <menuVRuler left="25px" top="0" bottom="0" width="1px" />
+            <group width="wrap" height="wrap" layout="VGroupExtend">
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Open"  solid="false"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + O" solid="false"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Edit" solid="false"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="History" solid="false"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px"  solid="false"/>
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="View in Dropbox" solid="false"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px"  solid="false"/>
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Share" solid="false"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px"  solid="false"/>
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="E-mail" solid="false"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" solid="false" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Cut" solid="false"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + X" solid="false"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Copy"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + V"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Copy path"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Move to"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Copy to"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Delete"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Rename"/>
+                </menuItem>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Undo"/>
+                    <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + Z"/>
+                </menuItem>
+
+                <menuSeparator height="5px" solid="false">
+                    <menuDivider left="28px" right="3px" top="2px" height="1px" solid="false" />
+                </menuSeparator>
+
+                <menuItem height="20px" padding="2px" solid="true">
+                    <menuIco left="3px" top="0" width="16px" height="16px" />
+                    <menuLabel left="28px" top="0" right="2px" height="16px" text="Properties"/>
+                </menuItem>
+
+            </group>
+        </menu>
+
+    </group>
+</panel>

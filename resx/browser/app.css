@@ -1,0 +1,120 @@
+
+.panel {
+  background: #e2e2e2;
+}
+
+.group {
+}
+
+.label {
+  text-align: left;
+  color: #181818;
+}
+
+.img {
+  background: #a6a6a6;
+  border: #a6a6a6;
+}
+
+.labelLinkFa {
+  color: #181818;
+  width: 40dp;
+  height: 40dp;
+}
+
+.labelLinkFa:over {
+  color: #181818;
+  background: white;
+}
+
+.onglet {
+  color: #181818;
+  background: #efefef;
+}
+
+.toolBar {
+  background: #a6a6a6;
+  background-gradient: #d8d8d8;
+}
+
+.input {
+  background: #45474a;
+  border-color: #111111;
+  color: #cdd9e4;
+  text-align: left;
+}
+
+.toolBtn {
+  background: #a6a6a6;
+  background-gradient: #6b6b6b;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #2f2f30;
+}
+
+.menu {
+  background: #a6a6a6;
+  border-color: #454545;
+  inner-color: #c2c2c2;
+}
+.menuVRuler {
+  background: #42a5f5;
+  width: 1px;
+}
+.menuDivider {
+  background: #545454;
+}
+.menuItem {
+}
+.menuItem:over {
+  background: #c2c2c2;
+}
+.menuLabel {
+  text-align: left;
+  color: #323232;
+}
+.menuLabel2 {
+  text-align: right;
+  color: #323232;
+}
+
+.toolBtn:over {
+  background: #45474a;
+  background-gradient: #6b6b6b;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #181818;
+}
+.toolBtn:down {
+  background: #45474a;
+  background-gradient: #45474a;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #181818;
+}
+
+
+.listItem {
+  text-align: left;
+  color: #2f2f30;
+}
+
+.listItem:over {
+  text-align: left;
+  background: #42a5f5;
+  color: #2f2f30;
+}
+
+.btnGroup {
+  background: #42a5f5;
+  color: white;
+  highlight-color: #0a66b1;
+  border-color: #064b84;
+}
+
+.btnGroup:over  {
+  background: #5f542a;
+  color: white;
+  highlight-color: #6b10a6;
+  border-color: #b84064;
+}

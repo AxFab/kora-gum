@@ -29,14 +29,14 @@ static void gum_layout_absolute_minsize(GUM_cell *cell, GUM_cell *child, GUM_lay
 {
     short left = CSS_GET_UNIT(child->rulerx.before, child->rulerx.bunit, layout->dpi, layout->dsp, 0);
     short right = CSS_GET_UNIT(child->rulerx.after, child->rulerx.aunit, layout->dpi, layout->dsp, 0);
-    short width = left + right + child->box.minw + layout->pad_width;
+    short width = left + right + child->box.minw;
     short top = CSS_GET_UNIT(child->rulery.before, child->rulery.bunit, layout->dpi, layout->dsp, 0);
     short bottom = CSS_GET_UNIT(child->rulery.after, child->rulery.aunit, layout->dpi, layout->dsp, 0);
-    short height = top + bottom + child->box.minh + layout->pad_height;
-    if (width > cell->box.minw)
-        cell->box.minw = width;
-    if (height > cell->box.minh)
-        cell->box.minh = height;
+    short height = top + bottom + child->box.minh;
+    if (width > cell->box.mincw)
+        cell->box.mincw = width;
+    if (height > cell->box.minch)
+        cell->box.minch = height;
 }
 
 static void gum_layout_absolute_resize(GUM_cell *cell, GUM_layout *layout)
@@ -83,15 +83,15 @@ void gum_layout_wrap(GUM_cell *cell, GUM_layout *layout)
 static void gum_layout_group_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout *layout)
 {
     if (layout->flags & GUM_GRP_VERTICAL) {
-        if (child->box.minw + layout->pad_width > cell->box.minw)
-            cell->box.minw = child->box.minw + layout->pad_width;
+        if (child->box.minw > cell->box.mincw)
+            cell->box.mincw = child->box.minw;
         layout->cursor += child->box.minh + layout->gap;
-        cell->box.minh = MAX(cell->box.minh, layout->cursor + layout->pad_height - layout->gap);
+        cell->box.minch = MAX(cell->box.minch, layout->cursor - layout->gap);
     } else {
-        if (child->box.minh + layout->pad_height > cell->box.minh)
-            cell->box.minh = child->box.minh + layout->pad_height;
+        if (child->box.minh > cell->box.minch)
+            cell->box.minch = child->box.minh;
         layout->cursor += child->box.minw + layout->gap;
-        cell->box.minw = MAX(cell->box.minw, layout->cursor + layout->pad_width - layout->gap);
+        cell->box.mincw = MAX(cell->box.mincw, layout->cursor - layout->gap);
     }
 }
 
@@ -204,15 +204,16 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
     int pad_bottom = CSS_GET_UNIT(cell->padding.bottom, cell->padding.bunit, layout->dpi, layout->dsp, cell->box.h);
 
     // TODO Add String size
-
+    int w, h;
+    gum_text_size(cell->text, &w, &h);
+    cell->box.minw = MAX(cell->box.minw, w + pad_left + pad_right);
+    cell->box.minh = MAX(cell->box.minh, h + pad_top + pad_bottom);
 
     if (cell->first) {
         GUM_cell *child;
         GUM_layout sub_layout;
         sub_layout.dpi = layout->dpi;
         sub_layout.dsp = layout->dsp;
-        sub_layout.pad_width = pad_left + pad_right;
-        sub_layout.pad_height = pad_top + pad_bottom;
         if (cell->layout)
             cell->layout(cell, &sub_layout);
         else
@@ -222,6 +223,10 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
             gum_cell_minsize(child, &sub_layout);
             sub_layout.minsize(cell, child, &sub_layout);
         }
+        if (!(cell->state & GUM_CELL_OVERFLOW_X))
+            cell->box.minw = MAX(cell->box.minw, cell->box.mincw + pad_left + pad_right);
+        if (!(cell->state & GUM_CELL_OVERFLOW_Y))
+            cell->box.minh = MAX(cell->box.minh, cell->box.minch + pad_top + pad_bottom);
     }
 }
 

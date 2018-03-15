@@ -1,4 +1,4 @@
-#include <kora/gum/display.h>
+// #include <kora/gum/display.h>
 #include <kora/gum/rendering.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,16 +22,17 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 }
 
 
-void gum_paint(GUM_surface *win, GUM_cell *cell)
+void gum_paint(void *ctx, GUM_cell *cell)
 {
+    // void *ctx = gum_context(win);
     int x = 0, y = 0;
-    while (cell) {
+    for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        gum_draw_cell(win->info, cell, x, y);
+        gum_draw_cell(ctx, cell, x, y);
         if (cell->first) {
-            x += cell->box.cx;
-            y += cell->box.cy;
+            x += cell->box.cx - cell->box.sx;
+            y += cell->box.cy - cell->box.sy;
             // TODO - prune if cell is outside drawing clip
             cell = cell->first;
             continue;
@@ -39,10 +40,15 @@ void gum_paint(GUM_surface *win, GUM_cell *cell)
 
         while (!cell->next) {
             cell = cell->parent;
-            if (cell == NULL)
+            if (cell == NULL) {
+                // gum_complete(win, ctx);
                 return;
-            x -= cell->box.cx;
-            y -= cell->box.cy;
+            }
+            x -= cell->box.cx - cell->box.sx;
+            y -= cell->box.cy - cell->box.sy;
+            if (cell->box.sy != 0) { // TODO
+                gum_draw_scrolls(ctx, cell, x, y);
+            }
         }
         if (cell) {
             cell = cell->next;
@@ -60,7 +66,7 @@ GUM_skin *gum_skin(GUM_cell *cell)
     return cell->skin;
 }
 
-void gum_invalid_cell(GUM_cell *cell, GUM_surface *win)
+void gum_invalid_cell(GUM_cell *cell, void *win)
 {
     // TODO -- Same as get by Id, but start by Last instead of Frist
     int x = cell->box.x;

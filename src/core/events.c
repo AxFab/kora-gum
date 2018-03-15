@@ -1,16 +1,19 @@
 #include <kora/gum/events.h>
-#include <kora/gum/display.h>
+// #include <kora/gum/display.h>
 #include <kora/gum/rendering.h>
 #include <kora/hmap.h>
+#include <kora/keys.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <cairo/cairo.h>
 
 struct GUM_event_manager
 {
   int mouse_x, mouse_y;
   GUM_cell *root;
-  GUM_surface *win;
+  void *win;
+  cairo_t *ctx;
 
   HMP_map actions;
 
@@ -200,26 +203,33 @@ void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 
-GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_surface *win)
+GUM_event_manager *gum_event_manager(GUM_cell *root, void *win)
 {
     GUM_event_manager *evm = (GUM_event_manager*)calloc(1, sizeof(GUM_event_manager));
     evm->root = root;
     evm->win = win;
+    evm->ctx = cairo_create((cairo_surface_t*)win);
     hmp_init(&evm->actions, 16);
 
-    win->cell = root; // TODO -- Remove all links
-
-    gum_resize(root, win->width, win->height, win->xdpi, win->xdsp);
+    gum_resize(root, 680, 480, 96, 0.75);
+    // gum_resize(root, win->width, win->height, win->xdpi, win->xdsp);
     // TODO -- Full update and paint (or invalidate)
     return evm;
 }
 
 void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
 {
-    fprintf(stderr, "Event %d enter\n", event->type);
+    // fprintf(stderr, "Event %d enter\n", event->type);
     switch (event->type) {
     case GUM_EV_EXPOSE:
-        gum_paint(evm->win, evm->root);
+        cairo_push_group(evm->ctx);
+        cairo_set_source_rgb(evm->ctx, 1, 1, 1);
+        cairo_paint(evm->ctx);
+        gum_paint(evm->ctx, evm->root);
+        cairo_pop_group_to_source(evm->ctx);
+        cairo_paint(evm->ctx);
+        cairo_surface_flush((cairo_surface_t*)evm->win);
+        // gum_paint(evm->win, evm->root);
         break;
 
     case GUM_EV_MOTION:
@@ -247,14 +257,14 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
         gum_event_key_release(evm, event->param0, event->param1);
         break;
     }
-    fprintf(stderr, "Event %d leave\n", event->type);
+    // fprintf(stderr, "Event %d leave\n", event->type);
 }
 
 void gum_event_loop(GUM_event_manager *evm)
 {
     GUM_event event;
     for (;;) {
-        if (gum_event_poll(evm->win->info, &event, -1) != 0)
+        if (gum_event_poll(evm->win, &event, -1) != 0)
             continue;
 
         if (event.type == GUM_EV_DESTROY)

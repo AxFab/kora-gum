@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <cairo/cairo.h>
 
 typedef struct xinfo {
     Display *d;
@@ -196,6 +197,20 @@ void gum_draw_cell(void *data, GUM_cell *cell, int x, int y)
     // XSetForeground(info->d, info->gc, 0xFF0000);
     // XDrawRectangle(info->d, info->w, info->gc,
     //     cell->box.x + x, cell->box.y + y, cell->box.w - 1, cell->box.h - 1);
+
+}
+
+void gum_draw_scrolls(void *data, GUM_cell *cell, int x, int y)
+{
+    xinfo_t *info = (xinfo_t*)data;
+
+    X_FillRectangle(info, 0xFF78c8c8, cell->box.x + cell->box.w - 7 + x,
+        cell->box.y + y, 7, cell->box.h);
+    int sz = cell->box.h * cell->box.h / cell->box.minch;
+    int st = cell->box.sy * cell->box.h / cell->box.minch;
+    X_FillRectangle(info, 0xFFe8c8c8, cell->box.x + cell->box.w - 7 + x,
+        cell->box.y + y + st, 7, sz);
+
 
 }
 

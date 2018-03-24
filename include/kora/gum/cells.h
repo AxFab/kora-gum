@@ -87,6 +87,8 @@ struct GUM_cell
     GUM_skin *skin_over;
     GUM_skin *skin_down;
     char *text; // Text value
+    char *img_src;
+    void *image;
 
     // Cell hierarchy into the rendering tree
     GUM_cell *parent;

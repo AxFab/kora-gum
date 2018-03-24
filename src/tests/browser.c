@@ -57,11 +57,21 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
         struct dirent *en = readdir(dir);
         if (en == NULL)
             break;
-        if (strcmp(en->d_name, ".") == 0)
+        if (strcmp(en->d_name, ".") == 0 || strcmp(en->d_name, "..") == 0)
+            continue;
+        if (en->d_name[0] == '.')
             continue;
         if (ico_txt->text)
             free(ico_txt->text);
         ico_txt->text = strdup(en->d_name);
+
+        if (ico_img->img_src)
+            free(ico_img->img_src);
+        if (en->d_type == 4)
+            ico_img->img_src = strdup("./icons/DIR.png");
+        else {
+            ico_img->img_src = strdup("./icons/TXT.png");
+        }
         // fprintf(stderr, "Dirent %s\n", en->d_name);
         GUM_cell *cpy = gum_cell_copy(icon);
         gum_cell_pushback(view, cpy);

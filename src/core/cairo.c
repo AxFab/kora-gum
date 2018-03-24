@@ -108,13 +108,16 @@ void gum_draw_cell(void *ctx, GUM_cell *cell)
     if (skin == NULL)
         return;
 
+    if (cell->image == NULL && cell->img_src != NULL)
+        cell->image = gum_load_image(cell->img_src);
+
     int sz = MIN(cell->box.w, cell->box.h);
     int r_top_left = CSS_GET_UNIT(skin->r_top_left, skin->u_top_left, 96, 0.75, sz);
     int r_top_right = CSS_GET_UNIT(skin->r_top_right, skin->u_top_right, 96, 0.75, sz);
     int r_bottom_right = CSS_GET_UNIT(skin->r_bottom_right, skin->u_bottom_right, 96, 0.75, sz);
     int r_bottom_left = CSS_GET_UNIT(skin->r_bottom_left, skin->u_bottom_left, 96, 0.75, sz);
 
-    if (skin->bgcolor >= MIN_ALPHA || skin->brcolor >= MIN_ALPHA) {
+    if (skin->bgcolor >= MIN_ALPHA || skin->brcolor >= MIN_ALPHA || cell->image) {
 
         cairo_new_path(ctx);
         cairo_move_to(ctx, cell->box.x + r_top_left, cell->box.y);
@@ -127,7 +130,18 @@ void gum_draw_cell(void *ctx, GUM_cell *cell)
         cairo_line_to(ctx, cell->box.x, cell->box.y + r_top_left);
         cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
 
-        if (skin->grcolor >= MIN_ALPHA) {
+        if (cell->image) {
+            cairo_surface_t *img = (cairo_surface_t*)cell->image;
+            int img_sz = MAX(cairo_image_surface_get_width(img), cairo_image_surface_get_height(img));
+            double rt = (double)MAX(cell->box.w, cell->box.h) / (double)img_sz;
+            cairo_save(ctx);
+            cairo_translate(ctx, cell->box.x, cell->box.y);
+            cairo_scale(ctx, rt, rt);
+            cairo_set_source_surface(ctx, img, 0, 0);
+            cairo_fill_preserve(ctx);
+            cairo_restore(ctx);
+
+        } else if (skin->grcolor >= MIN_ALPHA) {
 
             cairo_pattern_t *grad;
             if (skin->grad_angle == 90)

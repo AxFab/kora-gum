@@ -52,14 +52,16 @@
     </tool-bar>
     <panel left="0dp" width="240dp" top="118dp" bottom="20dp">
         <!-- Favorite / Navigation -->
+        <img left="0" top="0" img="./icons/DIR.png" width="256px" height="256px" />
     </panel>
     <panel left="240dp" right="0dp" top="118dp" bottom="20dp"
            id="view" layout="ColumnGrid" gap="3dp" padding="3dp"
            overflow-x="true" solid="true">
 
-        <itemIcon id="icon" left="0" top="20px" height="20px" padding="2px" solid="true">
-            <img id="icon-img" left="3px" top="2px" width="16px" height="16px" substyle="true" />
-            <menuLabel id="icon-text" left="28px" top="2px" right="5px" height="16px" text="Documents" min-width="80px" substyle="true"/>
+        <itemIcon id="icon" height="30dp" solid="true">
+            <img id="icon-img" left="0" top="0" width="30dp" height="30dp"
+                 substyle="true" img="./icons/DIR.png" />
+            <menuLabel id="icon-text" left="36dp" height="wrap" right="12dp" text="Documents" min-width="100dp" substyle="true"/>
         </itemIcon>
 
 

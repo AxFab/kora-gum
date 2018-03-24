@@ -75,6 +75,8 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
 
     else if (!strcmp("text", key))
         cell->text = strdup(value);
+    else if (!strcmp("img", key))
+        cell->img_src = strdup(value);
     else if (!strcmp("layout", key)) {
         if (!strcmp("Absolute", value)) cell->layout = gum_layout_absolute;
         else if (!strcmp("Wrap", value)) cell->layout = gum_layout_wrap;

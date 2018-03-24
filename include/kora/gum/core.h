@@ -26,7 +26,7 @@ void *gum_context(void *win);
 void gum_complete(void *win, void *ctx);
 
 void gum_text_size(const char *text, int *w, int *h);
-
+void *gum_load_image(const char *name);
 
 
 #define ALIGN_UP(v,a) (((v)+((a)-1)) & ~((a)-1))

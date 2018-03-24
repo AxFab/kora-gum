@@ -33,7 +33,7 @@ void gum_paint(void *ctx, GUM_cell *cell)
 {
     // void *ctx = gum_context(win);
     cairo_reset_clip(ctx);
-    int x = 0, y = 0;
+    // int x = 0, y = 0;
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
@@ -172,6 +172,8 @@ static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
     memcpy(cpy, cell, sizeof(GUM_cell));
     cpy->id = cell->id ? strdup(cell->id) : NULL;
     cpy->text = cell->text ? strdup(cell->text) : NULL;
+    cpy->img_src = cell->img_src ? strdup(cell->img_src) : NULL;
+    // TODO -- COPY IMAGE !?
     cpy->parent = NULL;
     cpy->previous = NULL;
     cpy->next = NULL;

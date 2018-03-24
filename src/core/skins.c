@@ -25,14 +25,10 @@ GUM_skin* gum_skin_property_setter(GUM_skin *skin, const char* property, const c
         skin->grcolor = css_parse_color(value);
     else if (!strcmp("shadow", property))
         skin->shcolor = css_parse_color(value);
-    else if (!strcmp("highlight-color", property))
-        skin->hgcolor = css_parse_color(value);
     else if (!strcmp("color", property))
         skin->txcolor = css_parse_color(value);
     else if (!strcmp("border-color", property))
         skin->brcolor = css_parse_color(value);
-    else if (!strcmp("inner-color", property))
-        skin->incolor = css_parse_color(value);
     else if (!strcmp("gradient-angle", property))
         skin->grad_angle = strtol(value, NULL, 10);
 

@@ -29,10 +29,8 @@ struct GUM_box
 struct GUM_skin
 {
     unsigned int bgcolor;
-    unsigned int hgcolor;
     unsigned int txcolor;
     unsigned int brcolor;
-    unsigned int incolor;
     unsigned int shcolor;
     unsigned int grcolor;
     int width, wunit;

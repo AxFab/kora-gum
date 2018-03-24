@@ -293,6 +293,8 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
 
 static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
 {
+    // Invalid cached data
+    cell->cachedSkin = NULL;
     layout->resize(cell, layout);
 
     int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, layout->dpi, layout->dsp, cell->box.w);

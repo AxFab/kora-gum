@@ -22,6 +22,25 @@ typedef struct xinfo {
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+struct MwmHints {
+    unsigned long flags;
+    unsigned long function;
+    unsigned long decoration;
+    long input_mode;
+    unsigned long status;
+};
+
+enum {
+    MWH_HINTS_FUNCTIONS = (1L << 0),
+    MWH_HINTS_DECORATIONS = (1L << 1),
+
+    MWH_FUNC_ALL = (1L << 0),
+    MWH_FUNC_RESIZE = (1L << 1),
+    MWH_FUNC_MOVE = (1L << 2),
+    MWH_FUNC_MINIMZE = (1L << 3),
+    MWH_FUNC_MAXIMIZE = (1L << 4),
+    MWH_FUNC_CLOSE = (1L << 5),
+};
 
 void *gum_create_surface(int width, int height)
 {
@@ -46,6 +65,14 @@ void *gum_create_surface(int width, int height)
         SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask |
         PropertyChangeMask | ColormapChangeMask |
         ExposureMask);
+
+    // Make the window, frameless
+    Atom mwmHintsProperty = XInternAtom(dsp, "_MOTIF_WM_HINTS", 0);
+    struct MwmHints hints;
+    hints.flags = MWH_HINTS_DECORATIONS;
+    hints.decoration = 0;
+    XChangeProperty(dsp, da, mwmHintsProperty, mwmHintsProperty, 32,
+        PropModeReplace, (unsigned char*)&hints, 5);
 
     XMapWindow(dsp, da);
 
@@ -102,14 +129,15 @@ void gum_complete(void *win, void *ctx)
     cairo_destroy((cairo_t*)ctx);
 }
 
-void gum_draw_cell(void *ctx, GUM_cell *cell)
-{
-    GUM_skin *skin = gum_skin(cell);
-    if (skin == NULL)
-        return;
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-    if (cell->image == NULL && cell->img_src != NULL)
-        cell->image = gum_load_image(cell->img_src);
+static void gum_draw_path(void* ctx, GUM_cell *cell, GUM_skin *skin)
+{
+    if (cell->path) {
+        cairo_new_path(ctx);
+        cairo_append_path(ctx, (cairo_path_t*)cell->path);
+        return;
+    }
 
     int sz = MIN(cell->box.w, cell->box.h);
     int r_top_left = CSS_GET_UNIT(skin->r_top_left, skin->u_top_left, 96, 0.75, sz);
@@ -117,18 +145,69 @@ void gum_draw_cell(void *ctx, GUM_cell *cell)
     int r_bottom_right = CSS_GET_UNIT(skin->r_bottom_right, skin->u_bottom_right, 96, 0.75, sz);
     int r_bottom_left = CSS_GET_UNIT(skin->r_bottom_left, skin->u_bottom_left, 96, 0.75, sz);
 
+    cairo_new_path(ctx);
+    cairo_move_to(ctx, cell->box.x + r_top_left, cell->box.y);
+    cairo_line_to(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y);
+    cairo_arc(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI/2.0, 0.0);
+    cairo_line_to(ctx, cell->box.x + cell->box.w, cell->box.y + cell->box.h - r_bottom_right);
+    cairo_arc(ctx, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
+    cairo_line_to(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h);
+    cairo_arc(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
+    cairo_line_to(ctx, cell->box.x, cell->box.y + r_top_left);
+    cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
+
+    cell->path = cairo_copy_path(ctx);
+}
+
+static cairo_pattern_t *gum_build_gradient(GUM_cell *cell, GUM_skin *skin)
+{
+    if (cell->gradient)
+        return (cairo_pattern_t *)cell->gradient;
+
+    cairo_pattern_t *grad;
+
+    if (skin->grad_angle == 90)
+        grad = cairo_pattern_create_linear(cell->box.x + cell->box.w, 0, cell->box.x, 0);
+    else if (skin->grad_angle == 270)
+        grad = cairo_pattern_create_linear(cell->box.x, 0, cell->box.x + cell->box.w, 0);
+    else
+        grad = cairo_pattern_create_linear(0, cell->box.y, 0, cell->box.y + cell->box.h);
+
+    cairo_pattern_add_color_stop_rgb(grad, 0.0, //0, 0.5, 0.5, 0);
+        ((skin->bgcolor >> 16) & 255) / 255.0,
+        ((skin->bgcolor >> 8) & 255) / 255.0,
+        ((skin->bgcolor >> 0) & 255) / 255.0);
+    // cairo_pattern_add_color_stop_rgb(grad, 0.25, 0.5, 0.5, 0);
+        // ((skin->grcolor >> 16) & 255) / 255.0,
+        // ((skin->grcolor >> 8) & 255) / 255.0,
+        // ((skin->grcolor >> 0) & 255) / 255.0);
+    cairo_pattern_add_color_stop_rgb(grad, 1.0, //0, 0.5, 0.5, 0);
+        ((skin->grcolor >> 16) & 255) / 255.0,
+        ((skin->grcolor >> 8) & 255) / 255.0,
+        ((skin->grcolor >> 0) & 255) / 255.0);
+
+    cell->gradient = grad;
+    return grad;
+}
+
+void gum_draw_cell(void *ctx, GUM_cell *cell)
+{
+    GUM_skin *skin = gum_skin(cell);
+    if (skin == NULL)
+        return;
+
+    if (cell->cachedSkin != skin) {
+        cell->path = NULL;
+        cell->gradient = NULL;
+        cell->cachedSkin = skin;
+    }
+
+    if (cell->image == NULL && cell->img_src != NULL)
+        cell->image = gum_load_image(cell->img_src);
+
     if (skin->bgcolor >= MIN_ALPHA || skin->brcolor >= MIN_ALPHA || cell->image) {
 
-        cairo_new_path(ctx);
-        cairo_move_to(ctx, cell->box.x + r_top_left, cell->box.y);
-        cairo_line_to(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y);
-        cairo_arc(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI/2.0, 0.0);
-        cairo_line_to(ctx, cell->box.x + cell->box.w, cell->box.y + cell->box.h - r_bottom_right);
-        cairo_arc(ctx, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
-        cairo_line_to(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h);
-        cairo_arc(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
-        cairo_line_to(ctx, cell->box.x, cell->box.y + r_top_left);
-        cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
+        gum_draw_path(ctx, cell, skin);
 
         if (cell->image) {
             cairo_surface_t *img = (cairo_surface_t*)cell->image;
@@ -143,30 +222,7 @@ void gum_draw_cell(void *ctx, GUM_cell *cell)
 
         } else if (skin->grcolor >= MIN_ALPHA) {
 
-            cairo_pattern_t *grad;
-            if (skin->grad_angle == 90)
-                grad = cairo_pattern_create_linear(cell->box.x + cell->box.w, 0, cell->box.x, 0);
-            else if (skin->grad_angle == 270)
-                grad = cairo_pattern_create_linear(cell->box.x, 0, cell->box.x + cell->box.w, 0);
-            else
-                grad = cairo_pattern_create_linear(0, cell->box.y, 0, cell->box.y + cell->box.h);
-
-            cairo_pattern_add_color_stop_rgb(grad, 0.0, //0, 0.5, 0.5, 0);
-                ((skin->bgcolor >> 16) & 255) / 255.0,
-                ((skin->bgcolor >> 8) & 255) / 255.0,
-                ((skin->bgcolor >> 0) & 255) / 255.0);
-            // cairo_pattern_add_color_stop_rgb(grad, 0.25, 0.5, 0.5, 0);
-                // ((skin->grcolor >> 16) & 255) / 255.0,
-                // ((skin->grcolor >> 8) & 255) / 255.0,
-                // ((skin->grcolor >> 0) & 255) / 255.0);
-            cairo_pattern_add_color_stop_rgb(grad, 1.0, //0, 0.5, 0.5, 0);
-                ((skin->grcolor >> 16) & 255) / 255.0,
-                ((skin->grcolor >> 8) & 255) / 255.0,
-                ((skin->grcolor >> 0) & 255) / 255.0);
-
-            // cairo_pattern_add_color_stop_rgb(grad, 0.5 * h0, 0.0, 0.5, 0.5);
-            // cairo_pattern_add_color_stop_rgb(grad, 0.7 * h0, 0.0, 0.5, 0.0);
-            // cairo_pattern_add_color_stop_rgb(grad, 1.0 * h0, 0.5, 0.0, 0.0);
+            cairo_pattern_t *grad = gum_build_gradient(cell, skin);
             cairo_set_source(ctx, grad);
             cairo_fill_preserve(ctx);
 
@@ -197,7 +253,7 @@ void gum_draw_cell(void *ctx, GUM_cell *cell)
 
         cairo_text_extents_t extents;
 
-        cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, 0);
         cairo_set_font_size(ctx, 10.0);
         cairo_text_extents(ctx, cell->text, &extents);
         int tx = cell->box.x;

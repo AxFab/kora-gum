@@ -88,7 +88,12 @@ struct GUM_cell
     GUM_skin *skin_down;
     char *text; // Text value
     char *img_src;
+
+    // Cached drawing data
     void *image;
+    void *path;
+    void *gradient;
+    GUM_skin *cachedSkin;
 
     // Cell hierarchy into the rendering tree
     GUM_cell *parent;

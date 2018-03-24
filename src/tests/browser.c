@@ -1,4 +1,4 @@
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <kora/gum/events.h>
 #include <kora/xml.h>
 #include <stdio.h>
@@ -7,9 +7,71 @@
 #include <stdarg.h>
 #include <dirent.h>
 
-#include <cairo/cairo.h>
+char current_path[8192];
+GUM_cell *view;
+GUM_cell *icon;
+GUM_cell *ico_txt;
+GUM_cell *ico_img;
+GUM_event_manager * evm;
+GUM_cell *root;
 
-#define M_PI 3.141592653589793
+void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event);
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+    strcat(current_path, "/");
+    strcat(current_path, cell->last->text);
+    printf("Click - Go to : %s\n", current_path);
+    on_refresh(evm, cell, event);
+}
+
+void on_previous(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+}
+
+void on_next(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+}
+
+void on_parent(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+    char *last = strrchr(current_path, '/');
+    if (last != NULL)
+        *last = '\0';
+    printf("Parent - Go to : %s\n", current_path);
+    on_refresh(evm, cell, event);
+}
+
+void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+    void *dir = opendir(current_path[0] == '\0' ? "/" : current_path);
+    if (dir == NULL) {
+        printf("Can't open directory '%s'\n", current_path);
+        return;
+    }
+    gum_cell_destroy_children(view);
+    for (;;) {
+        struct dirent *en = readdir(dir);
+        if (en == NULL)
+            break;
+        if (strcmp(en->d_name, ".") == 0)
+            continue;
+        if (ico_txt->text)
+            free(ico_txt->text);
+        ico_txt->text = strdup(en->d_name);
+        // fprintf(stderr, "Dirent %s\n", en->d_name);
+        GUM_cell *cpy = gum_cell_copy(icon);
+        gum_cell_pushback(view, cpy);
+        gum_event_bind(evm, cpy, GUM_EV_CLICK, on_icon_click);
+    }
+    closedir(dir);
+    gum_refresh(evm);
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
 int main ()
@@ -18,9 +80,9 @@ int main ()
     int height = width * 10 / 16; // 425
 
     // Load models
-    GUM_skins *skins = gum_skins_loadcss(NULL, "./resx/browser/app.css");
-    GUM_cell *cell = gum_cell_loadxml("./resx/browser/app.xml", skins);
-    if (cell == NULL) {
+    GUM_skins *skins = gum_skins_loadcss(NULL, "./resx/browser/app2.css");
+    root = gum_cell_loadxml("./resx/browser/app2.xml", skins);
+    if (root == NULL) {
         printf("Unable to create render model.\n");
         return -1;
     }
@@ -33,48 +95,36 @@ int main ()
     }
 
     // Remouve context menu
-    // GUM_cell *ctx_view = gum_get_by_id(cell, "ctx-menu-view");
-    // GUM_cell *ctx_file = gum_get_by_id(cell, "ctx-menu-file");
-    // // gum_cell_dettach(ctx_view);
-    // // gum_cell_dettach(ctx_file);
+    GUM_cell *ctx_view = gum_get_by_id(root, "ctx-menu-view");
+    GUM_cell *ctx_file = gum_get_by_id(root, "ctx-menu-file");
+    gum_cell_dettach(ctx_view);
+    gum_cell_dettach(ctx_file);
 
-    // Create widget using template
-    GUM_cell *view = gum_get_by_id(cell, "view");
-    GUM_cell *icon = gum_get_by_id(cell, "icon");
-    GUM_cell *ico_txt = gum_get_by_id(icon, "icon-text");
-    // GUM_cell *ico_img = gum_get_by_id(icon, "icon-img");
+    // Prepare widget using template
+    view = gum_get_by_id(root, "view");
+    icon = gum_get_by_id(root, "icon");
+    ico_txt = gum_get_by_id(icon, "icon-text");
+    ico_img = gum_get_by_id(icon, "icon-img");
     gum_cell_dettach(icon);
 
-    void *dir = opendir("/home/fabien");
-    for (;;) {
-        struct dirent *en = readdir(dir);
-        if (en == NULL)
-            break;
-        if (ico_txt->text)
-            free(ico_txt->text);
-        ico_txt->text = strdup(en->d_name);
-        fprintf(stderr, "Dirent %s\n", en->d_name);
-        GUM_cell *cpy = gum_cell_copy(icon);
-        gum_cell_pushback(view, cpy);
-    }
-    closedir(dir);
+    evm = gum_event_manager(root, win);
+    gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent);
+    gum_event_bind(evm, NULL, GUM_EV_NEXT, on_next);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-prev"), GUM_EV_CLICK, on_previous);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-next"), GUM_EV_CLICK, on_next);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
 
-    GUM_event_manager * evm = gum_event_manager(cell, win);
-    // TODO -- bind event ! manager, CellById(root, "btn-previous"), GUM_CE_CLICK, onPrevious);
 
-    // gum_resize(cell, 680, 480, 96, 0.75);
+    strcpy(current_path, "/home/fabien");
+    on_refresh(evm, NULL, 0);
+
     fprintf(stderr, "View: %dx%d  - zone %dx%d\n",
         view->box.w, view->box.h,
         view->box.mincw, view->box.minch);
-    view->box.sy = 20;
+    // view->box.sy = 20;
 
-    // struct timespec ts = { 0, 5000000 };
-    for(;;) {
-        // gum_check_events(win, 0);
-        gum_event_loop(evm);
-
-        // nanosleep(&ts, NULL);
-    }
+    gum_event_loop(evm);
     gum_destroy_surface(win);
     // TODO -- Free cells and skins
     return 0;

@@ -1,16 +1,18 @@
 #include <kora/gum/events.h>
 // #include <kora/gum/display.h>
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <kora/hmap.h>
 #include <kora/keys.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <cairo/cairo.h>
+#include <cairo/cairo-xlib.h>
 
 struct GUM_event_manager
 {
   int mouse_x, mouse_y;
+  int width, height;
   GUM_cell *root;
   void *win;
   cairo_t *ctx;
@@ -28,31 +30,27 @@ struct GUM_event_manager
 };
 
 
-
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_emit_event(GUM_event_manager *evm, GUM_cell *cell, int event)
+static void gum_emit_event(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-  char key[32];
-  snprintf(key, 32, "%p]%4x", cell, event);
-  // GIL_EventHandler action = (GIL_EventHandler)hmp_get(&evm->actions, key);
-  // if (action != NULL) {
-  //   action(evm, cell, event);
-  // } else if (event == GIL_CE_PREVIOUS || event == GIL_CE_NEXT) {
-  //   snprintf(key, 32, "%p]%4x", NULL, event);
-  //   action = (GIL_EventHandler)hmp_get(&evm->actions, key);
-  //   if (action != NULL) {
-  //     action(evm, cell, event);
-  //   }
-  // }
+    char key[32];
+    int lg = snprintf(key, 32, "%p]%4x", cell, event);
+    GUM_EventHandler action = (GUM_EventHandler)hmp_get(&evm->actions, key, lg);
+    if (action != NULL)
+        action(evm, cell, event);
+
+    lg = snprintf(key, 32, "%p]%4x", NULL, event);
+    action = (GUM_EventHandler)hmp_get(&evm->actions, key, lg);
+    if (action != NULL)
+        action(evm, cell, event);
 }
 
-
-void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags, int set, int event)
+static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags, int set, int event)
 {
     if (cell == NULL)
         return;
-    fprintf(stderr, "chstatus %s (%x)\n", cell->id, flags);
+    // fprintf(stderr, "chstatus %s (%x)\n", cell->id, flags);
     GUM_skin *skin = gum_skin(cell);
     if (set)
         cell->state |= flags;
@@ -63,6 +61,14 @@ void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags, int se
         gum_invalid_cell(cell, evm->win);
 
     gum_emit_event(evm, cell, event);
+}
+
+
+void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler)
+{
+    char key[32];
+    int lg = snprintf(key, 32, "%p]%4x", cell, event);
+    hmp_put(&evm->actions, key, lg, handler);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -78,10 +84,13 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
         evm->spec_btn = 0;
         gum_cell_chstatus(evm, evm->over, GUM_CELL_OVER, 0, GUM_EV_OUT);
         gum_cell_chstatus(evm, target, GUM_CELL_OVER, 1, GUM_EV_OVER);
+        // if (evm->over)
+        //     fprintf(stderr, "Out %s\n", evm->over->id);
+        // if (target)
+        //     fprintf(stderr, "Over %s\n", target->id);
         evm->over = target;
         /* If we live a down cell, it's like a release */
-        if (evm->down) {
-            fprintf(stderr, "Over %s\n", evm->down->id);
+        if (target == evm->down) {
             gum_cell_chstatus(evm, evm->down, GUM_CELL_DOWN, 0, GUM_EV_UP);
             evm->down = NULL;
         }
@@ -165,7 +174,42 @@ static void gum_event_button_release(GUM_event_manager *evm, int btn)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
+static void gum_event_wheel_up(GUM_event_manager *evm)
+{
+    GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
+    if (container != NULL) {
+    // fprintf(stderr, "wheel_up %s\n", evm->over->id);
+        if (container->state & GUM_CELL_OVERFLOW_Y) {
+            container->box.sy = MAX(0, container->box.sy - 20);
+            gum_invalid_cell(container, evm->win);
+        } else if (container->state & GUM_CELL_OVERFLOW_X) {
+            container->box.sx = MAX(0, container->box.sx - 20);
+            gum_invalid_cell(container, evm->win);
+        }
+    }
+}
+
+static void gum_event_wheel_down(GUM_event_manager *evm)
+{
+    GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
+    if (container != NULL) {
+    // fprintf(stderr, "wheel_down %s\n", evm->over->id);
+        if (container->state & GUM_CELL_OVERFLOW_Y) {
+            int st = container->box.ch_h - container->box.ch;
+            // fprintf(stderr, "Down : %d - %d - %d\n", evm->over->box.sy, evm->over->box.minch, evm->over->box.ch);
+            container->box.sy = MIN(st, container->box.sy + 20);
+            gum_invalid_cell(container, evm->win);
+        } else if (container->state & GUM_CELL_OVERFLOW_X) {
+            int st = container->box.ch_w - container->box.cw;
+            container->box.sx = MIN(st, container->box.sx + 20);
+            gum_invalid_cell(container, evm->win);
+        }
+    }
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
 {
     char buf[128] = { 0 };
     if (evm->edit == NULL)
@@ -195,13 +239,18 @@ void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
     gum_invalid_cell(evm->edit, evm->win);
 }
 
-void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
+static void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
 {
 
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+void gum_refresh(GUM_event_manager *evm)
+{
+    gum_resize(evm->root, evm->width, evm->height, 96, 0.75);
+    gum_invalid_cell(evm->root, evm->win);
+}
 
 GUM_event_manager *gum_event_manager(GUM_cell *root, void *win)
 {
@@ -211,7 +260,9 @@ GUM_event_manager *gum_event_manager(GUM_cell *root, void *win)
     evm->ctx = cairo_create((cairo_surface_t*)win);
     hmp_init(&evm->actions, 16);
 
-    gum_resize(root, 680, 480, 96, 0.75);
+    evm->width = 680;
+    evm->height = 425;
+    gum_resize(root, 680, 425, 96, 0.75);
     // gum_resize(root, win->width, win->height, win->xdpi, win->xdsp);
     // TODO -- Full update and paint (or invalidate)
     return evm;
@@ -232,6 +283,14 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
         // gum_paint(evm->win, evm->root);
         break;
 
+    case GUM_EV_RESIZE:
+        // fprintf(stderr, "W %d - H %d\n", event->param0, event->param1);
+        cairo_xlib_surface_set_size((cairo_surface_t*)evm->win, event->param0, event->param1);
+        evm->width = event->param0;
+        evm->height = event->param1;
+        gum_refresh(evm);
+        break;
+
     case GUM_EV_MOTION:
         gum_event_motion(evm, event->param0, event->param1);
         break;
@@ -241,6 +300,14 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
             gum_event_left_press(evm);
         else
             gum_event_button_press(evm, event->param0);
+        break;
+
+    case GUM_EV_WHEEL_UP:
+        gum_event_wheel_up(evm);
+        break;
+
+    case GUM_EV_WHEEL_DOWN:
+        gum_event_wheel_down(evm);
         break;
 
     case GUM_EV_BTN_RELEASE:

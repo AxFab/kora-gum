@@ -13,7 +13,10 @@
 
 .img {
   background: #a6a6a6;
-  border: #a6a6a6;
+}
+.img:over {
+  background: #a6a6a6;
+  border-color: #181818;
 }
 
 .labelLinkFa {
@@ -35,6 +38,12 @@
 .toolBar {
   background: #a6a6a6;
   background-gradient: #d8d8d8;
+}
+
+.sideBar {
+  background: #a6a6a6;
+  background-gradient: #d8d8d8;
+  gradient-angle: 90;
 }
 
 .input {
@@ -93,6 +102,12 @@
   color: #181818;
 }
 
+.itemIcon:over {
+  background: #e2e2e2;
+  background-gradient: #42a5f5;
+  gradient-angle: 90;
+
+}
 
 .listItem {
   text-align: left;

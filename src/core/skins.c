@@ -1,4 +1,4 @@
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <kora/hmap.h>
 #include <kora/css.h>
 #include <stdlib.h>
@@ -33,6 +33,18 @@ GUM_skin* gum_skin_property_setter(GUM_skin *skin, const char* property, const c
         skin->brcolor = css_parse_color(value);
     else if (!strcmp("inner-color", property))
         skin->incolor = css_parse_color(value);
+    else if (!strcmp("gradient-angle", property))
+        skin->grad_angle = strtol(value, NULL, 10);
+
+    else if (!strcmp("border-top-left-radius", property))
+        skin->u_top_left = css_parse_usize(value, &skin->r_top_left);
+    else if (!strcmp("border-top-right-radius", property))
+        skin->u_top_right = css_parse_usize(value, &skin->r_top_right);
+    else if (!strcmp("border-radius", property)) {
+        skin->u_top_left = css_parse_usize(value, &skin->r_top_left);
+        skin->r_top_right = skin->r_bottom_right = skin->r_bottom_left = skin->r_top_left;
+        skin->u_top_right = skin->u_bottom_right = skin->u_bottom_left = skin->u_top_left;
+    }
 
     else if (!strcmp("width", property))
         skin->wunit |= css_parse_usize(value, &skin->width);

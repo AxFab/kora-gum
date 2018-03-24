@@ -21,6 +21,7 @@ struct GUM_box
     int cx, cy, cw, ch;
     int mincw, minch;
     int sx, sy;
+    int ch_w, ch_h;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -38,11 +39,21 @@ struct GUM_skin
     int height, hunit;
     char read_only;
     char align, valign;
+    int grad_angle;
     // Background (image), Color (opacity) or Gradient
     // Border (color, width, style, radius) + image
     // Font properties (family, size, style-weight-variant, stretch, size-adjust)
     // Text properties (outline, direction, decoration, align, shadow, line-height)
     // Visual formating (display, position, float, clear, z-index, overflow, cursor, shadow)
+    int r_top_left;
+    int r_top_right;
+    int r_bottom_right;
+    int r_bottom_left;
+
+    char u_top_left;
+    char u_top_right;
+    char u_bottom_right;
+    char u_bottom_left;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -57,6 +68,8 @@ enum {
 
     GUM_CELL_OVERFLOW_X = (1 << 5),
     GUM_CELL_OVERFLOW_Y = (1 << 6),
+
+    GUM_CELL_SUBSTYLE = (1 << 7),
 };
 
 struct GUM_cell
@@ -64,7 +77,8 @@ struct GUM_cell
     struct GUM_absolruler rulerx;
     struct GUM_absolruler rulery;
     struct GUM_sideruler padding;
-    int gap; char gunit;
+    int gap_x, gap_y;
+    char gxunit, gyunit;
     // struct GUM_sideruler margin;
 
     char *id; // Identifier of the cell
@@ -94,7 +108,9 @@ struct GUM_layout
     int width; int height;
     int dpi;
     float dsp;
-    int flags, cursor, gap;
+    int flags;
+    int cursor, cursor2, cursor3;
+    int gap_x, gap_y;
 
     // Update layout and/or min size, by adding a child to the container
     void (*minsize)(GUM_cell *cell, GUM_cell *child, GUM_layout *layout);
@@ -112,7 +128,8 @@ void gum_layout_vgroup_center(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_hgroup_middle(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_vgroup_right(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout);
-
+void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout);
+void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout);
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -126,6 +143,7 @@ GUM_skin *gum_style_find(GUM_skins *skins, const char* name);
 
 
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
+GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask);
 void gum_paint(void *win, GUM_cell *cell);
 void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp);
 
@@ -134,6 +152,8 @@ GUM_skin *gum_skin(GUM_cell *cell);
 void gum_invalid_cell(GUM_cell *cell, void *win);
 GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
 void gum_cell_dettach(GUM_cell *cell);
+void gum_cell_destroy_children(GUM_cell *cell);
+
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
 GUM_cell *gum_cell_copy(GUM_cell *cell);
 

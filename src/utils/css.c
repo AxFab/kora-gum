@@ -45,6 +45,9 @@ void css_read_file(FILE *stream, void *arg, css_setter setter)
     size = 0;
     if (isspace(buffer[0])) {
       while (size < len && isspace(buffer[size])) ++size;
+    } else if (buffer[0] == '/' && buffer[1] == '*') {
+      size += 2;
+      while (buffer[size-1] != '/' || buffer[size-2] != '*') ++size;
     } else if (state == '\0') {
       size = css_read_token(buffer, len, property, '{', '{', &state);
       if (state == '\0') {
@@ -94,11 +97,11 @@ unsigned int css_parse_color(const char* value)
     return 0xFF000000 | color;
   } else if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') {
     if (value[3] == 'a') {
-      sscanf(value, "rgba(%d,%d,%d,%d)",
+      sscanf(value, "rgba(%hhd,%hhd,%hhd,%hhd)",
         &((char*)&color)[2], &((char*)&color)[1], &((char*)&color)[0], &((char*)&color)[3]);
       return color;
     } else {
-      sscanf(value, "rgb(%d,%d,%d)",
+      sscanf(value, "rgb(%hhd,%hhd,%hhd)",
         &((char*)&color)[2], &((char*)&color)[1], &((char*)&color)[0]);
       return 0xFF000000 | color;
     }

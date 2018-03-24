@@ -1,56 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <panel min-width="320px" min-height="220px" width="wrap" height="wrap">
 
-    <!-- Onglets
-    <group width="wrap" top="0dp" height="40dp">
-        <label left="0" width="40dp" height="wrap" image="@logo" />
-
-        <labelLinkFa left="40dp" height="wrap" top="0" text="&lg;" />
-        <group left="80dp" right="180dp" bottom="0" height="30dp" layout="HGroupExtend">
-            <onglet width="120dp" height="wrap" text="File Browser"/>
+    <header width="wrap" height="75dp">
+        <group right="0" top="0" height="40dp"
+               layout="HGroupMiddle" padding="5dp" gap="15dp">
+            <header-search width="200dp" height="25dp" solid="true"
+                           text="Search" editable="true" />
+            <group right="0" top="0" layout="HGroupMiddle"
+                   padding-left="15dp" padding-right="15dp" gap="10dp">
+                <header-pill width="20dp" height="20dp" solid="true" />
+                <header-pill width="20dp" height="20dp" solid="true" />
+                <header-pill width="20dp" height="20dp" solid="true" />
+            </group>
         </group>
-        <labelLinkFa right="140dp" height="wrap" text="&rg;" />
-        <labelLinkFa right="100dp" height="wrap" text="+" />
-
-        <labelLinkFa right="40dp" height="wrap" text="_" />
-        <labelLinkFa right="0" height="wrap" text="x" />
-    </group> -->
-
-    <!-- Toolbar -->
-    <toolBar width="wrap" top="0" height="40px" padding="5px">
-        <group left="0" height="wrap" width="120px" gap="5px" layout="HGroupMiddle">
-            <toolBtn width="26px" height="26px" image="@previous" text="P" solid="true" id="btn-prev" />
-            <toolBtn width="26px" height="26px" image="@next" text="N" solid="true" id="btn-next" />
-            <toolBtn width="26px" height="26px" image="@parent" text="T" solid="true" id="btn-top" />
-            <toolBtn width="26px" height="26px" image="@refresh" text="R" solid="true" id="btn-refr" />
+        <group left="0" top="0" height="40dp"
+               layout="HGroupMiddle" padding="5dp" gap="5dp">
+            <header-label width="24dp" height="25dp" text="File Organizer"
+                          padding-left="5dp" padding-right="5dp" />
+            <header-separator width="1" height="25dp" />
+            <header-tool width="24dp" height="24dp" solid="true" text="P" />
+            <header-tool width="24dp" height="24dp" solid="true" text="N" />
+            <header-tool width="24dp" height="24dp" solid="true" text="T" />
+            <header-tool width="24dp" height="24dp" solid="true" text="R" />
         </group>
-        <input left="125px" top="5px" height="20px" right="155px" text="/home/fabien" editable="true" padding="2px" solid="true" />
-        <group right="0" height="wrap" width="150px" gap="5px" layout="HGroupMiddle">
-            <toolBtn width="26px" height="26px" image="@newFolder" text="F" solid="true" />
-            <toolBtn width="26px" height="26px" image="@fileOperation" text="O" solid="true" />
-            <toolBtn width="26px" height="26px" image="@properties" text="P" solid="true" />
-            <toolBtn width="26px" height="26px" image="@share" text="S" solid="true" />
-            <toolBtn width="26px" height="26px" image="@viewSettings" text="V" solid="true" />
+
+        <group bottom="0dp" width="wrap" layout="HGroupBottom"
+               padding-left="15dp" padding-right="15dp" gap="10dp">
+            <header-tab-on height="32dp" padding="10dp" solid="true" text="Fabien"/>
+            <header-tab height="32dp" padding="10dp" solid="true" text="HardDrive1" />
         </group>
-    </toolBar>
+    </header>
 
-    <!-- Shortcut Navbar -->
-    <sideBar left="0px" width="140px" top="40px" bottom="0px" padding="3px" gap="2px" layout="VGroupExtend">
-        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Home" />
-        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Desktop" />
-        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Download" />
-        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Cloud storage" />
-        <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Devices" />
-    </sideBar>
 
-    <!-- File view -->
-    <group left="140px" right="0px" top="40px" bottom="0px" layout="VGroupLeft"
-            id="view" overflow-y="true" solid="true" gap="1px"  padding="3px">
+
+    <tool-bar width="wrap" top="74dp" height="44dp">
+        <group left="0" layout="HGroupExtend" gap="8dp" padding="8dp" >
+            <tool-btn width="28dp" height="28dp" solid="true" text="P" id="btn-prev" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="N" id="btn-next" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="T" id="btn-top" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="R" id="btn-refr" />
+        </group>
+
+        <group right="0" layout="HGroupExtend" gap="8dp" padding="8dp" >
+            <tool-btn width="28dp" height="28dp" solid="true" text="F" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="O" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="P" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="S" />
+            <tool-btn width="28dp" height="28dp" solid="true" text="V" />
+        </group>
+        <tool-search left="152dp" right="188dp" top="8dp" height="28dp" text="/home/fabien" editable="true" solid="true" />
+    </tool-bar>
+    <panel left="0dp" width="240dp" top="118dp" bottom="20dp">
+        <!-- Favorite / Navigation -->
+    </panel>
+    <panel left="240dp" right="0dp" top="118dp" bottom="20dp"
+           id="view" layout="ColumnGrid" gap="3dp" padding="3dp"
+           overflow-x="true" solid="true">
 
         <itemIcon id="icon" left="0" top="20px" height="20px" padding="2px" solid="true">
             <img id="icon-img" left="3px" top="2px" width="16px" height="16px" substyle="true" />
             <menuLabel id="icon-text" left="28px" top="2px" right="5px" height="16px" text="Documents" min-width="80px" substyle="true"/>
         </itemIcon>
+
+
+    </panel>
+    <tool-ruler width="wrap" top="118dp" height="1px" />
+    <tool-ruler left="240dp" width="1px" top="118dp" bottom="20dp" />
+
+        <!-- Onglets
+        <group width="wrap" top="0dp" height="40dp">
+            <label left="0" width="40dp" height="wrap" image="@logo" />
+
+            <labelLinkFa left="40dp" height="wrap" top="0" text="&lg;" />
+            <group left="80dp" right="180dp" bottom="0" height="30dp" layout="HGroupExtend">
+                <onglet width="120dp" height="wrap" text="File Browser"/>
+            </group>
+            <labelLinkFa right="140dp" height="wrap" text="&rg;" />
+            <labelLinkFa right="100dp" height="wrap" text="+" />
+
+            <labelLinkFa right="40dp" height="wrap" text="_" />
+            <labelLinkFa right="0" height="wrap" text="x" />
+        </group> -->
+
+        <!-- Toolbar -->
+        <!-- <toolBar width="wrap" top="100dp" height="40px" padding="5px">
+            <group left="0" height="wrap" width="120px" gap="5px" layout="HGroupMiddle">
+                <toolBtn width="26px" height="26px" image="@previous" text="P" solid="true" id="btn-prev" />
+                <toolBtn width="26px" height="26px" image="@next" text="N" solid="true" id="btn-next" />
+                <toolBtn width="26px" height="26px" image="@parent" text="T" solid="true" id="btn-top" />
+                <toolBtn width="26px" height="26px" image="@refresh" text="R" solid="true" id="btn-refr" />
+            </group>
+            <input left="125px" top="5px" height="20px" right="155px" text="/home/fabien" editable="true" padding="2px" solid="true" />
+            <group right="0" height="wrap" width="150px" gap="5px" layout="HGroupMiddle">
+                <toolBtn width="26px" height="26px" image="@newFolder" text="F" solid="true" />
+                <toolBtn width="26px" height="26px" image="@fileOperation" text="O" solid="true" />
+                <toolBtn width="26px" height="26px" image="@properties" text="P" solid="true" />
+                <toolBtn width="26px" height="26px" image="@share" text="S" solid="true" />
+                <toolBtn width="26px" height="26px" image="@viewSettings" text="V" solid="true" />
+            </group>
+        </toolBar> -->
+
+        <!-- Shortcut Navbar -->
+       <!--  <sideBar left="0px" width="140px" top="140dp" bottom="20dp" padding="3px" gap="2px" layout="VGroupExtend">
+            <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Home" />
+            <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Desktop" />
+            <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Download" />
+            <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Cloud storage" />
+            <listItem solid="true" height="18px" padding="2px" padding-left="20px" text="Devices" />
+        </sideBar> -->
+
+        <!-- File view -->
+        <!-- <group left="140px" right="0px" top="140dp" bottom="20dp" layout="VGroupLeft"
+                id="view" overflow-y="true" solid="true" gap="1px"  padding="3px">
+            -->
 
         <menu left="100px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-file">
             <menuVRuler left="25px" top="0" bottom="0" width="1px" />
@@ -294,5 +356,9 @@
             </group>
         </menu>
 
-    </group>
+
+
+
+    <footer bottom="0dp" height="20dp" width="wrap">
+    </footer>
 </panel>

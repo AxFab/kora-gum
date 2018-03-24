@@ -1,0 +1,240 @@
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/* Container */
+.panel {
+  background: #e2e2e2;
+}
+
+.header {
+  background: #28764c;
+  color:#f2f2f2;
+}
+
+.footer {
+  background: #a6a6a6;
+  background-gradient: #d8d8d8;
+}
+.tool-bar {
+  background: #e2e2e2;
+  background-gradient: #d8d8d8; /*#a6a6a6;*/
+}
+.tool-ruler {
+  background: #7e7e7e;
+}
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/* Header - widgets */
+.header-pill {
+  background: #c2c2c2;
+  border-color: #323232;
+  color: #323232;
+  border-radius: 50%;
+}
+.header-pill:over {
+  background: #a6a6a6;
+  border-color: #323232;
+  color: #323232;
+  border-radius: 50%;
+}
+
+.header-search {
+  background: #236340;
+  color:#1b4d31;
+  border-color:#1b4d31;
+  border-radius: 5dp;
+  text-align: left;
+}
+
+.header-tool {
+  color:#1b4d31;
+  border-color:#1b4d31;
+  border-radius: 5dp;
+}
+.header-tool:over {
+  background: #236340;
+  color:#1b4d31;
+  border-color:#1b4d31;
+  border-radius: 5dp;
+}
+
+.header-label {
+  color: #181818;
+}
+
+.header-separator {
+  background:#1b4d31;
+}
+
+.header-tab-on {
+  background: #e2e2e2;
+  border-color:#1b4d31;
+  color:#1b4d31;
+  border-top-left-radius: 5dp;
+  border-top-right-radius: 5dp;
+}
+.header-tab {
+  color: #e2e2e2;
+}
+.header-tab:over {
+  background: #236340;
+  border-color:#1b4d31;
+  color: #e2e2e2;
+}
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+/* Tool-bar - widgets */
+
+.tool-search {
+  background: #f2f2f2;
+  color:#343434;
+  border-color:#7e7e7e;
+  border-radius: 5dp;
+  text-align: left;
+}
+
+.tool-btn {
+  color: #7e7e7e;
+  border-radius: 5dp;
+}
+.tool-btn:over {
+  color: #343434;
+  background: #a6a6a6;
+  background-gradient: #e2e2e2;
+  border-color:#e2e2e2;
+  border-radius: 5dp;
+}
+
+
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+.group {
+}
+
+.label {
+  text-align: left;
+  color: #181818;
+}
+
+.img {
+  background: #a6a6a6;
+}
+.img:over {
+  background: #a6a6a6;
+  border-color: #181818;
+}
+
+/* Hello */
+.labelLinkFa {
+  color: #181818;
+  width: 40dp;
+  height: 40dp;
+}
+
+.labelLinkFa:over {
+  color: #181818;
+  background: white;
+}
+
+.onglet {
+  color: #181818;
+  background: #efefef;
+}
+
+.toolBar {
+  background: #a6a6a6;
+  background-gradient: #d8d8d8;
+}
+
+.sideBar {
+  background: #a6a6a6;
+  background-gradient: #d8d8d8;
+  gradient-angle: 90;
+}
+
+.input {
+  background: #45474a;
+  border-color: #111111;
+  color: #cdd9e4;
+  text-align: left;
+}
+
+.toolBtn {
+  background: #a6a6a6;
+  background-gradient: #6b6b6b;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #2f2f30;
+}
+
+.menu {
+  background: #a6a6a6;
+  border-color: #454545;
+  inner-color: #c2c2c2;
+}
+.menuVRuler {
+  background: #42a5f5;
+  width: 1px;
+}
+.menuDivider {
+  background: #545454;
+}
+.menuItem {
+}
+.menuItem:over {
+  background: #c2c2c2;
+}
+.menuLabel {
+  text-align: left;
+  color: #323232;
+}
+.menuLabel2 {
+  text-align: right;
+  color: #323232;
+}
+
+.toolBtn:over {
+  background: #45474a;
+  background-gradient: #6b6b6b;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #181818;
+}
+.toolBtn:down {
+  background: #45474a;
+  background-gradient: #45474a;
+  border-color: #64676a;
+  inner-color: #a6a6a6;
+  color: #181818;
+}
+
+.itemIcon:over {
+  background: #e2e2e2;
+  background-gradient: #28764c;
+  gradient-angle: 90;
+
+}
+
+.listItem {
+  text-align: left;
+  color: #2f2f30;
+}
+
+.listItem:over {
+  text-align: left;
+  background: #42a5f5;
+  color: #2f2f30;
+}
+
+.btnGroup {
+  background: #42a5f5;
+  color: white;
+  highlight-color: #0a66b1;
+  border-color: #064b84;
+}
+
+.btnGroup:over  {
+  background: #5f542a;
+  color: white;
+  highlight-color: #6b10a6;
+  border-color: #b84064;
+}

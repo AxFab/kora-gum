@@ -23,25 +23,23 @@ CFLAGS += -Iinclude
 CFLAGS += -D__GUM_X11
 
 # LFLAGS += -L/usr/X11R6/lib -lX11
-LFLAGS += -L/usr/X11R6/lib -lX11 -lcairo
+LFLAGS += -L/usr/X11R6/lib -L/usr/include/cairo -lX11 -lcairo
 
 
 # C O M P I L E   M O D E -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-std_CFLAGS := $(CFLAGS) -ggdb -fno-builtin
+std_CFLAGS := $(CFLAGS) -ggdb
 $(eval $(call ccpl,std))
 
 
 # D E L I V E R I E S -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 gum_src-y += $(wildcard $(srcdir)/utils/*.c)
 gum_src-y += $(wildcard $(srcdir)/core/*.c)
-gum_omit-y += $(srcdir)/core/x11.c
-# brws_LFLAGS := $(LFLAGS)
+gum_LFLAGS := $(LFLAGS)
 $(eval $(call llib,gum,std))
 DV_LIBS += $(libdir)/libgum.so
 
 brws_src-y += $(gum_src-y)
 brws_src-y += $(srcdir)/tests/browser.c
-brws_omit-y += $(srcdir)/core/x11.c
 brws_LFLAGS := $(LFLAGS)
 $(eval $(call link,brws,std))
 DV_UTILS += $(bindir)/brws

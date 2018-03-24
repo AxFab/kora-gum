@@ -1,9 +1,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <kora/gum/display.h>
+// #include <kora/gum/display.h>
 #include <kora/gum/events.h>
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
+#include <kora/css.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,7 +27,6 @@ void *gum_create_surface(int width, int height)
 {
     Display *dsp;
     Drawable da;
-    Screen *scr;
     int screen;
     cairo_surface_t *sfc;
 
@@ -35,18 +35,16 @@ void *gum_create_surface(int width, int height)
         return NULL;
     }
     screen = DefaultScreen(dsp);
-    scr = DefaultScreenOfDisplay(dsp);
     da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, width, height, 0, 0, 0);
     XSelectInput(dsp, da,
         ButtonMotionMask |  ButtonPressMask | ButtonReleaseMask | // Mouse
-        KeyPressMask | KeyReleaseMask |  // Keyboard
-        PointerMotionHintMask | KeymapStateMask |
+        KeyPressMask | KeyReleaseMask | KeymapStateMask | // Keyboard
         EnterWindowMask | LeaveWindowMask | PointerMotionMask |
-        Button1MotionMask | Button2MotionMask | Button3MotionMask |
-        Button4MotionMask | Button5MotionMask |
-        // VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask |
-        // SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask |
-        // PropertyChangeMask | ColormapChangeMask |
+        // Button1MotionMask | Button2MotionMask | Button3MotionMask |
+        // Button4MotionMask | Button5MotionMask |
+        VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask |
+        SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask |
+        PropertyChangeMask | ColormapChangeMask |
         ExposureMask);
 
     XMapWindow(dsp, da);
@@ -104,37 +102,41 @@ void gum_complete(void *win, void *ctx)
     cairo_destroy((cairo_t*)ctx);
 }
 
-void gum_draw_cell(void *ctx, GUM_cell *cell, int x, int y)
+void gum_draw_cell(void *ctx, GUM_cell *cell)
 {
-    // cairo_t *ctx = cairo_create((cairo_surface_t*)win);
-    // if (font == NULL)
-    //     X_LoadFont(info);
-
     GUM_skin *skin = gum_skin(cell);
     if (skin == NULL)
         return;
 
-    int r_top_left = 0;
-    int r_top_right = 0;
-    int r_bottom_right = 0;
-    int r_bottom_left = 0;
+    int sz = MIN(cell->box.w, cell->box.h);
+    int r_top_left = CSS_GET_UNIT(skin->r_top_left, skin->u_top_left, 96, 0.75, sz);
+    int r_top_right = CSS_GET_UNIT(skin->r_top_right, skin->u_top_right, 96, 0.75, sz);
+    int r_bottom_right = CSS_GET_UNIT(skin->r_bottom_right, skin->u_bottom_right, 96, 0.75, sz);
+    int r_bottom_left = CSS_GET_UNIT(skin->r_bottom_left, skin->u_bottom_left, 96, 0.75, sz);
 
     if (skin->bgcolor >= MIN_ALPHA || skin->brcolor >= MIN_ALPHA) {
 
         cairo_new_path(ctx);
-        cairo_move_to(ctx, cell->box.x + x + r_top_left, cell->box.y + y);
-        cairo_line_to(ctx, cell->box.x + x + cell->box.w - r_top_right, cell->box.y + y);
-        cairo_arc(ctx, cell->box.x + x + cell->box.w - r_top_right, cell->box.y + y + r_top_right, r_top_right, -M_PI/2.0, 0.0);
-        cairo_line_to(ctx, cell->box.x + x + cell->box.w, cell->box.y + y + cell->box.h - r_bottom_right);
-        cairo_arc(ctx, cell->box.x + x + cell->box.w - r_bottom_right, cell->box.y + y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
-        cairo_line_to(ctx, cell->box.x + x + r_bottom_left, cell->box.y + y + cell->box.h);
-        cairo_arc(ctx, cell->box.x + x + r_bottom_left, cell->box.y + y + cell->box.h - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
-        cairo_line_to(ctx, cell->box.x + x, cell->box.y + y + r_top_left);
-        cairo_arc(ctx, cell->box.x + x + r_top_left, cell->box.y + y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
+        cairo_move_to(ctx, cell->box.x + r_top_left, cell->box.y);
+        cairo_line_to(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y);
+        cairo_arc(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI/2.0, 0.0);
+        cairo_line_to(ctx, cell->box.x + cell->box.w, cell->box.y + cell->box.h - r_bottom_right);
+        cairo_arc(ctx, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
+        cairo_line_to(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h);
+        cairo_arc(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
+        cairo_line_to(ctx, cell->box.x, cell->box.y + r_top_left);
+        cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
 
         if (skin->grcolor >= MIN_ALPHA) {
 
-            cairo_pattern_t *grad = cairo_pattern_create_linear(0, cell->box.y + y, 0, cell->box.y + y + cell->box.h);
+            cairo_pattern_t *grad;
+            if (skin->grad_angle == 90)
+                grad = cairo_pattern_create_linear(cell->box.x + cell->box.w, 0, cell->box.x, 0);
+            else if (skin->grad_angle == 270)
+                grad = cairo_pattern_create_linear(cell->box.x, 0, cell->box.x + cell->box.w, 0);
+            else
+                grad = cairo_pattern_create_linear(0, cell->box.y, 0, cell->box.y + cell->box.h);
+
             cairo_pattern_add_color_stop_rgb(grad, 0.0, //0, 0.5, 0.5, 0);
                 ((skin->bgcolor >> 16) & 255) / 255.0,
                 ((skin->bgcolor >> 8) & 255) / 255.0,
@@ -184,8 +186,8 @@ void gum_draw_cell(void *ctx, GUM_cell *cell, int x, int y)
         cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(ctx, 10.0);
         cairo_text_extents(ctx, cell->text, &extents);
-        int tx = cell->box.x + x;
-        int ty = cell->box.y + y;
+        int tx = cell->box.x;
+        int ty = cell->box.y;
 
         if (skin->align == 2)
             tx += cell->box.w - (extents.width + extents.x_bearing);
@@ -202,9 +204,16 @@ void gum_draw_cell(void *ctx, GUM_cell *cell, int x, int y)
     }
 }
 
+
+cairo_surface_t *srf = NULL;
+cairo_t *ctx;
+
 void gum_text_size(const char *text, int *w, int *h)
 {
-    cairo_t *ctx = cairo_create(NULL);
+    if (srf == NULL) {
+        srf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 10, 10);
+        ctx = cairo_create(srf);
+    }
     cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(ctx, 10.0);
 
@@ -214,34 +223,48 @@ void gum_text_size(const char *text, int *w, int *h)
     *h = extents.height + extents.y_bearing;
 }
 
-void gum_draw_scrolls(void *ctx, GUM_cell *cell, int x, int y)
+
+void gum_draw_scrolls(void *ctx, GUM_cell *cell)
 {
-    cairo_new_path(ctx);
-    cairo_rectangle(ctx,
-        cell->box.x + cell->box.w - 7 + x,
-        cell->box.y + y, 7, cell->box.h);
-    cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
-    cairo_fill_preserve(ctx);
+    if (cell->state & GUM_CELL_OVERFLOW_X) {
+        cairo_new_path(ctx);
+        cairo_rectangle(ctx,
+            cell->box.x,
+            cell->box.y + cell->box.h - 7,
+            cell->box.w - 7, 7);
+        cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
+        cairo_fill(ctx);
 
-    int sz = cell->box.h * cell->box.h / cell->box.minch;
-    int st = cell->box.sy * cell->box.h / cell->box.minch;
+        int sz = cell->box.cw * (cell->box.w - 7) / cell->box.ch_w;
+        int st = cell->box.sx * (cell->box.w - 7) / cell->box.ch_w;
 
-    cairo_new_path(ctx);
-    cairo_rectangle(ctx,
-        cell->box.x + cell->box.w - 7 + x,
-        cell->box.y + y + st, 7, sz);
-    cairo_set_source_rgb(ctx, 66.0/255.0, 165.0/255.0, 245.0/255.0);
-    cairo_fill_preserve(ctx);
+        cairo_new_path(ctx);
+        cairo_rectangle(ctx,
+            cell->box.x + st,
+            cell->box.y + cell->box.h - 7,
+            sz, 7);
+        cairo_set_source_rgb(ctx, 66.0/255.0, 165.0/255.0, 245.0/255.0);
+        cairo_fill(ctx);
+    }
 
+    if (cell->state & GUM_CELL_OVERFLOW_Y) {
+        cairo_new_path(ctx);
+        cairo_rectangle(ctx,
+            cell->box.x + cell->box.w - 7,
+            cell->box.y, 7, cell->box.h - 7);
+        cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
+        cairo_fill(ctx);
 
-    // xinfo_t *info = (xinfo_t*)data;
+        int sz = cell->box.ch * (cell->box.h - 7) / cell->box.ch_h;
+        int st = cell->box.sy * (cell->box.h - 7) / cell->box.ch_h;
 
-    // X_FillRectangle(info, 0xFF78c8c8, cell->box.x + cell->box.w - 7 + x,
-    //     cell->box.y + y, 7, cell->box.h);
-    // X_FillRectangle(info, 0xFFe8c8c8, cell->box.x + cell->box.w - 7 + x,
-    //     cell->box.y + y + st, 7, sz);
-
-
+        cairo_new_path(ctx);
+        cairo_rectangle(ctx,
+            cell->box.x + cell->box.w - 7,
+            cell->box.y + st, 7, sz);
+        cairo_set_source_rgb(ctx, 66.0/255.0, 165.0/255.0, 245.0/255.0);
+        cairo_fill(ctx);
+    }
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -265,6 +288,7 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
     XMotionEvent *motion = (XMotionEvent *)&e;
     XButtonEvent *btn = (XButtonEvent *)&e;
     XKeyEvent *key = (XKeyEvent *)&e;
+    XResizeRequestEvent *resz = (XResizeRequestEvent *)&e;
 
     XNextEvent(cairo_xlib_surface_get_display((cairo_surface_t *)win), &e);
     switch (e.type) {
@@ -294,19 +318,43 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
         // printf("Event Motion <%d, %d>\n", motion->x, motion->y);
         break;
     case ButtonPress:
-        // printf("Event ButtonPress <%x.%x>\n", btn->state, btn->button);
-        event->type = GUM_EV_BTN_PRESS;
-        event->param0 = btn->button;
-        event->param1 = btn->state;
+        if (btn->button == 4) {
+            // printf("Event Wheel Up\n");
+            event->type = GUM_EV_WHEEL_UP;
+        } else if (btn->button == 5) {
+            // printf("Event Wheel Down\n");
+            event->type = GUM_EV_WHEEL_DOWN;
+        } else {
+            // printf("Event ButtonPress <%x.%x>\n", btn->state, btn->button);
+            event->type = GUM_EV_BTN_PRESS;
+            event->param0 = btn->button;
+            event->param1 = btn->state;
+        }
         break;
     case ButtonRelease:
-        // printf("Event ButtonRelease <%x.%x>\n", btn->state, btn->button);
-        event->type = GUM_EV_BTN_RELEASE;
-        event->param0 = btn->button;
-        event->param1 = btn->state;
+        if (btn->button == 4 || btn->button == 5) {
+            event->type = -1;
+        } else {
+            // printf("Event ButtonRelease <%x.%x>\n", btn->state, btn->button);
+            event->type = GUM_EV_BTN_RELEASE;
+            event->param0 = btn->button;
+            event->param1 = btn->state;
+        }
+        break;
+    case ResizeRequest:
+        event->type = GUM_EV_RESIZE;
+        cairo_xlib_surface_set_size((cairo_surface_t*)win, resz->width, resz->height);
+        event->param0 = resz->width;
+        event->param1 = resz->height;
         break;
     case EnterNotify:
+        // printf("EnterNotify\n");
+        event->type = -1;
+        break;
     case LeaveNotify:
+        // printf("LeaveNotify\n");
+        event->type = -1;
+        break;
     case FocusIn:
     case FocusOut:
     case KeymapNotify:
@@ -315,11 +363,9 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
     case CirculateRequest:
     case ConfigureRequest:
     case MapRequest:
-    case ResizeRequest:
     case CirculateNotify:
     case ConfigureNotify:
     case CreateNotify:
-    case DestroyNotify:
     case GravityNotify:
     case MapNotify:
     case MappingNotify:
@@ -333,8 +379,8 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
     case SelectionNotify:
     case SelectionRequest:
     default:
-        printf("Event %d\n", e.type);
-        event->type = 0;
+        // printf("Event %d\n", e.type);
+        event->type = -1;
         break;
     }
     return 0;

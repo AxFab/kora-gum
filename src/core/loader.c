@@ -1,5 +1,5 @@
 // #include <kora/gum/display.h>
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <kora/xml.h>
 #include <kora/css.h>
 
@@ -49,8 +49,16 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         }
     }
 
-    else if (!strcmp("gap", key))
-        cell->gunit = css_parse_usize(value, &cell->gap);
+    else if (!strcmp("gap-x", key))
+        cell->gxunit = css_parse_usize(value, &cell->gap_x);
+    else if (!strcmp("gap-y", key))
+        cell->gyunit = css_parse_usize(value, &cell->gap_y);
+    else if (!strcmp("gap", key)) {
+        cell->gxunit = css_parse_usize(value, &cell->gap_x);
+        cell->gap_y = cell->gap_x;
+        cell->gyunit = cell->gxunit;
+    }
+
     else if (!strcmp("padding-left", key))
         cell->padding.lunit = css_parse_size(value, &cell->padding.left);
     else if (!strcmp("padding-right", key))
@@ -59,7 +67,7 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         cell->padding.tunit = css_parse_size(value, &cell->padding.top);
     else if (!strcmp("padding-bottom", key))
         cell->padding.bunit = css_parse_size(value, &cell->padding.bottom);
-    else if (!strcmp("padding-bottom", key)) {
+    else if (!strcmp("padding", key)) {
         cell->padding.lunit = css_parse_size(value, &cell->padding.left);
         cell->padding.right = cell->padding.top = cell->padding.bottom = cell->padding.left;
         cell->padding.runit = cell->padding.tunit = cell->padding.bunit = cell->padding.lunit;
@@ -78,6 +86,8 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         else if (!strcmp("HGroupMiddle", value)) cell->layout = gum_layout_hgroup_middle;
         else if (!strcmp("VGroupRight", value)) cell->layout = gum_layout_vgroup_right;
         else if (!strcmp("HGroupBottom", value)) cell->layout = gum_layout_hgroup_bottom;
+        else if (!strcmp("ColumnGrid", value)) cell->layout = gum_layout_column_grid;
+        else if (!strcmp("RowGrid", value)) cell->layout = gum_layout_row_grid;
     }
 
     else if (!strcmp("editable", key)) {
@@ -92,6 +102,9 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     } else if (!strcmp("overflow-y", key)) {
         if (!strcmp("true", value)) cell->state |= GUM_CELL_OVERFLOW_Y;
         else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_OVERFLOW_Y;
+    } else if (!strcmp("substyle", key)) {
+        if (!strcmp("true", value)) cell->state |= GUM_CELL_SUBSTYLE;
+        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_SUBSTYLE;
     }
 }
 
@@ -112,7 +125,7 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
 
     // Create a new cell and attach it to the tree
     GUM_cell *cell = (GUM_cell*)calloc(1, sizeof(GUM_cell));
-    cell->id = strdup(node->node_name); // TODO -- Debug only
+    // cell->id = strdup(node->node_name); // TODO -- Debug only
     if (builder->cursor) {
         gum_cell_pushback(builder->cursor, cell);
     } else {

@@ -1,4 +1,4 @@
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <kora/css.h>
 
 /* Condensed algorithm: aboslute position */
@@ -13,11 +13,11 @@ static void gum_layout_absolute_part(struct GUM_absolruler* pos, int minimum,
     if (pos->bunit && pos->aunit) {
         *pPos = before;
         *pSz = MAX(min, container - before - after);
-    } else if (pos->bunit && pos->sunit) {
+    } else if (pos->bunit) {
         *pPos = before;
         *pSz = MAX(min, size);
-    } else if (pos->aunit && pos->sunit) {
-        *pPos = container - size - after;
+    } else if (pos->aunit) {
+        *pPos = container - MAX(min, size) - after;
         *pSz = MAX(min, size);
     } else {
         *pPos = 0;
@@ -85,13 +85,13 @@ static void gum_layout_group_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout
     if (layout->flags & GUM_GRP_VERTICAL) {
         if (child->box.minw > cell->box.mincw)
             cell->box.mincw = child->box.minw;
-        layout->cursor += child->box.minh + layout->gap;
-        cell->box.minch = MAX(cell->box.minch, layout->cursor - layout->gap);
+        layout->cursor += child->box.minh + layout->gap_y;
+        cell->box.minch = MAX(cell->box.minch, layout->cursor - layout->gap_y);
     } else {
         if (child->box.minh > cell->box.minch)
             cell->box.minch = child->box.minh;
-        layout->cursor += child->box.minw + layout->gap;
-        cell->box.mincw = MAX(cell->box.mincw, layout->cursor - layout->gap);
+        layout->cursor += child->box.minw + layout->gap_x;
+        cell->box.mincw = MAX(cell->box.mincw, layout->cursor - layout->gap_x);
     }
 }
 
@@ -117,7 +117,7 @@ void gum_layout_group_resize(GUM_cell *cell, GUM_layout *layout)
             cell->box.x = 0;
             cell->box.w = MAX(cell->box.w, layout->width);
         }
-        layout->cursor += cell->box.h + layout->gap;
+        layout->cursor += cell->box.h + layout->gap_y;
     } else {
         cell->box.x = layout->cursor;
         if (layout->flags & GUM_GRP_TOP)
@@ -130,7 +130,7 @@ void gum_layout_group_resize(GUM_cell *cell, GUM_layout *layout)
             cell->box.y = 0;
             cell->box.h = MAX(cell->box.h, layout->height);
         }
-        layout->cursor += cell->box.w + layout->gap;
+        layout->cursor += cell->box.w + layout->gap_x;
     }
 }
 
@@ -140,7 +140,8 @@ static void gum_layout_group(GUM_cell *cell, GUM_layout *layout, int flags)
     layout->height = cell->box.ch;
     layout->flags = flags;
     layout->cursor = 0;
-    layout->gap = CSS_GET_UNIT(cell->gap, cell->gunit, layout->dpi, layout->dsp, 0);
+    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi, layout->dsp, 0);
+    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi, layout->dsp, 0);
     layout->resize = gum_layout_group_resize;
     layout->minsize = gum_layout_group_minsize;
 }
@@ -186,6 +187,65 @@ void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout)
 }
 
 
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+static void gum_layout_grid_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout *layout)
+{
+    cell->box.mincw = MAX(cell->box.mincw, child->box.minw);
+    cell->box.minch = MAX(cell->box.minch, child->box.minh);
+}
+
+static void gum_layout_grid_resize(GUM_cell *cell, GUM_layout *layout)
+{
+    short min_width = CSS_GET_UNIT(cell->rulerx.min, cell->rulerx.munit, layout->dpi, layout->dsp, layout->width);
+    short min_height = CSS_GET_UNIT(cell->rulery.min, cell->rulery.munit, layout->dpi, layout->dsp, layout->height);
+    short sz_width = CSS_GET_UNIT(cell->rulerx.size, cell->rulerx.sunit, layout->dpi, layout->dsp, layout->width);
+    short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, layout->dpi, layout->dsp, layout->height);
+
+    cell->box.w = MAX(cell->box.minw, MAX(min_width, sz_width));
+    cell->box.h = MAX(cell->box.minh, MAX(min_height, sz_height));
+
+    if (layout->flags & GUM_GRP_VERTICAL) {
+        if (cell->box.h + layout->cursor > layout->height) {
+            layout->cursor = 0;
+            layout->cursor2 += layout->cursor3 + layout->gap_x;
+            layout->cursor3 = 0;
+        }
+        if (cell->box.w > layout->cursor3)
+            layout->cursor3 = cell->box.w;
+        cell->box.y = layout->cursor;
+        cell->box.x = layout->cursor2;
+        layout->cursor += cell->box.h + layout->gap_y;
+
+    } else {
+        cell->box.x = layout->cursor;
+        cell->box.y = layout->cursor2;
+        layout->cursor += cell->box.w + layout->gap_x;
+    }
+}
+
+static void gum_layout_grid(GUM_cell *cell, GUM_layout *layout, int flags)
+{
+    layout->width = cell->box.cw;
+    layout->height = cell->box.ch;
+    layout->flags = flags;
+    layout->cursor = 0;
+    layout->cursor2 = 0;
+    layout->cursor3 = 0;
+    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi, layout->dsp, 0);
+    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi, layout->dsp, 0);
+    layout->resize = gum_layout_grid_resize;
+    layout->minsize = gum_layout_grid_minsize;
+}
+
+void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout) {
+    gum_layout_grid(cell, layout, GUM_GRP_VERTICAL);
+}
+
+void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout) {
+    gum_layout_grid(cell, layout, 0);
+}
+
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -197,6 +257,7 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
     short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, layout->dpi, layout->dsp, 0);
     cell->box.minw = MAX(min_width, sz_width);
     cell->box.minh = MAX(min_height, sz_height);
+    cell->box.mincw = cell->box.minch = 0;
 
     int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, layout->dpi, layout->dsp, cell->box.w);
     int pad_right = CSS_GET_UNIT(cell->padding.right, cell->padding.runit, layout->dpi, layout->dsp, cell->box.w);
@@ -244,7 +305,11 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     cell->box.cy = cell->box.y + pad_top;
     cell->box.ch = cell->box.h - pad_top - pad_bottom;
 
-    // printf("CELL <%d, %d, %d, %d>  -- <%d, %d, %d, %d> \n", cell->x, cell->y, cell->width, cell->height,  cell->cx, cell->cy, cell->cw, cell->ch);
+    // printf("CELL %s %dx%d <%d, %d, %d, %d>  -- %dx%d <%d, %d, %d, %d> \n", cell->id,
+    //         cell->box.minw, cell->box.minh,
+    //         cell->box.x, cell->box.y, cell->box.w, cell->box.h,
+    //         cell->box.mincw, cell->box.minch,
+    //         cell->box.cx, cell->box.cy, cell->box.cw, cell->box.ch);
     // Children CELLs
     GUM_cell *child;
     GUM_layout sub_layout;
@@ -256,8 +321,15 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     else
         gum_layout_absolute(cell, &sub_layout);
 
-    for (child = cell->first; child; child = child->next)
+    cell->box.ch_w = 0;
+    cell->box.ch_h = 0;
+    for (child = cell->first; child; child = child->next) {
         gum_cell_resize(child, &sub_layout);
+        if (child->box.x + child->box.w > cell->box.ch_w)
+            cell->box.ch_w = child->box.x + child->box.w;
+        if (child->box.y + child->box.h > cell->box.ch_h)
+            cell->box.ch_h = child->box.y + child->box.h;
+    }
 }
 
 void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp)

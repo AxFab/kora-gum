@@ -15,8 +15,8 @@ void *gum_create_surface(int width, int height);
 void* gum_surface_info(GUM_surface *img);
 void gum_destroy_surface(void *win);
 
-void gum_draw_cell(void *win, GUM_cell *cell, int x, int y);
-void gum_draw_scrolls(void *win, GUM_cell *cell, int x, int y);
+void gum_draw_cell(void *win, GUM_cell *cell);
+void gum_draw_scrolls(void *win, GUM_cell *cell);
 
 int gum_event_poll(void *win, GUM_event *event, int timeout);
 int gum_check_events(void *win, int block);
@@ -30,6 +30,9 @@ void gum_text_size(const char *text, int *w, int *h);
 
 
 #define ALIGN_UP(v,a) (((v)+((a)-1)) & ~((a)-1))
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#define MAX(a,b) ((a)>(b)?(a):(b))
+
 
 /* Commmon */
 const char *gum_error();

@@ -1,11 +1,11 @@
 // #include <kora/gum/display.h>
-#include <kora/gum/rendering.h>
+#include <kora/gum/cells.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <cairo/cairo.h>
 
-
-GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
+GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
 {
     if (x < cell->box.x || y < cell->box.y ||
             x >= cell->box.x + cell->box.w || y >= cell->box.y + cell->box.h)
@@ -13,27 +13,40 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 
     GUM_cell *child, *hit;
     for (child = cell->last; child; child = child->previous) {
-        hit = gum_cell_hit(child, x - cell->box.cx, y - cell->box.cy);
+        hit = gum_cell_hit_ex(child,
+            x - cell->box.cx + cell->box.sx,
+            y - cell->box.cy + cell->box.sy, mask);
         if (hit)
             return hit;
     }
 
-    return cell->state & GUM_CELL_SOLID ? cell : NULL;
+    return cell->state & mask ? cell : NULL;
+}
+
+GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
+{
+    return gum_cell_hit_ex(cell, x, y, GUM_CELL_SOLID);
 }
 
 
 void gum_paint(void *ctx, GUM_cell *cell)
 {
     // void *ctx = gum_context(win);
+    cairo_reset_clip(ctx);
     int x = 0, y = 0;
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        gum_draw_cell(ctx, cell, x, y);
+        gum_draw_cell(ctx, cell);
         if (cell->first) {
-            x += cell->box.cx - cell->box.sx;
-            y += cell->box.cy - cell->box.sy;
             // TODO - prune if cell is outside drawing clip
+            cairo_save(ctx);
+            cairo_new_path(ctx);
+            cairo_rectangle(ctx, cell->box.cx, cell->box.cy, cell->box.cw, cell->box.ch);
+            cairo_clip(ctx);
+            // x += cell->box.cx - cell->box.sx;
+            // y += cell->box.cy - cell->box.sy;
+            cairo_translate(ctx, cell->box.cx - cell->box.sx, cell->box.cy - cell->box.sy);
             cell = cell->first;
             continue;
         }
@@ -44,10 +57,13 @@ void gum_paint(void *ctx, GUM_cell *cell)
                 // gum_complete(win, ctx);
                 return;
             }
-            x -= cell->box.cx - cell->box.sx;
-            y -= cell->box.cy - cell->box.sy;
-            if (cell->box.sy != 0) { // TODO
-                gum_draw_scrolls(ctx, cell, x, y);
+
+            // x -= cell->box.cx - cell->box.sx;
+            // y -= cell->box.cy - cell->box.sy;
+            cairo_translate(ctx, cell->box.sx - cell->box.cx, cell->box.sy - cell->box.cy);
+            cairo_restore(ctx);
+            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) { // TODO
+                gum_draw_scrolls(ctx, cell);
             }
         }
         if (cell) {
@@ -58,9 +74,13 @@ void gum_paint(void *ctx, GUM_cell *cell)
 
 GUM_skin *gum_skin(GUM_cell *cell)
 {
-    if (cell->state & GUM_CELL_DOWN && cell->skin_down)
+    GUM_cell *ref = cell;
+    while (ref->state & GUM_CELL_SUBSTYLE)
+        ref = ref->parent;
+
+    if (ref->state & GUM_CELL_DOWN && cell->skin_down)
         return cell->skin_down;
-    else if (cell->state & GUM_CELL_OVER && cell->skin_over)
+    else if (ref->state & GUM_CELL_OVER && cell->skin_over)
         return cell->skin_over;
 
     return cell->skin;
@@ -111,10 +131,25 @@ void gum_cell_dettach(GUM_cell *cell)
     if (cell->next)
         cell->next->previous = cell->previous;
     else
-        cell->parent->last = cell->next;
+        cell->parent->last = cell->previous;
     cell->previous = NULL;
     cell->next = NULL;
     cell->parent = NULL;
+}
+
+void gum_cell_destroy(GUM_cell *cell)
+{
+
+}
+
+void gum_cell_destroy_children(GUM_cell *cell)
+{
+    while (cell->first) {
+        GUM_cell *child = cell->first;
+        cell->first = child->next;
+        gum_cell_destroy(child);
+    }
+    cell->last = NULL;
 }
 
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)

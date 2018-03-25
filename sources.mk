@@ -19,8 +19,8 @@ VERSION := $(GIT_DESC)
 
 # F L A G S -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -fPIC -Wno-multichar
-CFLAGS += -Iinclude
-CFLAGS += -D__GUM_X11
+CFLAGS += -I$(topdir)/include
+# CFLAGS += -D__GUM_X11
 
 # LFLAGS += -L/usr/X11R6/lib -lX11
 LFLAGS += -L/usr/X11R6/lib -L/usr/include/cairo -lX11 -lcairo

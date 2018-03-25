@@ -1,4 +1,22 @@
-// #include <kora/gum/display.h>
+/*
+ *      This file is part of the KoraOS project.
+ *  Copyright (C) 2015  <Fabien Bavent>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *   - - - - - - - - - - - - - - -
+ */
 #include <kora/gum/cells.h>
 #include <kora/xml.h>
 #include <kora/css.h>
@@ -107,6 +125,11 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     } else if (!strcmp("substyle", key)) {
         if (!strcmp("true", value)) cell->state |= GUM_CELL_SUBSTYLE;
         else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_SUBSTYLE;
+    }
+
+    else {
+        // TODO - Avoid copy is not neccessary, - how to change over/down skins
+        // cell->skin = gum_skin_property_setter(cell->skin, key, value);
     }
 }
 

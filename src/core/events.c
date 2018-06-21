@@ -287,7 +287,7 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
     // fprintf(stderr, "Event %d enter\n", event->type);
     switch (event->type) {
     case GUM_EV_EXPOSE:
-        gum_painter(evm->win, evm->root);
+        gum_paint(evm->win, evm->root);
         break;
 
     case GUM_EV_RESIZE:

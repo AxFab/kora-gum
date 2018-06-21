@@ -468,9 +468,19 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 }
 
 
-void gum_reset_clip(GUM_window *win)
+void gum_start_paint(GUM_window *win)
 {
-	cairo_reset_clip(win->ctx);
+    cairo_push_group(win->ctx);
+    cairo_set_source_rgb(win->ctx, 1, 1, 1);
+    cairo_paint(win->ctx);
+    cairo_reset_clip(win->ctx);
+}
+
+void gum_end_paint(GUM_window *win)
+{
+    cairo_pop_group_to_source(win->ctx);
+    cairo_paint(win->ctx);
+    cairo_surface_flush(evm->win);
 }
 
 void gum_push_clip(GUM_window *win, struct GUM_box *box)
@@ -486,18 +496,6 @@ void gum_pop_clip(GUM_window *win, struct GUM_box *box)
 {
     cairo_translate(win->ctx, box->sx - box->cx, box->sy - box->cy);
     cairo_restore(win->ctx);
-}
-
-
-void gum_painter(GUM_window *win, GUM_cell *root)
-{
-    cairo_push_group(win->ctx);
-    cairo_set_source_rgb(win->ctx, 1, 1, 1);
-    cairo_paint(win->ctx);
-    gum_paint(win, root);
-    cairo_pop_group_to_source(win->ctx);
-    cairo_paint(win->ctx);
-    cairo_surface_flush(evm->win);
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)

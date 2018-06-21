@@ -48,7 +48,7 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 
 void gum_paint(GUM_window *win, GUM_cell *cell)
 {
-    gum_reset_clip(win);
+    gum_start_paint(win);
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
@@ -63,10 +63,11 @@ void gum_paint(GUM_window *win, GUM_cell *cell)
         while (!cell->next) {
             cell = cell->parent;
             if (cell == NULL) {
-                // TODO -- 
+                gum_end_paint(win);
                 return;
             }
 
+            gum_pop_clip(win, &cell->box);
             if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) { // TODO
                 gum_draw_scrolls(win, cell);
             }

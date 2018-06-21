@@ -26,3 +26,7 @@
 !resx/**/*.xml
 
 # Exceptions
+!vs/*.sln
+!vs/**/*.vcxproj
+!vs/**/*.vcxproj.*
+

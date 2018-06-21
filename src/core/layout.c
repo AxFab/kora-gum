@@ -284,8 +284,9 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
     int pad_bottom = CSS_GET_UNIT(cell->padding.bottom, cell->padding.bunit, layout->dpi, layout->dsp, cell->box.h);
 
     // TODO Add String size
-    int w, h;
-    gum_text_size(cell->text, &w, &h);
+    int w = 0, h = 0;
+    if (cell->text != NULL)
+        gum_text_size(cell->text, &w, &h);
     cell->box.minw = MAX(cell->box.minw, w + pad_left + pad_right);
     cell->box.minh = MAX(cell->box.minh, h + pad_top + pad_bottom);
 

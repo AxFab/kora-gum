@@ -44,11 +44,11 @@ void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h);
 void gum_text_size(const char *text, int *w, int *h);
 void *gum_load_image(const char *name);
 
-void gum_reset_clip(GUM_window *win);
+void gum_start_paint(GUM_window *win);
+void gum_end_paint(GUM_window *win);
 void gum_push_clip(GUM_window *win, struct GUM_box *box);
 void gum_pop_clip(GUM_window *win, struct GUM_box *box);
 void gum_resize_win(GUM_window *win, int width, int height);
-void gum_painter(GUM_window *win, GUM_cell *root);
 
 #define ALIGN_UP(v,a) (((v)+((a)-1)) & ~((a)-1))
 #define MIN(a,b) ((a)<(b)?(a):(b))

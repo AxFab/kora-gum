@@ -103,7 +103,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
-int main ()
+int S_main ()
 {
     int width = 680;
     int height = width * 10 / 16; // 425
@@ -113,14 +113,14 @@ int main ()
     root = gum_cell_loadxml("./resx/browser/app2.xml", skins);
     if (root == NULL) {
         printf("Unable to create render model.\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     // Open Window
     GUM_window *win = gum_create_surface(width, height);
     if (win == NULL) {
         printf("Unable to initialize window.\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     // Remouve context menu
@@ -156,7 +156,7 @@ int main ()
     gum_event_loop(evm);
     gum_destroy_surface(win);
     // TODO -- Free cells and skins
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 

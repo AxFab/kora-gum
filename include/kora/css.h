@@ -35,7 +35,7 @@ int css_parse_size(const char* value, int *pSz);
 #define CSS_GET_UNIT(v, u, dpi, dsp, sz) ( \
     (u) == CSS_SIZE_PX ? (v) : ( \
     (u) == CSS_SIZE_PTS ? (v) * (dpi) / 100 : ( \
-    (u) == CSS_SIZE_DP ? (v) * (dsp) : ( \
+    (u) == CSS_SIZE_DP ? (int)((v) * (dsp)) : ( \
     (u) == CSS_SIZE_PERC ? (v) * (sz) / 1000 : ( \
       0 )))))
 

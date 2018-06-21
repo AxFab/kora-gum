@@ -144,7 +144,7 @@ unsigned int css_parse_color(const char* value)
 int css_parse_size(const char* value, int *pSz)
 {
     char *unit;
-    float sz = strtod(value, &unit);
+    float sz = strtof(value, &unit);
     if (*unit == '\0') {
         *pSz = (short)sz;
         return CSS_SIZE_PX;

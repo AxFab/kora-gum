@@ -24,16 +24,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <cairo/cairo.h>
-#include <cairo/cairo-xlib.h>
 
 struct GUM_event_manager
 {
   int mouse_x, mouse_y;
   int width, height;
   GUM_cell *root;
-  void *win;
-  cairo_t *ctx;
+  GUM_window *win;
 
   HMP_map actions;
 
@@ -270,12 +267,11 @@ void gum_refresh(GUM_event_manager *evm)
     gum_invalid_cell(evm->root, evm->win);
 }
 
-GUM_event_manager *gum_event_manager(GUM_cell *root, void *win)
+GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
 {
     GUM_event_manager *evm = (GUM_event_manager*)calloc(1, sizeof(GUM_event_manager));
     evm->root = root;
     evm->win = win;
-    evm->ctx = cairo_create((cairo_surface_t*)win);
     hmp_init(&evm->actions, 16);
 
     evm->width = 680;
@@ -291,19 +287,12 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
     // fprintf(stderr, "Event %d enter\n", event->type);
     switch (event->type) {
     case GUM_EV_EXPOSE:
-        cairo_push_group(evm->ctx);
-        cairo_set_source_rgb(evm->ctx, 1, 1, 1);
-        cairo_paint(evm->ctx);
-        gum_paint(evm->ctx, evm->root);
-        cairo_pop_group_to_source(evm->ctx);
-        cairo_paint(evm->ctx);
-        cairo_surface_flush((cairo_surface_t*)evm->win);
-        // gum_paint(evm->win, evm->root);
+        gum_painter(evm->win, evm->root);
         break;
 
     case GUM_EV_RESIZE:
         // fprintf(stderr, "W %d - H %d\n", event->param0, event->param1);
-        cairo_xlib_surface_set_size((cairo_surface_t*)evm->win, event->param0, event->param1);
+        gum_resize_win(evm->win, event->param0, event->param1);
         evm->width = event->param0;
         evm->height = event->param1;
         gum_refresh(evm);

@@ -117,7 +117,7 @@ int main ()
     }
 
     // Open Window
-    void *win = gum_create_surface(width, height);
+    GUM_window *win = gum_create_surface(width, height);
     if (win == NULL) {
         printf("Unable to initialize window.\n");
         return -1;

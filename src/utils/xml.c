@@ -40,9 +40,9 @@ int memcnt (const void *ptr, int byte, size_t length) {
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-static void xml_error(int errno, ...)
+static void xml_error(int err, ...)
 {
-  fprintf(stderr, "XML Error n°:%d\n", errno);
+  fprintf(stderr, "XML Error n°:%d\n", err);
 }
 
 static void xml_parse_element(XML_node *node, const char *data, int lg)

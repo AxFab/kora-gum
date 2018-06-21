@@ -37,6 +37,10 @@ typedef struct xinfo {
     XImage *i;
 } xinfo_t;
 
+struct GUM_image {
+	cairo_t *ctx;
+	cairo_surface_t *srf;
+};
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -60,7 +64,7 @@ enum {
     MWH_FUNC_CLOSE = (1L << 5),
 };
 
-void *gum_create_surface(int width, int height)
+GUM_window *gum_create_surface(int width, int height)
 {
     Display *dsp;
     Drawable da;
@@ -96,20 +100,26 @@ void *gum_create_surface(int width, int height)
 
     sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), width, height);
     cairo_xlib_surface_set_size(sfc, width, height);
-    return sfc;
+    
+    GUM_window *win = (GUM_window*)malloc(sizeof(GUM_window));
+    win->srf = sfc;
+    win->ctx = cairo_create(sfc);
+    return win;
 }
 
-void gum_destroy_surface(void *win)
+void gum_destroy_surface(GUM_window *win)
 {
-   Display *dsp = cairo_xlib_surface_get_display((cairo_surface_t*)win);
-   cairo_surface_destroy((cairo_surface_t*)win);
-   XCloseDisplay(dsp);
+    cairo_destroy(win->ctx);
+    Display *dsp = cairo_xlib_surface_get_display(win->srf);
+    cairo_surface_destroy(win->srf);
+    XCloseDisplay(dsp);
+    free(win);
 }
 
-void gum_invalid_surface(void *win, int x, int y, int w, int h)
+void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
-    Display *dsp = cairo_xlib_surface_get_display((cairo_surface_t*)win);
-    Drawable da = cairo_xlib_surface_get_drawable((cairo_surface_t*)win);
+    Display *dsp = cairo_xlib_surface_get_display(win->srf);
+    Drawable da = cairo_xlib_surface_get_drawable(win->srf);
     // printf("Invalid <%d, %d, %d, %d>\n", x, y, width, height);
     XExposeEvent paint;
     memset(&paint, 0, sizeof(XExposeEvent));
@@ -129,25 +139,6 @@ void gum_invalid_surface(void *win, int x, int y, int w, int h)
 #define MIN_ALPHA 0x1000000
 #define M_PI 3.141592653589793
 
-
-void *gum_context(void *win)
-{
-    cairo_t *ctx = cairo_create((cairo_surface_t*)win);
-    cairo_push_group(ctx);
-    cairo_set_source_rgb(ctx, 1, 1, 1);
-    cairo_paint(ctx);
-    return ctx;
-}
-
-void gum_complete(void *win, void *ctx)
-{
-    cairo_pop_group_to_source((cairo_t*)ctx);
-    cairo_paint((cairo_t*)ctx);
-    cairo_surface_flush((cairo_surface_t*)win);
-    cairo_destroy((cairo_t*)ctx);
-}
-
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 static void gum_draw_path(void* ctx, GUM_cell *cell, GUM_skin *skin)
 {
@@ -208,8 +199,9 @@ static cairo_pattern_t *gum_build_gradient(GUM_cell *cell, GUM_skin *skin)
     return grad;
 }
 
-void gum_draw_cell(void *ctx, GUM_cell *cell)
+void gum_draw_cell(GUM_window *win, GUM_cell *cell)
 {
+	cairo_t *ctx = win->ctx;
     GUM_skin *skin = gum_skin(cell);
     if (skin == NULL)
         return;
@@ -312,8 +304,9 @@ void gum_text_size(const char *text, int *w, int *h)
 }
 
 
-void gum_draw_scrolls(void *ctx, GUM_cell *cell)
+void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 {
+	cairo_t *ctx = win->ctx;
     if (cell->state & GUM_CELL_OVERFLOW_X) {
         cairo_new_path(ctx);
         cairo_rectangle(ctx,
@@ -369,7 +362,7 @@ int key_unicode(int kcode, int state) {
 }
 
 
-int gum_event_poll(void *win, GUM_event *event, int timeout)
+int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 {
     int unicode;
     XEvent e;
@@ -378,7 +371,7 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
     XKeyEvent *key = (XKeyEvent *)&e;
     XResizeRequestEvent *resz = (XResizeRequestEvent *)&e;
 
-    XNextEvent(cairo_xlib_surface_get_display((cairo_surface_t *)win), &e);
+    XNextEvent(cairo_xlib_surface_get_display(win->srf), &e);
     switch (e.type) {
     case Expose:
         event->type = GUM_EV_EXPOSE;
@@ -431,7 +424,7 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
         break;
     case ResizeRequest:
         event->type = GUM_EV_RESIZE;
-        cairo_xlib_surface_set_size((cairo_surface_t*)win, resz->width, resz->height);
+        cairo_xlib_surface_set_size(win->srf, resz->width, resz->height);
         event->param0 = resz->width;
         event->param1 = resz->height;
         break;
@@ -475,28 +468,40 @@ int gum_event_poll(void *win, GUM_event *event, int timeout)
 }
 
 
-int gum_check_events(void *win, int block)
+void gum_reset_clip(GUM_window *win)
 {
-    char keybuf[8];
-    KeySym key;
-    XEvent e;
-
-    for (;;)
-    {
-        if (block || XPending(cairo_xlib_surface_get_display((cairo_surface_t*)win)))
-            XNextEvent(cairo_xlib_surface_get_display((cairo_surface_t*)win), &e);
-        else
-            return 0;
-
-        switch (e.type)
-        {
-        case ButtonPress:
-            return -e.xbutton.button;
-        case KeyPress:
-            XLookupString(&e.xkey, keybuf, sizeof(keybuf), &key, NULL);
-            return key;
-        default:
-            fprintf(stderr, "Dropping unhandled XEevent.type = %d.\n", e.type);
-        }
-    }
+	cairo_reset_clip(win->ctx);
 }
+
+void gum_push_clip(GUM_window *win, struct GUM_box *box)
+{
+	cairo_save(win->ctx);
+    cairo_new_path(win->ctx);
+    cairo_rectangle(win->ctx, box->cx, box->cy, box->cw, box->ch);
+    cairo_clip(win->ctx);
+    cairo_translate(win->ctx, box->cx - box->sx, box->cy - box->sy);
+}
+
+void gum_pop_clip(GUM_window *win, struct GUM_box *box)
+{
+    cairo_translate(win->ctx, box->sx - box->cx, box->sy - box->cy);
+    cairo_restore(win->ctx);
+}
+
+
+void gum_painter(GUM_window *win, GUM_cell *root)
+{
+    cairo_push_group(win->ctx);
+    cairo_set_source_rgb(win->ctx, 1, 1, 1);
+    cairo_paint(win->ctx);
+    gum_paint(win, root);
+    cairo_pop_group_to_source(win->ctx);
+    cairo_paint(win->ctx);
+    cairo_surface_flush(evm->win);
+}
+
+void gum_resize_win(GUM_window *win, int width, int height)
+{
+    cairo_xlib_surface_set_size(win->srf, width, height);
+}
+

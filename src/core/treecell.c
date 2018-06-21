@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <cairo/cairo.h>
 
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
 {
@@ -47,24 +46,16 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 }
 
 
-void gum_paint(void *ctx, GUM_cell *cell)
+void gum_paint(GUM_window *win, GUM_cell *cell)
 {
-    // void *ctx = gum_context(win);
-    cairo_reset_clip(ctx);
-    // int x = 0, y = 0;
+    gum_reset_clip(win);
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        gum_draw_cell(ctx, cell);
+        gum_draw_cell(win, cell);
         if (cell->first) {
             // TODO - prune if cell is outside drawing clip
-            cairo_save(ctx);
-            cairo_new_path(ctx);
-            cairo_rectangle(ctx, cell->box.cx, cell->box.cy, cell->box.cw, cell->box.ch);
-            cairo_clip(ctx);
-            // x += cell->box.cx - cell->box.sx;
-            // y += cell->box.cy - cell->box.sy;
-            cairo_translate(ctx, cell->box.cx - cell->box.sx, cell->box.cy - cell->box.sy);
+            gum_push_clip(win, &cell->box);
             cell = cell->first;
             continue;
         }
@@ -72,16 +63,12 @@ void gum_paint(void *ctx, GUM_cell *cell)
         while (!cell->next) {
             cell = cell->parent;
             if (cell == NULL) {
-                // gum_complete(win, ctx);
+                // TODO -- 
                 return;
             }
 
-            // x -= cell->box.cx - cell->box.sx;
-            // y -= cell->box.cy - cell->box.sy;
-            cairo_translate(ctx, cell->box.sx - cell->box.cx, cell->box.sy - cell->box.cy);
-            cairo_restore(ctx);
             if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) { // TODO
-                gum_draw_scrolls(ctx, cell);
+                gum_draw_scrolls(win, cell);
             }
         }
         if (cell) {
@@ -104,7 +91,7 @@ GUM_skin *gum_skin(GUM_cell *cell)
     return cell->skin;
 }
 
-void gum_invalid_cell(GUM_cell *cell, void *win)
+void gum_invalid_cell(GUM_cell *cell, GUM_window *win)
 {
     // TODO -- Same as get by Id, but start by Last instead of Frist
     int x = cell->box.x;
@@ -203,7 +190,7 @@ static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
 
 GUM_cell *gum_cell_copy(GUM_cell *cell)
 {
-    GUM_cell *root;
+    GUM_cell *root = NULL;
     GUM_cell *cursor = NULL;
     while (cell) {
         GUM_cell *cpy = gum_cell_copy_one(cell);

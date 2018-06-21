@@ -22,7 +22,7 @@
 
 #include <kora/gum/core.h>
 
-GUM_event_manager *gum_event_manager(GUM_cell *root, void *win);
+GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win);
 void gum_event_loop(GUM_event_manager *evm);
 
 

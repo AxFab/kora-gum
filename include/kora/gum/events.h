@@ -31,8 +31,7 @@ typedef void(*GUM_EventHandler)(GUM_event_manager *evm, GUM_cell *cell, int even
 void gum_refresh(GUM_event_manager *evm);
 void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
 
-struct GUM_event
-{
+struct GUM_event {
     int type;
     int param0;
     int param1;

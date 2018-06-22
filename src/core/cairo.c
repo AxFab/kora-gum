@@ -38,8 +38,8 @@ typedef struct xinfo {
 } xinfo_t;
 
 struct GUM_window {
-	cairo_t *ctx;
-	cairo_surface_t *srf;
+    cairo_t *ctx;
+    cairo_surface_t *srf;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -78,15 +78,15 @@ GUM_window *gum_create_surface(int width, int height)
     screen = DefaultScreen(dsp);
     da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, width, height, 0, 0, 0);
     XSelectInput(dsp, da,
-        ButtonMotionMask |  ButtonPressMask | ButtonReleaseMask | // Mouse
-        KeyPressMask | KeyReleaseMask | KeymapStateMask | // Keyboard
-        EnterWindowMask | LeaveWindowMask | PointerMotionMask |
-        // Button1MotionMask | Button2MotionMask | Button3MotionMask |
-        // Button4MotionMask | Button5MotionMask |
-        VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask |
-        SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask |
-        PropertyChangeMask | ColormapChangeMask |
-        ExposureMask);
+                 ButtonMotionMask |  ButtonPressMask | ButtonReleaseMask | // Mouse
+                 KeyPressMask | KeyReleaseMask | KeymapStateMask | // Keyboard
+                 EnterWindowMask | LeaveWindowMask | PointerMotionMask |
+                 // Button1MotionMask | Button2MotionMask | Button3MotionMask |
+                 // Button4MotionMask | Button5MotionMask |
+                 VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask |
+                 SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask |
+                 PropertyChangeMask | ColormapChangeMask |
+                 ExposureMask);
 
     // Make the window, frameless
     Atom mwmHintsProperty = XInternAtom(dsp, "_MOTIF_WM_HINTS", 0);
@@ -94,14 +94,14 @@ GUM_window *gum_create_surface(int width, int height)
     hints.flags = MWH_HINTS_DECORATIONS;
     hints.decoration = 0;
     XChangeProperty(dsp, da, mwmHintsProperty, mwmHintsProperty, 32,
-        PropModeReplace, (unsigned char*)&hints, 5);
+                    PropModeReplace, (unsigned char *)&hints, 5);
 
     XMapWindow(dsp, da);
 
     sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), width, height);
     cairo_xlib_surface_set_size(sfc, width, height);
 
-    GUM_window *win = (GUM_window*)malloc(sizeof(GUM_window));
+    GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
     win->srf = sfc;
     win->ctx = cairo_create(sfc);
     return win;
@@ -131,7 +131,7 @@ void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
     paint.y = y;
     paint.width = w;
     paint.height = h;
-    XSendEvent(dsp, da, True, ExposureMask, (XEvent*)&paint);
+    XSendEvent(dsp, da, True, ExposureMask, (XEvent *)&paint);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -140,11 +140,11 @@ void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 #define M_PI 3.141592653589793
 
 
-static void gum_draw_path(void* ctx, GUM_cell *cell, GUM_skin *skin)
+static void gum_draw_path(void *ctx, GUM_cell *cell, GUM_skin *skin)
 {
     if (cell->path) {
         cairo_new_path(ctx);
-        cairo_append_path(ctx, (cairo_path_t*)cell->path);
+        cairo_append_path(ctx, (cairo_path_t *)cell->path);
         return;
     }
 
@@ -157,13 +157,13 @@ static void gum_draw_path(void* ctx, GUM_cell *cell, GUM_skin *skin)
     cairo_new_path(ctx);
     cairo_move_to(ctx, cell->box.x + r_top_left, cell->box.y);
     cairo_line_to(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y);
-    cairo_arc(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI/2.0, 0.0);
+    cairo_arc(ctx, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI / 2.0, 0.0);
     cairo_line_to(ctx, cell->box.x + cell->box.w, cell->box.y + cell->box.h - r_bottom_right);
-    cairo_arc(ctx, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
+    cairo_arc(ctx, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI / 2.0);
     cairo_line_to(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h);
-    cairo_arc(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
+    cairo_arc(ctx, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI / 2.0, M_PI);
     cairo_line_to(ctx, cell->box.x, cell->box.y + r_top_left);
-    cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
+    cairo_arc(ctx, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3 * M_PI / 2.0);
 
     cell->path = cairo_copy_path(ctx);
 }
@@ -183,17 +183,17 @@ static cairo_pattern_t *gum_build_gradient(GUM_cell *cell, GUM_skin *skin)
         grad = cairo_pattern_create_linear(0, cell->box.y, 0, cell->box.y + cell->box.h);
 
     cairo_pattern_add_color_stop_rgb(grad, 0.0, //0, 0.5, 0.5, 0);
-        ((skin->bgcolor >> 16) & 255) / 255.0,
-        ((skin->bgcolor >> 8) & 255) / 255.0,
-        ((skin->bgcolor >> 0) & 255) / 255.0);
+                                     ((skin->bgcolor >> 16) & 255) / 255.0,
+                                     ((skin->bgcolor >> 8) & 255) / 255.0,
+                                     ((skin->bgcolor >> 0) & 255) / 255.0);
     // cairo_pattern_add_color_stop_rgb(grad, 0.25, 0.5, 0.5, 0);
-        // ((skin->grcolor >> 16) & 255) / 255.0,
-        // ((skin->grcolor >> 8) & 255) / 255.0,
-        // ((skin->grcolor >> 0) & 255) / 255.0);
+    // ((skin->grcolor >> 16) & 255) / 255.0,
+    // ((skin->grcolor >> 8) & 255) / 255.0,
+    // ((skin->grcolor >> 0) & 255) / 255.0);
     cairo_pattern_add_color_stop_rgb(grad, 1.0, //0, 0.5, 0.5, 0);
-        ((skin->grcolor >> 16) & 255) / 255.0,
-        ((skin->grcolor >> 8) & 255) / 255.0,
-        ((skin->grcolor >> 0) & 255) / 255.0);
+                                     ((skin->grcolor >> 16) & 255) / 255.0,
+                                     ((skin->grcolor >> 8) & 255) / 255.0,
+                                     ((skin->grcolor >> 0) & 255) / 255.0);
 
     cell->gradient = grad;
     return grad;
@@ -201,7 +201,7 @@ static cairo_pattern_t *gum_build_gradient(GUM_cell *cell, GUM_skin *skin)
 
 void gum_draw_cell(GUM_window *win, GUM_cell *cell)
 {
-	cairo_t *ctx = win->ctx;
+    cairo_t *ctx = win->ctx;
     GUM_skin *skin = gum_skin(cell);
     if (skin == NULL)
         return;
@@ -220,7 +220,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
         gum_draw_path(ctx, cell, skin);
 
         if (cell->image) {
-            cairo_surface_t *img = (cairo_surface_t*)cell->image;
+            cairo_surface_t *img = (cairo_surface_t *)cell->image;
             int img_sz = MAX(cairo_image_surface_get_width(img), cairo_image_surface_get_height(img));
             double rt = (double)MAX(cell->box.w, cell->box.h) / (double)img_sz;
             cairo_save(ctx);
@@ -238,18 +238,18 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
 
         } else if (skin->bgcolor >= MIN_ALPHA) {
             cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
-                ((skin->bgcolor >> 16) & 255) / 255.0,
-                ((skin->bgcolor >> 8) & 255) / 255.0,
-                ((skin->bgcolor >> 0) & 255) / 255.0);
+                                 ((skin->bgcolor >> 16) & 255) / 255.0,
+                                 ((skin->bgcolor >> 8) & 255) / 255.0,
+                                 ((skin->bgcolor >> 0) & 255) / 255.0);
             cairo_fill_preserve(ctx);
         }
 
         if (skin->brcolor >= MIN_ALPHA) {
             cairo_set_line_width(ctx, 1.0);
             cairo_set_source_rgb(ctx, //0.1, 0.1, 0.1);
-                ((skin->brcolor >> 16) & 255) / 255.0,
-                ((skin->brcolor >> 8) & 255) / 255.0,
-                ((skin->brcolor >> 0) & 255) / 255.0);
+                                 ((skin->brcolor >> 16) & 255) / 255.0,
+                                 ((skin->brcolor >> 8) & 255) / 255.0,
+                                 ((skin->brcolor >> 0) & 255) / 255.0);
             cairo_stroke(ctx);
         }
     }
@@ -257,9 +257,9 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
     // fprintf(stderr, " -- %s\n", cell->text);
     if (cell->text) {
         cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
-            ((skin->txcolor >> 16) & 255) / 255.0,
-            ((skin->txcolor >> 8) & 255) / 255.0,
-            ((skin->txcolor >> 0) & 255) / 255.0);
+                             ((skin->txcolor >> 16) & 255) / 255.0,
+                             ((skin->txcolor >> 8) & 255) / 255.0,
+                             ((skin->txcolor >> 0) & 255) / 255.0);
 
         cairo_text_extents_t extents;
 
@@ -306,13 +306,13 @@ void gum_text_size(const char *text, int *w, int *h)
 
 void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 {
-	cairo_t *ctx = win->ctx;
+    cairo_t *ctx = win->ctx;
     if (cell->state & GUM_CELL_OVERFLOW_X) {
         cairo_new_path(ctx);
         cairo_rectangle(ctx,
-            cell->box.x,
-            cell->box.y + cell->box.h - 7,
-            cell->box.w - 7, 7);
+                        cell->box.x,
+                        cell->box.y + cell->box.h - 7,
+                        cell->box.w - 7, 7);
         cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
         cairo_fill(ctx);
 
@@ -321,18 +321,18 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 
         cairo_new_path(ctx);
         cairo_rectangle(ctx,
-            cell->box.x + st,
-            cell->box.y + cell->box.h - 7,
-            sz, 7);
-        cairo_set_source_rgb(ctx, 66.0/255.0, 165.0/255.0, 245.0/255.0);
+                        cell->box.x + st,
+                        cell->box.y + cell->box.h - 7,
+                        sz, 7);
+        cairo_set_source_rgb(ctx, 66.0 / 255.0, 165.0 / 255.0, 245.0 / 255.0);
         cairo_fill(ctx);
     }
 
     if (cell->state & GUM_CELL_OVERFLOW_Y) {
         cairo_new_path(ctx);
         cairo_rectangle(ctx,
-            cell->box.x + cell->box.w - 7,
-            cell->box.y, 7, cell->box.h - 7);
+                        cell->box.x + cell->box.w - 7,
+                        cell->box.y, 7, cell->box.h - 7);
         cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
         cairo_fill(ctx);
 
@@ -341,9 +341,9 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 
         cairo_new_path(ctx);
         cairo_rectangle(ctx,
-            cell->box.x + cell->box.w - 7,
-            cell->box.y + st, 7, sz);
-        cairo_set_source_rgb(ctx, 66.0/255.0, 165.0/255.0, 245.0/255.0);
+                        cell->box.x + cell->box.w - 7,
+                        cell->box.y + st, 7, sz);
+        cairo_set_source_rgb(ctx, 66.0 / 255.0, 165.0 / 255.0, 245.0 / 255.0);
         cairo_fill(ctx);
     }
 }
@@ -352,13 +352,14 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 
 #include <kora/keys.h>
 
-int key_unicode(int kcode, int state) {
-  int r = 0;
-  if ((state & 3) == 0 || ((state & 3) == 3))
-    r += 1;
-  if (state & 8)
-    r += 2;
-  return keyboard_layout_US[kcode][r];
+int key_unicode(int kcode, int state)
+{
+    int r = 0;
+    if ((state & 3) == 0 || ((state & 3) == 3))
+        r += 1;
+    if (state & 8)
+        r += 2;
+    return keyboard_layout_US[kcode][r];
 }
 
 
@@ -413,9 +414,10 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         }
         break;
     case ButtonRelease:
-        if (btn->button == 4 || btn->button == 5) {
+        if (btn->button == 4 || btn->button == 5)
             event->type = -1;
-        } else {
+
+        else {
             // printf("Event ButtonRelease <%x.%x>\n", btn->state, btn->button);
             event->type = GUM_EV_BTN_RELEASE;
             event->param0 = btn->button;
@@ -485,7 +487,7 @@ void gum_end_paint(GUM_window *win)
 
 void gum_push_clip(GUM_window *win, GUM_box *box)
 {
-	cairo_save(win->ctx);
+    cairo_save(win->ctx);
     cairo_new_path(win->ctx);
     cairo_rectangle(win->ctx, box->cx, box->cy, box->cw, box->ch);
     cairo_clip(win->ctx);

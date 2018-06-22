@@ -21,8 +21,7 @@
 #include <kora/xml.h>
 #include <kora/css.h>
 
-struct GUM_cellbuilder
-{
+struct GUM_cellbuilder {
     GUM_cell *root;
     GUM_cell *cursor;
     GUM_skins *skins;
@@ -45,9 +44,8 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         if (!strcmp("wrap", value)) {
             cell->rulerx.before = cell->rulerx.after = 0;
             cell->rulerx.bunit = cell->rulerx.aunit = CSS_SIZE_PX;
-        } else {
+        } else
             cell->rulerx.sunit = css_parse_usize(value, &cell->rulerx.size);
-        }
     }
 
     else if (!strcmp("top", key))
@@ -62,9 +60,8 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         if (!strcmp("wrap", value)) {
             cell->rulery.before = cell->rulery.after = 0;
             cell->rulery.bunit = cell->rulery.aunit = CSS_SIZE_PX;
-        } else {
+        } else
             cell->rulery.sunit = css_parse_usize(value, &cell->rulery.size);
-        }
     }
 
     else if (!strcmp("gap-x", key))
@@ -96,35 +93,57 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     else if (!strcmp("img", key))
         cell->img_src = strdup(value);
     else if (!strcmp("layout", key)) {
-        if (!strcmp("Absolute", value)) cell->layout = gum_layout_absolute;
-        else if (!strcmp("Wrap", value)) cell->layout = gum_layout_wrap;
-        else if (!strcmp("VGroupExtend", value)) cell->layout = gum_layout_vgroup_extend;
-        else if (!strcmp("HGroupExtend", value)) cell->layout = gum_layout_hgroup_extend;
-        else if (!strcmp("VGroupLeft", value)) cell->layout = gum_layout_vgroup_left;
-        else if (!strcmp("HGroupTop", value)) cell->layout = gum_layout_hgroup_top;
-        else if (!strcmp("VGroupCenter", value)) cell->layout = gum_layout_vgroup_center;
-        else if (!strcmp("HGroupMiddle", value)) cell->layout = gum_layout_hgroup_middle;
-        else if (!strcmp("VGroupRight", value)) cell->layout = gum_layout_vgroup_right;
-        else if (!strcmp("HGroupBottom", value)) cell->layout = gum_layout_hgroup_bottom;
-        else if (!strcmp("ColumnGrid", value)) cell->layout = gum_layout_column_grid;
-        else if (!strcmp("RowGrid", value)) cell->layout = gum_layout_row_grid;
+        if (!strcmp("Absolute", value))
+            cell->layout = gum_layout_absolute;
+        else if (!strcmp("Wrap", value))
+            cell->layout = gum_layout_wrap;
+        else if (!strcmp("VGroupExtend", value))
+            cell->layout = gum_layout_vgroup_extend;
+        else if (!strcmp("HGroupExtend", value))
+            cell->layout = gum_layout_hgroup_extend;
+        else if (!strcmp("VGroupLeft", value))
+            cell->layout = gum_layout_vgroup_left;
+        else if (!strcmp("HGroupTop", value))
+            cell->layout = gum_layout_hgroup_top;
+        else if (!strcmp("VGroupCenter", value))
+            cell->layout = gum_layout_vgroup_center;
+        else if (!strcmp("HGroupMiddle", value))
+            cell->layout = gum_layout_hgroup_middle;
+        else if (!strcmp("VGroupRight", value))
+            cell->layout = gum_layout_vgroup_right;
+        else if (!strcmp("HGroupBottom", value))
+            cell->layout = gum_layout_hgroup_bottom;
+        else if (!strcmp("ColumnGrid", value))
+            cell->layout = gum_layout_column_grid;
+        else if (!strcmp("RowGrid", value))
+            cell->layout = gum_layout_row_grid;
     }
 
     else if (!strcmp("editable", key)) {
-        if (!strcmp("true", value)) cell->state |= GUM_CELL_EDITABLE;
-        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_EDITABLE;
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_EDITABLE;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_EDITABLE;
     } else if (!strcmp("solid", key)) {
-        if (!strcmp("true", value)) cell->state |= GUM_CELL_SOLID;
-        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_SOLID;
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_SOLID;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_SOLID;
     } else if (!strcmp("overflow-x", key)) {
-        if (!strcmp("true", value)) cell->state |= GUM_CELL_OVERFLOW_X;
-        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_OVERFLOW_X;
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_OVERFLOW_X;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_OVERFLOW_X;
     } else if (!strcmp("overflow-y", key)) {
-        if (!strcmp("true", value)) cell->state |= GUM_CELL_OVERFLOW_Y;
-        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_OVERFLOW_Y;
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_OVERFLOW_Y;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_OVERFLOW_Y;
     } else if (!strcmp("substyle", key)) {
-        if (!strcmp("true", value)) cell->state |= GUM_CELL_SUBSTYLE;
-        else if (!strcmp("false", value)) cell->state &= ~GUM_CELL_SUBSTYLE;
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_SUBSTYLE;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_SUBSTYLE;
     }
 
     else {
@@ -149,13 +168,13 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
     }
 
     // Create a new cell and attach it to the tree
-    GUM_cell *cell = (GUM_cell*)calloc(1, sizeof(GUM_cell));
+    GUM_cell *cell = (GUM_cell *)calloc(1, sizeof(GUM_cell));
     // cell->id = strdup(node->node_name); // TODO -- Debug only
-    if (builder->cursor) {
+    if (builder->cursor)
         gum_cell_pushback(builder->cursor, cell);
-    } else {
+
+    else
         builder->root = cell;
-    }
 
     // TODO -- Find a skin for this cell
     char name[50];
@@ -177,9 +196,8 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
 
     // Continue XML process
     xml_add_child_node(cursor, node);
-    if ((node->build_flags & XML_BLD_CLOSED)) {
+    if ((node->build_flags & XML_BLD_CLOSED))
         return cursor;
-    }
 
     builder->cursor = cell;
     return node;

@@ -57,44 +57,44 @@ typedef struct XML_attribute XML_attribute;
 typedef struct XML_builder XML_builder;
 
 struct XML_node {
-  int type;
-  int length;
-  int children_count;
-  char *litteral;
-  XML_node *parent;
-  XML_node *next_sibling;
-  XML_node *previous_sibling;
-  XML_node *first_child;
-  XML_node *last_child;
-  XML_attribute *first_attribute;
-  XML_attribute *last_attribute;
-  char *node_name;
-  char *content;
-  int build_flags;
-  int row;
-  int col;
-  int rows;
-  int ecol;
+    int type;
+    int length;
+    int children_count;
+    char *litteral;
+    XML_node *parent;
+    XML_node *next_sibling;
+    XML_node *previous_sibling;
+    XML_node *first_child;
+    XML_node *last_child;
+    XML_attribute *first_attribute;
+    XML_attribute *last_attribute;
+    char *node_name;
+    char *content;
+    int build_flags;
+    int row;
+    int col;
+    int rows;
+    int ecol;
 };
 
 struct XML_attribute {
-  char *key;
-  char *value;
-  XML_attribute *next;
-  XML_attribute *previous;
+    char *key;
+    char *value;
+    XML_attribute *next;
+    XML_attribute *previous;
 };
 
-typedef XML_node * (*XML_pusher)(XML_node *cursor, XML_node *node, void *param);
+typedef XML_node *(*XML_pusher)(XML_node *cursor, XML_node *node, void *param);
 
 
 /* Build XML document */
-void xml_add_attribute(XML_node *node, const char* key, const char* value);
+void xml_add_attribute(XML_node *node, const char *key, const char *value);
 XML_node *xml_create_node(int type, const char *name, const char *content);
 void xml_add_child_node(XML_node *node, XML_node *child);
 void xml_remove_node(XML_node *node);
 
 /* Parse XML sub-strings */
-void xml_parse_attributes(XML_node *node, const char* buf, int lg);
+void xml_parse_attributes(XML_node *node, const char *buf, int lg);
 XML_node *xml_parse_node(int nodetype, const char *data, int lg);
 
 /* Serialization of XML DOM */
@@ -103,7 +103,7 @@ XML_node *xml_read_file_with(FILE *stream, XML_pusher pusher, void *param);
 void xml_write_file(FILE *stream, XML_node *node, int opt);
 
 /* Free all memory block occupied for the DOM */
-void xml_free_node (XML_node *node);
+void xml_free_node(XML_node *node);
 
 
 #endif  /* _KORA_XML_H */

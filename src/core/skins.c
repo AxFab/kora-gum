@@ -24,15 +24,14 @@
 #include <stdio.h>
 #include <string.h>
 
-struct GUM_skins
-{
+struct GUM_skins {
     HMP_map map;
 };
 
-GUM_skin* gum_skin_property_setter(GUM_skin *skin, const char* property, const char* value)
+GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value)
 {
     if (skin->read_only) {
-        GUM_skin *tmp = (GUM_skin*)calloc(1, sizeof(GUM_skin));
+        GUM_skin *tmp = (GUM_skin *)calloc(1, sizeof(GUM_skin));
         memcpy(tmp, skin, sizeof(*tmp));
         skin = tmp;
         skin->read_only = 0;
@@ -67,28 +66,33 @@ GUM_skin* gum_skin_property_setter(GUM_skin *skin, const char* property, const c
         skin->hunit |= css_parse_usize(value, &skin->height);
 
     else if (!strcmp("text-align", property)) {
-        if (!strcmp("left", value)) skin->align = 1;
-        else if (!strcmp("right", value)) skin->align = 2;
-        else if (!strcmp("center", value)) skin->align = 0;
+        if (!strcmp("left", value))
+            skin->align = 1;
+        else if (!strcmp("right", value))
+            skin->align = 2;
+        else if (!strcmp("center", value))
+            skin->align = 0;
     } else if (!strcmp("vertical-align", property)) {
-        if (!strcmp("top", value)) skin->align = 1;
-        else if (!strcmp("bottom", value)) skin->align = 2;
-        else if (!strcmp("middle", value)) skin->align = 0;
+        if (!strcmp("top", value))
+            skin->align = 1;
+        else if (!strcmp("bottom", value))
+            skin->align = 2;
+        else if (!strcmp("middle", value))
+            skin->align = 0;
     }
 
     return skin;
 }
 
 
-void gum_skins_setter(GUM_skins *skins, const char* name, const char* property, const char* value)
+void gum_skins_setter(GUM_skins *skins, const char *name, const char *property, const char *value)
 {
-    if (*name == '.') {
+    if (*name == '.')
         name = &name[1];
-    }
     int lg = strlen(name);
     GUM_skin *skin = hmp_get(&skins->map, name, lg);
     if (skin == NULL) {
-        skin = (GUM_skin*)calloc(1, sizeof(GUM_skin));
+        skin = (GUM_skin *)calloc(1, sizeof(GUM_skin));
         hmp_put(&skins->map, name, lg, skin);
     }
 
@@ -99,21 +103,20 @@ void gum_skins_setter(GUM_skins *skins, const char* name, const char* property, 
 GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename)
 {
     if (skins == NULL) {
-        skins = (GUM_skins*)malloc(sizeof(GUM_skins));
+        skins = (GUM_skins *)malloc(sizeof(GUM_skins));
         hmp_init(&skins->map, 16);
     }
 
     FILE *fp = fopen(filename, "r");
-        if (fp == NULL) {
-            return skins;
-    }
+    if (fp == NULL)
+        return skins;
 
     css_read_file(fp, skins, (css_setter)&gum_skins_setter);
     fclose(fp);
     return skins;
 }
 
-GUM_skin *gum_style_find(GUM_skins *skins, const char* name)
+GUM_skin *gum_style_find(GUM_skins *skins, const char *name)
 {
     int lg = strlen(name);
     GUM_skin *skin = hmp_get(&skins->map, name, lg);

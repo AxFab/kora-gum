@@ -47,28 +47,26 @@
  */
 int cairo_check_event(cairo_surface_t *sfc, int block)
 {
-   char keybuf[8];
-   KeySym key;
-   XEvent e;
+    char keybuf[8];
+    KeySym key;
+    XEvent e;
 
-   for (;;)
-   {
-      if (block || XPending(cairo_xlib_surface_get_display(sfc)))
-         XNextEvent(cairo_xlib_surface_get_display(sfc), &e);
-      else
-         return 0;
+    for (;;) {
+        if (block || XPending(cairo_xlib_surface_get_display(sfc)))
+            XNextEvent(cairo_xlib_surface_get_display(sfc), &e);
+        else
+            return 0;
 
-      switch (e.type)
-      {
-         case ButtonPress:
+        switch (e.type) {
+        case ButtonPress:
             return -e.xbutton.button;
-         case KeyPress:
+        case KeyPress:
             XLookupString(&e.xkey, keybuf, sizeof(keybuf), &key, NULL);
             return key;
-         default:
+        default:
             fprintf(stderr, "Dropping unhandled XEevent.type = %d.\n", e.type);
-      }
-   }
+        }
+    }
 }
 
 
@@ -83,24 +81,24 @@ int cairo_check_event(cairo_surface_t *sfc, int block)
  */
 cairo_surface_t *cairo_create_x11_surface(int *x, int *y)
 {
-   Display *dsp;
-   Drawable da;
-   Screen *scr;
-   int screen;
-   cairo_surface_t *sfc;
+    Display *dsp;
+    Drawable da;
+    Screen *scr;
+    int screen;
+    cairo_surface_t *sfc;
 
-   if ((dsp = XOpenDisplay(NULL)) == NULL)
-      exit(1);
-   screen = DefaultScreen(dsp);
-   scr = DefaultScreenOfDisplay(dsp);
-   da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, *x, *y, 0, 0, 0);
-   XSelectInput(dsp, da, ButtonPressMask | KeyPressMask);
-   XMapWindow(dsp, da);
+    if ((dsp = XOpenDisplay(NULL)) == NULL)
+        exit(1);
+    screen = DefaultScreen(dsp);
+    scr = DefaultScreenOfDisplay(dsp);
+    da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, *x, *y, 0, 0, 0);
+    XSelectInput(dsp, da, ButtonPressMask | KeyPressMask);
+    XMapWindow(dsp, da);
 
-   sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), *x, *y);
-   cairo_xlib_surface_set_size(sfc, *x, *y);
+    sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), *x, *y);
+    cairo_xlib_surface_set_size(sfc, *x, *y);
 
-   return sfc;
+    return sfc;
 }
 
 
@@ -108,124 +106,122 @@ cairo_surface_t *cairo_create_x11_surface(int *x, int *y)
  */
 void cairo_close_x11_surface(cairo_surface_t *sfc)
 {
-   Display *dsp = cairo_xlib_surface_get_display(sfc);
+    Display *dsp = cairo_xlib_surface_get_display(sfc);
 
-   cairo_surface_destroy(sfc);
-   XCloseDisplay(dsp);
+    cairo_surface_destroy(sfc);
+    XCloseDisplay(dsp);
 }
 
 
 static void turn(double v, double max, double *diff)
 {
-   if (v <= 0 || v >= max)
-      *diff *= -1.0;
+    if (v <= 0 || v >= max)
+        *diff *= -1.0;
 }
 
 
 int main(int argc, char **argv)
 {
-   cairo_surface_t *sfc;
-   cairo_t *ctx;
-   int x, y;
-   struct timespec ts = {0, 5000000};
+    cairo_surface_t *sfc;
+    cairo_t *ctx;
+    int x, y;
+    struct timespec ts = {0, 5000000};
 
-   double x0 = 20, y0 = 20, x1 = 200, y1 = 400, x2 = 450, y2 = 100;
-   double dx0 = 1, dx1 = 1.5, dx2 = 2;
-   double dy0 = 2, dy1 = 1.5, dy2 = 1;
-   int running;
+    double x0 = 20, y0 = 20, x1 = 200, y1 = 400, x2 = 450, y2 = 100;
+    double dx0 = 1, dx1 = 1.5, dx2 = 2;
+    double dy0 = 2, dy1 = 1.5, dy2 = 1;
+    int running;
 
-   x = 680;
-   y = x * 10 / 16;
-   sfc = cairo_create_x11_surface(&x, &y);
-   ctx = cairo_create(sfc);
+    x = 680;
+    y = x * 10 / 16;
+    sfc = cairo_create_x11_surface(&x, &y);
+    ctx = cairo_create(sfc);
 
-   for (running = 1; running;)
-   {
+    for (running = 1; running;) {
 
-      cairo_push_group(ctx);
-      cairo_set_source_rgb(ctx, 1, 1, 1);
-      cairo_paint(ctx);
+        cairo_push_group(ctx);
+        cairo_set_source_rgb(ctx, 1, 1, 1);
+        cairo_paint(ctx);
 
-      int r_top_left = 12;
-      int r_top_right = 12;
-      int r_bottom_right = 12;
-      int r_bottom_left = 12;
-      int w0 = 40;
-      int h0 = 24;
+        int r_top_left = 12;
+        int r_top_right = 12;
+        int r_bottom_right = 12;
+        int r_bottom_left = 12;
+        int w0 = 40;
+        int h0 = 24;
 
-      cairo_move_to(ctx, x0 + r_top_left, y0);
-      cairo_line_to(ctx, x0 + w0 - r_top_right, y0);
-      cairo_arc(ctx, x0 + w0 - r_top_right, y0 + r_top_right, r_top_right, -M_PI/2.0, 0.0);
-      cairo_line_to(ctx, x0 + w0, y0 + h0 - r_bottom_right);
-      cairo_arc(ctx, x0 + w0 - r_bottom_right, y0 + h0 - r_bottom_right, r_bottom_right, 0.0, M_PI/2.0);
-      cairo_line_to(ctx, x0 + r_bottom_left, y0 + h0);
-      cairo_arc(ctx, x0 + r_bottom_left, y0 + h0 - r_bottom_left, r_bottom_left, M_PI/2.0, M_PI);
-      cairo_line_to(ctx, x0, y0 + r_top_left);
-      cairo_arc(ctx, x0 + r_top_left, y0 + r_top_left, r_top_left, M_PI, 3*M_PI/2.0);
+        cairo_move_to(ctx, x0 + r_top_left, y0);
+        cairo_line_to(ctx, x0 + w0 - r_top_right, y0);
+        cairo_arc(ctx, x0 + w0 - r_top_right, y0 + r_top_right, r_top_right, -M_PI / 2.0, 0.0);
+        cairo_line_to(ctx, x0 + w0, y0 + h0 - r_bottom_right);
+        cairo_arc(ctx, x0 + w0 - r_bottom_right, y0 + h0 - r_bottom_right, r_bottom_right, 0.0, M_PI / 2.0);
+        cairo_line_to(ctx, x0 + r_bottom_left, y0 + h0);
+        cairo_arc(ctx, x0 + r_bottom_left, y0 + h0 - r_bottom_left, r_bottom_left, M_PI / 2.0, M_PI);
+        cairo_line_to(ctx, x0, y0 + r_top_left);
+        cairo_arc(ctx, x0 + r_top_left, y0 + r_top_left, r_top_left, M_PI, 3 * M_PI / 2.0);
 
 
-      // cairo_line_to(ctx, x2, y2);
-      // cairo_line_to(ctx, x0, y0);
-      float bg = 235.0 / 255.0;
-      float br = 20.0 / 255.0;
-      cairo_pattern_t *grad = cairo_pattern_create_linear(0, y0, 0, y0 + h0);
-      cairo_pattern_add_color_stop_rgb(grad, 0, 0.5, 0.5, 0);
-      cairo_pattern_add_color_stop_rgb(grad, 0.5 * h0, 0.0, 0.5, 0.5);
-      cairo_pattern_add_color_stop_rgb(grad, 0.7 * h0, 0.0, 0.5, 0.0);
-      cairo_pattern_add_color_stop_rgb(grad, 1.0 * h0, 0.5, 0.0, 0.0);
-      cairo_set_source(ctx, grad);
-      cairo_fill_preserve(ctx);
-      cairo_set_line_width(ctx, 0.8);
-      cairo_set_source_rgb(ctx, br, br, br);
-      cairo_stroke(ctx);
-      // cairo_set_source_rgb(ctx, 0, 0, 0);
-      // cairo_move_to(ctx, x0, y0);
-      // cairo_show_text(ctx, "P0");
-      // cairo_move_to(ctx, x1, y1);
-      // cairo_show_text(ctx, "P1");
-      // cairo_move_to(ctx, x2, y2);
-      // cairo_show_text(ctx, "P2");
-      cairo_pop_group_to_source(ctx);
-      cairo_paint(ctx);
-      cairo_surface_flush(sfc);
+        // cairo_line_to(ctx, x2, y2);
+        // cairo_line_to(ctx, x0, y0);
+        float bg = 235.0 / 255.0;
+        float br = 20.0 / 255.0;
+        cairo_pattern_t *grad = cairo_pattern_create_linear(0, y0, 0, y0 + h0);
+        cairo_pattern_add_color_stop_rgb(grad, 0, 0.5, 0.5, 0);
+        cairo_pattern_add_color_stop_rgb(grad, 0.5 * h0, 0.0, 0.5, 0.5);
+        cairo_pattern_add_color_stop_rgb(grad, 0.7 * h0, 0.0, 0.5, 0.0);
+        cairo_pattern_add_color_stop_rgb(grad, 1.0 * h0, 0.5, 0.0, 0.0);
+        cairo_set_source(ctx, grad);
+        cairo_fill_preserve(ctx);
+        cairo_set_line_width(ctx, 0.8);
+        cairo_set_source_rgb(ctx, br, br, br);
+        cairo_stroke(ctx);
+        // cairo_set_source_rgb(ctx, 0, 0, 0);
+        // cairo_move_to(ctx, x0, y0);
+        // cairo_show_text(ctx, "P0");
+        // cairo_move_to(ctx, x1, y1);
+        // cairo_show_text(ctx, "P1");
+        // cairo_move_to(ctx, x2, y2);
+        // cairo_show_text(ctx, "P2");
+        cairo_pop_group_to_source(ctx);
+        cairo_paint(ctx);
+        cairo_surface_flush(sfc);
 
-      // x0 += dx0;
-      // y0 += dy0;
-      // x1 += dx1;
-      // y1 += dy1;
-      // x2 += dx2;
-      // y2 += dy2;
-      // turn(x0, x, &dx0);
-      // turn(x1, x, &dx1);
-      // turn(x2, x, &dx2);
-      // turn(y0, y, &dy0);
-      // turn(y1, y, &dy1);
-      // turn(y2, y, &dy2);
+        // x0 += dx0;
+        // y0 += dy0;
+        // x1 += dx1;
+        // y1 += dy1;
+        // x2 += dx2;
+        // y2 += dy2;
+        // turn(x0, x, &dx0);
+        // turn(x1, x, &dx1);
+        // turn(x2, x, &dx2);
+        // turn(y0, y, &dy0);
+        // turn(y1, y, &dy1);
+        // turn(y2, y, &dy2);
 
-      switch (cairo_check_event(sfc, 0))
-      {
-         case 0xff53:   // right cursor
+        switch (cairo_check_event(sfc, 0)) {
+        case 0xff53:   // right cursor
             dx0 *= 2.0;
             dy0 *= 2.0;
             break;
 
-         case 0xff51:   // left cursor
+        case 0xff51:   // left cursor
             dx0 /= 2.0;
             dy0 /= 2.0;
             break;
 
-         case 0xff1b:   // Esc
-         case -1:       // left mouse button
+        case 0xff1b:   // Esc
+        case -1:       // left mouse button
             running = 0;
             break;
-      }
+        }
 
-      nanosleep(&ts, NULL);
-   }
+        nanosleep(&ts, NULL);
+    }
 
-   cairo_destroy(ctx);
-   cairo_close_x11_surface(sfc);
+    cairo_destroy(ctx);
+    cairo_close_x11_surface(sfc);
 
-   return 0;
+    return 0;
 }
 

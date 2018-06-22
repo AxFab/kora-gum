@@ -21,8 +21,8 @@
 #include <kora/css.h>
 
 /* Condensed algorithm: aboslute position */
-static void gum_layout_absolute_part(struct GUM_absolruler* pos, int minimum,
-        int container, short dpi, float dsp, int *pPos, int *pSz)
+static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
+                                     int container, short dpi, float dsp, int *pPos, int *pSz)
 {
     short min = MAX(minimum, CSS_GET_UNIT(pos->min, pos->munit, dpi, dsp, container));
     short size = CSS_GET_UNIT(pos->size, pos->sunit, dpi, dsp, container);
@@ -257,11 +257,13 @@ static void gum_layout_grid(GUM_cell *cell, GUM_layout *layout, int flags)
     layout->minsize = gum_layout_grid_minsize;
 }
 
-void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout) {
+void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout)
+{
     gum_layout_grid(cell, layout, GUM_GRP_VERTICAL);
 }
 
-void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout) {
+void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout)
+{
     gum_layout_grid(cell, layout, 0);
 }
 

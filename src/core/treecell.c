@@ -25,14 +25,14 @@
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
 {
     if (x < cell->box.x || y < cell->box.y ||
-            x >= cell->box.x + cell->box.w || y >= cell->box.y + cell->box.h)
+        x >= cell->box.x + cell->box.w || y >= cell->box.y + cell->box.h)
         return NULL;
 
     GUM_cell *child, *hit;
     for (child = cell->last; child; child = child->previous) {
         hit = gum_cell_hit_ex(child,
-            x - cell->box.cx + cell->box.sx,
-            y - cell->box.cy + cell->box.sy, mask);
+                              x - cell->box.cx + cell->box.sx,
+                              y - cell->box.cy + cell->box.sy, mask);
         if (hit)
             return hit;
     }
@@ -68,13 +68,11 @@ void gum_paint(GUM_window *win, GUM_cell *cell)
             }
 
             gum_pop_clip(win, &cell->box);
-            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) { // TODO
+            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y))   // TODO
                 gum_draw_scrolls(win, cell);
-            }
         }
-        if (cell) {
+        if (cell)
             cell = cell->next;
-        }
     }
 }
 
@@ -117,12 +115,10 @@ GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
             continue;
         }
 
-        while (!cell->next) {
+        while (!cell->next)
             cell = cell->parent;
-        }
-        if (cell) {
+        if (cell)
             cell = cell->next;
-        }
     }
     return NULL;
 }
@@ -174,7 +170,7 @@ void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
 
 static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
 {
-    GUM_cell *cpy = (GUM_cell*)calloc(sizeof(GUM_cell), 1);
+    GUM_cell *cpy = (GUM_cell *)calloc(sizeof(GUM_cell), 1);
     memcpy(cpy, cell, sizeof(GUM_cell));
     cpy->id = cell->id ? strdup(cell->id) : NULL;
     cpy->text = cell->text ? strdup(cell->text) : NULL;
@@ -195,9 +191,8 @@ GUM_cell *gum_cell_copy(GUM_cell *cell)
     GUM_cell *cursor = NULL;
     while (cell) {
         GUM_cell *cpy = gum_cell_copy_one(cell);
-        if (cursor) {
+        if (cursor)
             gum_cell_pushback(cursor, cpy);
-        }
         else
             root = cpy;
         cursor = cpy;
@@ -214,9 +209,8 @@ GUM_cell *gum_cell_copy(GUM_cell *cell)
                 return root;
             cursor = cursor->parent;
         }
-        if (cell) {
+        if (cell)
             cell = cell->next;
-        }
     }
     return root;
 }

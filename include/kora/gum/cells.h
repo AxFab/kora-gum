@@ -26,8 +26,7 @@
 # define main app_main
 #endif
 
-struct GUM_absolruler
-{
+struct GUM_absolruler {
     int before, after, center, size, min;
     char bunit, aunit, cunit, sunit, munit;
 };
@@ -37,8 +36,7 @@ struct GUM_sideruler {
     char lunit, runit, tunit, bunit;
 };
 
-struct GUM_box
-{
+struct GUM_box {
     int x, y, w, h;
     int minw, minh;
     int cx, cy, cw, ch;
@@ -49,8 +47,7 @@ struct GUM_box
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-struct GUM_skin
-{
+struct GUM_skin {
     unsigned int bgcolor;
     unsigned int txcolor;
     unsigned int brcolor;
@@ -93,8 +90,7 @@ enum {
     GUM_CELL_SUBSTYLE = (1 << 7),
 };
 
-struct GUM_cell
-{
+struct GUM_cell {
     struct GUM_absolruler rulerx;
     struct GUM_absolruler rulery;
     struct GUM_sideruler padding;
@@ -129,11 +125,11 @@ struct GUM_cell
     void (*layout)(GUM_cell *cell, GUM_layout *layout);
 };
 
-struct GUM_layout
-{
+struct GUM_layout {
     // int padleft, padright, padtop, padbottom;
     // int pad_width, pad_height;
-    int width; int height;
+    int width;
+    int height;
     int dpi;
     float dsp;
     int flags;
@@ -165,8 +161,8 @@ void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout);
 GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins);
 
 GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename);
-GUM_skin* gum_skin_property_setter(GUM_skin *skin, const char* property, const char* value);
-GUM_skin *gum_style_find(GUM_skins *skins, const char* name);
+GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value);
+GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 
 
 

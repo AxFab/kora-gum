@@ -31,7 +31,7 @@ GUM_cell *view;
 GUM_cell *icon;
 GUM_cell *ico_txt;
 GUM_cell *ico_img;
-GUM_event_manager * evm;
+GUM_event_manager *evm;
 GUM_cell *root;
 
 void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event);
@@ -88,9 +88,8 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
             free(ico_img->img_src);
         if (en->d_type == 4)
             ico_img->img_src = strdup("./icons/DIR.png");
-        else {
+        else
             ico_img->img_src = strdup("./icons/TXT.png");
-        }
         // fprintf(stderr, "Dirent %s\n", en->d_name);
         GUM_cell *cpy = gum_cell_copy(icon);
         gum_cell_pushback(view, cpy);
@@ -103,7 +102,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
-int main ()
+int main()
 {
     int width = 680;
     int height = width * 10 / 16; // 425
@@ -149,8 +148,8 @@ int main ()
     on_refresh(evm, NULL, 0);
 
     fprintf(stderr, "View: %dx%d  - zone %dx%d\n",
-        view->box.w, view->box.h,
-        view->box.mincw, view->box.minch);
+            view->box.w, view->box.h,
+            view->box.mincw, view->box.minch);
     // view->box.sy = 20;
 
     gum_event_loop(evm);

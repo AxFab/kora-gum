@@ -25,23 +25,22 @@
 #include <stdio.h>
 #include <string.h>
 
-struct GUM_event_manager
-{
-  int mouse_x, mouse_y;
-  int width, height;
-  GUM_cell *root;
-  GUM_window *win;
+struct GUM_event_manager {
+    int mouse_x, mouse_y;
+    int width, height;
+    GUM_cell *root;
+    GUM_window *win;
 
-  HMP_map actions;
+    HMP_map actions;
 
-  GUM_cell *over;
-  GUM_cell *down;
-  GUM_cell *focus;
-  GUM_cell *click;
-  GUM_cell *edit;
+    GUM_cell *over;
+    GUM_cell *down;
+    GUM_cell *focus;
+    GUM_cell *click;
+    GUM_cell *edit;
 
-  int click_cnt;
-  int spec_btn;
+    int click_cnt;
+    int spec_btn;
 };
 
 
@@ -145,13 +144,13 @@ static void gum_event_left_release(GUM_event_manager *evm)
     /* Translate into click */
     if (target && evm->down == target) {
         if (evm->click != target || evm->click_cnt >= 3 || 0/* TODO - TIME OFF */) {
-        evm->click = target;
-        evm->click_cnt = 0;
+            evm->click = target;
+            evm->click_cnt = 0;
         }
 
         // printf("Click %d, %p\n", evm->click_cnt+1, target);
         gum_emit_event(evm, target, evm->click_cnt == 0 ? GUM_EV_CLICK :
-        (evm->click_cnt == 1 ? GUM_EV_DOUBLECLICK : GUM_EV_TRIPLECLICK));
+                       (evm->click_cnt == 1 ? GUM_EV_DOUBLECLICK : GUM_EV_TRIPLECLICK));
         evm->click_cnt++;
     }
     /* Invalid down */
@@ -193,7 +192,7 @@ static void gum_event_wheel_up(GUM_event_manager *evm)
 {
     GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
     if (container != NULL) {
-    // fprintf(stderr, "wheel_up %s\n", evm->over->id);
+        // fprintf(stderr, "wheel_up %s\n", evm->over->id);
         if (container->state & GUM_CELL_OVERFLOW_Y) {
             container->box.sy = MAX(0, container->box.sy - 20);
             gum_invalid_cell(container, evm->win);
@@ -208,7 +207,7 @@ static void gum_event_wheel_down(GUM_event_manager *evm)
 {
     GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
     if (container != NULL) {
-    // fprintf(stderr, "wheel_down %s\n", evm->over->id);
+        // fprintf(stderr, "wheel_down %s\n", evm->over->id);
         if (container->state & GUM_CELL_OVERFLOW_Y) {
             int st = container->box.ch_h - container->box.ch;
             // fprintf(stderr, "Down : %d - %d - %d\n", evm->over->box.sy, evm->over->box.minch, evm->over->box.ch);
@@ -242,12 +241,11 @@ static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
         if (evm->edit->text_pen == 0)
             return;
 
-        memcpy(buf, evm->edit->text, evm->edit->text_pen-1);
-        memcpy(&buf[evm->edit->text_pen-1], &evm->edit->text[evm->edit->text_pen], lg - evm->edit->text_pen);
+        memcpy(buf, evm->edit->text, evm->edit->text_pen - 1);
+        memcpy(&buf[evm->edit->text_pen - 1], &evm->edit->text[evm->edit->text_pen], lg - evm->edit->text_pen);
         evm->edit->text_pen--;
-    } else {
+    } else
         return;
-    }
 
     free(evm->edit->text);
     evm->edit->text = strdup(buf);
@@ -269,7 +267,7 @@ void gum_refresh(GUM_event_manager *evm)
 
 GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
 {
-    GUM_event_manager *evm = (GUM_event_manager*)calloc(1, sizeof(GUM_event_manager));
+    GUM_event_manager *evm = (GUM_event_manager *)calloc(1, sizeof(GUM_event_manager));
     evm->root = root;
     evm->win = win;
     hmp_init(&evm->actions, 16);

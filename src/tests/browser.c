@@ -103,7 +103,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
-int S_main ()
+int main ()
 {
     int width = 680;
     int height = width * 10 / 16; // 425

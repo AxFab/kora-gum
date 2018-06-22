@@ -29,4 +29,5 @@
 !vs/*.sln
 !vs/**/*.vcxproj
 !vs/**/*.vcxproj.*
+!vs/include/**/*.h
 

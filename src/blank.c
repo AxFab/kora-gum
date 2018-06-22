@@ -55,11 +55,11 @@ void gum_reset_clip(GUM_window *win)
 {
 }
 
-void gum_push_clip(GUM_window *win, struct GUM_box *box)
+void gum_push_clip(GUM_window *win, GUM_box *box)
 {
 }
 
-void gum_pop_clip(GUM_window *win, struct GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box)
 {
 }
 

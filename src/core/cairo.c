@@ -37,7 +37,7 @@ typedef struct xinfo {
     XImage *i;
 } xinfo_t;
 
-struct GUM_image {
+struct GUM_window {
 	cairo_t *ctx;
 	cairo_surface_t *srf;
 };
@@ -100,7 +100,7 @@ GUM_window *gum_create_surface(int width, int height)
 
     sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), width, height);
     cairo_xlib_surface_set_size(sfc, width, height);
-    
+
     GUM_window *win = (GUM_window*)malloc(sizeof(GUM_window));
     win->srf = sfc;
     win->ctx = cairo_create(sfc);
@@ -480,10 +480,10 @@ void gum_end_paint(GUM_window *win)
 {
     cairo_pop_group_to_source(win->ctx);
     cairo_paint(win->ctx);
-    cairo_surface_flush(evm->win);
+    cairo_surface_flush(win->srf);
 }
 
-void gum_push_clip(GUM_window *win, struct GUM_box *box)
+void gum_push_clip(GUM_window *win, GUM_box *box)
 {
 	cairo_save(win->ctx);
     cairo_new_path(win->ctx);
@@ -492,7 +492,7 @@ void gum_push_clip(GUM_window *win, struct GUM_box *box)
     cairo_translate(win->ctx, box->cx - box->sx, box->cy - box->sy);
 }
 
-void gum_pop_clip(GUM_window *win, struct GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box)
 {
     cairo_translate(win->ctx, box->sx - box->cx, box->sy - box->cy);
     cairo_restore(win->ctx);

@@ -22,6 +22,10 @@
 
 #include <kora/gum/core.h>
 
+#ifdef WIN32
+# define main app_main
+#endif
+
 struct GUM_absolruler
 {
     int before, after, center, size, min;
@@ -99,7 +103,7 @@ struct GUM_cell
     // struct GUM_sideruler margin;
 
     char *id; // Identifier of the cell
-    struct GUM_box box; // Boxing compiled attribute (size, client, min...)
+    GUM_box box; // Boxing compiled attribute (size, client, min...)
     GUM_skin *skin;
     GUM_skin *skin_over;
     GUM_skin *skin_down;

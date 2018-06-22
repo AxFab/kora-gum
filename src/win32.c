@@ -20,7 +20,7 @@
 #include <kora/gum/core.h>
 #include <kora/gum/cells.h>
 #include <kora/gum/events.h>
-#include <windows.h>  
+#include <windows.h>
 #include <tchar.h>
 
 struct GUM_window {
@@ -34,10 +34,13 @@ static TCHAR szTitle[] = _T("Application");
 static WNDCLASSEX wcex;
 HINSTANCE appInstance;
 
+int app_main(int argc, char **argv);
+
 LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
+
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -59,7 +62,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
         return 1;
     }
 
-    return S_main();
+    return app_main(0, NULL);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -169,13 +172,13 @@ void gum_end_paint(GUM_window *win)
 {
 }
 
-void gum_push_clip(GUM_window *win, struct GUM_box *box)
+void gum_push_clip(GUM_window *win, GUM_box *box)
 {
     win->x += box->cx - box->sx;
     win->y += box->cy - box->sy;
 }
 
-void gum_pop_clip(GUM_window *win, struct GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box)
 {
     win->x -= box->cx - box->sx;
     win->y -= box->cy - box->sy;

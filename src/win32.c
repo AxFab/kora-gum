@@ -70,21 +70,23 @@ HFONT  hFont;
 
 GUM_window *gum_create_surface(int width, int height)
 {
-    HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, width + (16), height + (39), NULL, NULL, appInstance, NULL);
+    HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, width + (16), height + (39), NULL, NULL,
+                             appInstance, NULL);
     if (!hwnd) {
         DWORD err = GetLastError();
         MessageBox(NULL, _T("Can't create the window!"), _T("Win32 Guided Tour"), 0);
         return NULL;
     }
 
-    GUM_window *win = (GUM_window*)malloc(sizeof(GUM_window));
+    GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
     win->hwnd = hwnd;
     win->hdc = GetDC(win->hwnd);
     //RECT rcClient;
     //GetClientRect(hwnd, &rcClient);
 
     int sz = MulDiv(10, GetDeviceCaps(win->hdc, LOGPIXELSY), 72);
-    hFont = CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
+    hFont = CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                       VARIABLE_PITCH, TEXT("Arial"));
     return win;
 }
 
@@ -279,15 +281,15 @@ struct dirent *readdir_r(void *dir, struct dirent *en)
 
 struct dirent readdir_en;
 
-struct dirent * readdir(void *dir)
+struct dirent *readdir(void *dir)
 {
     return readdir_r(dir, &readdir_en);
 }
 
 const char *memrchr(const void *buf, int byte, size_t len)
 {
-    const char *ptr = (const char*)buf + len;
-    while (ptr-- > (const char*)buf)
+    const char *ptr = (const char *)buf + len;
+    while (ptr-- > (const char *)buf)
         if (*ptr == byte)
             return ptr;
     return NULL;

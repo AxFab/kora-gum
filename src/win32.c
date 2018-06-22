@@ -21,6 +21,7 @@
 #include <kora/gum/cells.h>
 #include <kora/gum/events.h>
 #include <windows.h>
+#include <windowsx.h>
 #include <tchar.h>
 
 struct GUM_window {
@@ -41,7 +42,6 @@ LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
     appInstance = hInstance;
@@ -58,7 +58,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
     wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
     if (!RegisterClassEx(&wcex)) {
-        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Win32 Guided Tour"), NULL);
+        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Win32 Guided Tour"), 0);
         return 1;
     }
 
@@ -66,13 +66,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+HFONT  hFont;
 
 GUM_window *gum_create_surface(int width, int height)
 {
     HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, width + (16), height + (39), NULL, NULL, appInstance, NULL);
     if (!hwnd) {
         DWORD err = GetLastError();
-        MessageBox(NULL, _T("Can't create the window!"), _T("Win32 Guided Tour"), NULL);
+        MessageBox(NULL, _T("Can't create the window!"), _T("Win32 Guided Tour"), 0);
         return NULL;
     }
 
@@ -81,6 +82,9 @@ GUM_window *gum_create_surface(int width, int height)
     win->hdc = GetDC(win->hwnd);
     //RECT rcClient;
     //GetClientRect(hwnd, &rcClient);
+
+    int sz = MulDiv(10, GetDeviceCaps(win->hdc, LOGPIXELSY), 72);
+    hFont = CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Arial"));
     return win;
 }
 
@@ -89,7 +93,6 @@ void gum_destroy_surface(GUM_window *win)
     ReleaseDC(win->hwnd, win->hdc);
 }
 
-int last;
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
@@ -100,7 +103,6 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         return -1;
     }
 
-    last = msg.message;
     switch (msg.message) {
     case 0:
     case WM_QUIT:
@@ -111,9 +113,13 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     case WM_PAINT:
         event->type = GUM_EV_EXPOSE;
         break;
+    case WM_NCMOUSEMOVE:
+        event->type = GUM_EV_MOTION;
+        event->param0 = GET_X_LPARAM(msg.lParam);
+        event->param1 = GET_Y_LPARAM(msg.lParam);
+        break;
     case WM_TIMER:
     case 0x60:
-    case WM_NCMOUSEMOVE:
     case WM_NCLBUTTONDOWN:
     case 799:
     case 1847:
@@ -121,6 +127,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     case 512:
     case 257:
     case 49303:
+    case 49305:
     case 260:
     case 674:
         event->type = -1;
@@ -134,9 +141,9 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     /*
     for (int i = 0; i < 1000; i++)
     {
-        int x = rand() % 300;
-        int y = rand() % 300;
-        SetPixel(win->hdc, x, y, RGB(rand() % 255, 0, 0));
+    int x = rand() % 300;
+    int y = rand() % 300;
+    SetPixel(win->hdc, x, y, RGB(rand() % 255, 0, 0));
     }
     */
     return 0;
@@ -146,6 +153,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
+    PostMessage(win->hwnd, WM_PAINT, 0, 0);
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)
@@ -208,17 +216,39 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
     }
 
     if (skin->brcolor >= MIN_ALPHA) {
-        SetDCPenColor(win->hdc, COLOR_REF(skin->brcolor));
-        SetDCBrushColor(win->hdc, COLOR_REF(skin->brcolor));
-        // HBRUSH brush = CreateSolidBrush(COLOR_REF(skin->brcolor));
-        // SetDCBrushColor(win->hdc, brush);
-        Rectangle(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.x + cell->box.w + win->x, cell->box.y + cell->box.h + win->y);
+        if (skin->grcolor >= MIN_ALPHA) {
+
+        } else {
+            SetDCPenColor(win->hdc, COLOR_REF(skin->brcolor));
+            SetDCBrushColor(win->hdc, COLOR_REF(skin->brcolor));
+            // HBRUSH brush = CreateSolidBrush(COLOR_REF(skin->brcolor));
+            // SetDCBrushColor(win->hdc, brush);
+            Rectangle(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.x + cell->box.w + win->x, cell->box.y + cell->box.h + win->y);
+        }
     }
 
     if (cell->text) {
         TCHAR szBuf[64];
         mbstowcs(szBuf, cell->text, 64);
-        DrawText(win->hdc, szBuf, wcslen(szBuf), &r, 0);
+        int alg = 0;
+        if (skin->align == 2)
+            alg |= DT_RIGHT;
+        else if (skin->align == 0)
+            alg |= DT_CENTER;
+        else
+            alg |= DT_LEFT;
+
+
+        if (skin->valign == 2)
+            alg |= DT_BOTTOM;
+        else if (skin->valign == 0)
+            alg |= DT_VCENTER;
+        else
+            alg |= DT_TOP;
+
+        SelectObject(win->hdc, hFont);
+        SetTextColor(win->hdc, COLOR_REF(skin->txcolor));
+        DrawText(win->hdc, szBuf, wcslen(szBuf), &r, alg);
     }
 }
 

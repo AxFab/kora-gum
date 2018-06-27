@@ -122,3 +122,20 @@ GUM_skin *gum_style_find(GUM_skins *skins, const char *name)
     GUM_skin *skin = hmp_get(&skins->map, name, lg);
     return skin;
 }
+
+unsigned gum_mix(unsigned src, unsigned dest, float mx)
+{
+    unsigned char rs = (src & 0xFF0000) >> 16;
+    unsigned char rd = (dest & 0xFF0000) >> 16;
+
+    unsigned char gs = (src & 0xFF00) >> 8;
+    unsigned char gd = (dest & 0xFF00) >> 8;
+
+    unsigned char bs = (src & 0xFF);
+    unsigned char bd = (dest & 0xFF);
+
+    unsigned char r = (unsigned char)(rs + (rd - rs) * mx);
+    unsigned char g = (unsigned char)(gs + (gd - gs) * mx);
+    unsigned char b = (unsigned char)(bs + (bd - bs) * mx);
+    return r << 16 | g << 8 | b;
+}

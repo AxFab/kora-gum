@@ -125,7 +125,6 @@
     <ClCompile Include="..\..\src\win32.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\dirent.h" />
     <ClInclude Include="..\..\include\kora\css.h" />
     <ClInclude Include="..\..\include\kora\gum\cells.h" />
     <ClInclude Include="..\..\include\kora\gum\core.h" />
@@ -133,6 +132,7 @@
     <ClInclude Include="..\..\include\kora\hmap.h" />
     <ClInclude Include="..\..\include\kora\keys.h" />
     <ClInclude Include="..\..\include\kora\xml.h" />
+    <ClInclude Include="..\include\dirent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

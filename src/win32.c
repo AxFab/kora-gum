@@ -28,6 +28,7 @@ struct GUM_window {
     HWND hwnd;
     HDC hdc;
     int x, y;
+    PAINTSTRUCT ps;
 };
 
 static TCHAR szWindowClass[] = _T("gum");
@@ -42,7 +43,7 @@ LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+void gum_win32_setup(_In_ HINSTANCE hInstance)
 {
     appInstance = hInstance;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -59,11 +60,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
     wcex.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
     if (!RegisterClassEx(&wcex)) {
         MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Win32 Guided Tour"), 0);
-        return 1;
+        exit(-1);
     }
-
-    return app_main(0, NULL);
 }
+
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 HFONT  hFont;
@@ -105,6 +105,8 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         return -1;
     }
 
+    event->param0 = 0;
+    event->param1 = 0;
     switch (msg.message) {
     case 0:
     case WM_QUIT:
@@ -114,11 +116,42 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         break;
     case WM_PAINT:
         event->type = GUM_EV_EXPOSE;
-        break;
+        return 0;
+    case WM_ERASEBKGND:
+        return 0;
     case WM_NCMOUSEMOVE:
+        event->type = GUM_EV_MOTION;
+        event->param0 = GET_X_LPARAM(msg.lParam) - 8;
+        event->param1 = GET_Y_LPARAM(msg.lParam) - 16;
+        break;
+    case WM_MOUSEMOVE:
         event->type = GUM_EV_MOTION;
         event->param0 = GET_X_LPARAM(msg.lParam);
         event->param1 = GET_Y_LPARAM(msg.lParam);
+        break;
+    case WM_LBUTTONDOWN:
+        event->type = GUM_EV_BTN_PRESS;
+        event->param0 = 1;
+        break;
+    case WM_LBUTTONUP:
+        event->type = GUM_EV_BTN_RELEASE;
+        event->param0 = 1;
+        break;
+    case WM_MBUTTONDOWN:
+        event->type = GUM_EV_BTN_PRESS;
+        event->param0 = 2;
+        break;
+    case WM_MBUTTONUP:
+        event->type = GUM_EV_BTN_RELEASE;
+        event->param0 = 2;
+        break;
+    case WM_RBUTTONDOWN:
+        event->type = GUM_EV_BTN_PRESS;
+        event->param0 = 3;
+        break;
+    case WM_RBUTTONUP:
+        event->type = GUM_EV_BTN_RELEASE;
+        event->param0 = 3;
         break;
     case WM_TIMER:
     case 0x60:
@@ -126,7 +159,6 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     case 799:
     case 1847:
     case 1848:
-    case 512:
     case 257:
     case 49303:
     case 49305:
@@ -155,7 +187,12 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
-    PostMessage(win->hwnd, WM_PAINT, 0, 0);
+    RECT r;
+    r.left = x;
+    r.right = x + w;
+    r.top = y;
+    r.bottom = y + h;
+    InvalidateRect(win->hwnd, &r, TRUE);
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)
@@ -176,10 +213,12 @@ void gum_text_size(const char *text, int *w, int *h)
 void gum_start_paint(GUM_window *win)
 {
     win->x = win->y = 0;
+    win->hdc = BeginPaint(win->hwnd, &win->ps);
 }
 
 void gum_end_paint(GUM_window *win)
 {
+    EndPaint(win->hwnd, &win->ps);
 }
 
 void gum_push_clip(GUM_window *win, GUM_box *box)
@@ -205,6 +244,8 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
         cell->gradient = NULL;
         cell->cachedSkin = skin;
     }
+    if (cell->image == NULL && cell->img_src != NULL)
+        cell->image = gum_image(cell->img_src);
 
     RECT r;
     r.left = cell->box.x + win->x;
@@ -212,21 +253,37 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
     r.right = cell->box.x + cell->box.w + win->x;
     r.bottom = cell->box.y + cell->box.h + win->y;
     SetBkMode(win->hdc, TRANSPARENT);
-    if (skin->bgcolor >= MIN_ALPHA) {
+    if (cell->image != NULL) {
+        BITMAP bm;
+        HBITMAP bmp = (HBITMAP)cell->image;
+        HDC hdcMem = CreateCompatibleDC(win->hdc);
+        HBITMAP hbmOld = SelectObject(hdcMem, bmp);
+        GetObject(bmp, sizeof(bm), &bm);
+        StretchBlt(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.w, cell->box.h, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
+
+    } else if (skin->bgcolor >= MIN_ALPHA && skin->grcolor >= MIN_ALPHA) {
+        for (int i = 0; i < cell->box.h; ++i) {
+            r.top = cell->box.y + win->y + i;
+            r.bottom = r.top + 1;
+            unsigned color = gum_mix(skin->grcolor, skin->bgcolor, (float)i / cell->box.h);
+            HBRUSH brush = CreateSolidBrush(COLOR_REF(color));
+            FillRect(win->hdc, &r, brush);
+            DeleteObject(brush);
+        }
+    } else if (skin->bgcolor >= MIN_ALPHA) {
         HBRUSH brush = CreateSolidBrush(COLOR_REF(skin->bgcolor));
         FillRect(win->hdc, &r, brush);
+        DeleteObject(brush);
     }
 
     if (skin->brcolor >= MIN_ALPHA) {
-        if (skin->grcolor >= MIN_ALPHA) {
-
-        } else {
-            SetDCPenColor(win->hdc, COLOR_REF(skin->brcolor));
-            SetDCBrushColor(win->hdc, COLOR_REF(skin->brcolor));
-            // HBRUSH brush = CreateSolidBrush(COLOR_REF(skin->brcolor));
-            // SetDCBrushColor(win->hdc, brush);
-            Rectangle(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.x + cell->box.w + win->x, cell->box.y + cell->box.h + win->y);
-        }
+        HPEN pen = CreatePen(PS_SOLID, 1, COLOR_REF(skin->brcolor));
+        SelectObject(win->hdc, GetStockObject(NULL_BRUSH));
+        SelectObject(win->hdc, pen);
+        Rectangle(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.x + cell->box.w + win->x, cell->box.y + cell->box.h + win->y);
+        DeleteObject(pen);
     }
 
     if (cell->text) {
@@ -258,33 +315,18 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 {
 }
 
+void *gum_load_image(const char *name)
+{
+    TCHAR szBuf[64];
+    mbstowcs(szBuf, name, 64);
+    for (int i = 0; i < 64; ++i)
+        if (szBuf[i] == '/')
+            szBuf[i] = '\\';
+    HBITMAP bmp = (HBITMAP)LoadImage(NULL, szBuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    return bmp;
+}
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-
-#include <dirent.h>
-
-
-void *opendir(const char *path)
-{
-    return NULL;
-}
-
-int closedir(void *dir)
-{
-    return 0;
-}
-
-struct dirent *readdir_r(void *dir, struct dirent *en)
-{
-    return en;
-}
-
-struct dirent readdir_en;
-
-struct dirent *readdir(void *dir)
-{
-    return readdir_r(dir, &readdir_en);
-}
 
 const char *memrchr(const void *buf, int byte, size_t len)
 {
@@ -295,3 +337,163 @@ const char *memrchr(const void *buf, int byte, size_t len)
     return NULL;
 }
 
+
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */ 
+#if 0
+// Creates a stream object initialized with the data from an executable resource.
+IStream * CreateStreamOnResource(LPCTSTR lpName, LPCTSTR lpType)
+{
+    // initialize return value
+    IStream * ipStream = NULL;
+
+    // find the resource
+    HRSRC hrsrc = FindResource(NULL, lpName, lpType);
+    if (hrsrc == NULL)
+        goto Return;
+
+    // load the resource
+    DWORD dwResourceSize = SizeofResource(NULL, hrsrc);
+    HGLOBAL hglbImage = LoadResource(NULL, hrsrc);
+    if (hglbImage == NULL)
+        goto Return;
+
+    // lock the resource, getting a pointer to its data
+    LPVOID pvSourceResourceData = LockResource(hglbImage);
+    if (pvSourceResourceData == NULL)
+        goto Return;
+
+    // allocate memory to hold the resource data
+    HGLOBAL hgblResourceData = GlobalAlloc(GMEM_MOVEABLE, dwResourceSize);
+    if (hgblResourceData == NULL)
+        goto Return;
+
+    // get a pointer to the allocated memory
+    LPVOID pvResourceData = GlobalLock(hgblResourceData);
+    if (pvResourceData == NULL)
+        goto FreeData;
+
+    // copy the data from the resource to the new memory block
+    CopyMemory(pvResourceData, pvSourceResourceData, dwResourceSize);
+    GlobalUnlock(hgblResourceData);
+
+    // create a stream on the HGLOBAL containing the data
+    if (SUCCEEDED(CreateStreamOnHGlobal(hgblResourceData, TRUE, &ipStream)))
+        goto Return;
+
+FreeData:
+    // couldn't create stream; free the memory
+    GlobalFree(hgblResourceData);
+
+Return:
+    // no need to unlock or free the resource
+    return ipStream;
+}
+
+
+// Loads a PNG image from the specified stream (using Windows Imaging Component).
+IWICBitmapSource * LoadBitmapFromStream(IStream * ipImageStream)
+{
+    // initialize return value
+    IWICBitmapSource * ipBitmap = NULL;
+
+    // load WIC's PNG decoder
+    IWICBitmapDecoder * ipDecoder = NULL;
+    if (FAILED(CoCreateInstance(CLSID_WICPngDecoder, NULL, CLSCTX_INPROC_SERVER, __uuidof(ipDecoder), reinterpret_cast<void**>(&ipDecoder))))
+        goto Return;
+
+    // load the PNG
+    if (FAILED(ipDecoder->Initialize(ipImageStream, WICDecodeMetadataCacheOnLoad)))
+        goto ReleaseDecoder;
+
+    // check for the presence of the first frame in the bitmap
+    UINT nFrameCount = 0;
+    if (FAILED(ipDecoder->GetFrameCount(&nFrameCount)) || nFrameCount != 1)
+        goto ReleaseDecoder;
+
+    // load the first frame (i.e., the image)
+    IWICBitmapFrameDecode * ipFrame = NULL;
+    if (FAILED(ipDecoder->GetFrame(0, &ipFrame)))
+        goto ReleaseDecoder;
+
+    // convert the image to 32bpp BGRA format with pre-multiplied alpha
+    //   (it may not be stored in that format natively in the PNG resource,
+    //   but we need this format to create the DIB to use on-screen)
+    WICConvertBitmapSource(GUID_WICPixelFormat32bppPBGRA, ipFrame, &ipBitmap);
+    ipFrame->Release();
+
+ReleaseDecoder:
+    ipDecoder->Release();
+Return:
+    return ipBitmap;
+}
+
+// Creates a 32 - bit DIB from the specified WIC bitmap.
+HBITMAP CreateHBITMAP(IWICBitmapSource * ipBitmap)
+{
+    // initialize return value
+    HBITMAP hbmp = NULL;
+
+    // get image attributes and check for valid image
+    UINT width = 0;
+    UINT height = 0;
+    if (FAILED(ipBitmap->GetSize(&width, &height)) || width == 0 || height == 0)
+        goto Return;
+
+    // prepare structure giving bitmap information (negative height indicates a top-down DIB)
+    BITMAPINFO bminfo;
+    ZeroMemory(&bminfo, sizeof(bminfo));
+    bminfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bminfo.bmiHeader.biWidth = width;
+    bminfo.bmiHeader.biHeight = -((LONG)height);
+    bminfo.bmiHeader.biPlanes = 1;
+    bminfo.bmiHeader.biBitCount = 32;
+    bminfo.bmiHeader.biCompression = BI_RGB;
+
+    // create a DIB section that can hold the image
+    void * pvImageBits = NULL;
+    HDC hdcScreen = GetDC(NULL);
+    hbmp = CreateDIBSection(hdcScreen, &bminfo, DIB_RGB_COLORS, &pvImageBits, NULL, 0);
+    ReleaseDC(NULL, hdcScreen);
+    if (hbmp == NULL)
+        goto Return;
+
+    // extract the image into the HBITMAP
+    const UINT cbStride = width * 4;
+    const UINT cbImage = cbStride * height;
+    if (FAILED(ipBitmap->CopyPixels(NULL, cbStride, cbImage, static_cast<BYTE *>(pvImageBits))))
+    {
+        // couldn't extract image; delete HBITMAP
+        DeleteObject(hbmp);
+        hbmp = NULL;
+    }
+
+Return:
+    return hbmp;
+}
+
+// Loads the PNG containing the splash image into a HBITMAP.
+HBITMAP LoadPNGImage(TCHAR *file)
+{
+    HBITMAP hbmpSplash = NULL;
+
+    // load the PNG image data into a stream
+    IStream * ipImageStream = CreateStreamOnResource(file, _T("PNG"));
+    if (ipImageStream == NULL)
+        goto Return;
+
+    // load the bitmap with WIC
+    IWICBitmapSource * ipBitmap = LoadBitmapFromStream(ipImageStream);
+    if (ipBitmap == NULL)
+        goto ReleaseStream;
+
+    // create a HBITMAP containing the image
+    hbmpSplash = CreateHBITMAP(ipBitmap);
+    ipBitmap->Release();
+
+ReleaseStream:
+    ipImageStream->Release();
+Return:
+    return hbmpSplash;
+}
+#endif

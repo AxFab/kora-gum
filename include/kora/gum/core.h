@@ -43,7 +43,9 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout);
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h);
 
 void gum_text_size(const char *text, int *w, int *h);
+void *gum_image(const char *name);
 void *gum_load_image(const char *name);
+unsigned gum_mix(unsigned src, unsigned dest, float mx);
 
 void gum_start_paint(GUM_window *win);
 void gum_end_paint(GUM_window *win);

@@ -86,7 +86,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 
         if (ico_img->img_src)
             free(ico_img->img_src);
-        if (en->d_type == 4)
+        if (S_ISDIR(en->d_type))
             ico_img->img_src = strdup("./icons/DIR.png");
         else
             ico_img->img_src = strdup("./icons/TXT.png");
@@ -101,8 +101,19 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+#if defined(WIN32) || defined(_WIN32)
+#define main app_main 
+int app_main(int argc, char **argv, char**env);
+extern void gum_win32_setup(_In_ HINSTANCE hInstance);
+int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+{
+    gum_win32_setup(hInstance);
+    return app_main(0, NULL, NULL);
+}
+#endif
+
 /* Graphical User-interface Module */
-int main()
+int main(int argc, char **argv, char**env)
 {
     int width = 680;
     int height = width * 10 / 16; // 425
@@ -143,8 +154,7 @@ int main()
     gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
     gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
 
-
-    strcpy(current_path, "/home/fabien");
+    strcpy(current_path, "C:/Users/Fabien");
     on_refresh(evm, NULL, 0);
 
     fprintf(stderr, "View: %dx%d  - zone %dx%d\n",

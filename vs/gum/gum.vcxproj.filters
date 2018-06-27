@@ -80,7 +80,7 @@
     <ClInclude Include="..\..\include\kora\gum\events.h">
       <Filter>Fichiers d%27en-tête\kora\gum</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\dirent.h">
+    <ClInclude Include="..\include\dirent.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

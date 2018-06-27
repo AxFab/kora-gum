@@ -219,3 +219,24 @@ GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins)
 
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+#include <kora/hmap.h>
+
+HMP_map img_map;
+int is_map_init = 0;
+void *gum_image(const char *name)
+{
+    if (!is_map_init) {
+        hmp_init(&img_map, 16);
+        is_map_init = 1;
+    }
+    int lg = strlen(name);
+    void *img = hmp_get(&img_map, name, lg);
+    if (img != NULL)
+        return img;
+
+    img = gum_load_image(name);
+    if (img != NULL)
+        hmp_put(&img_map, name, lg, img);
+    return img;
+}

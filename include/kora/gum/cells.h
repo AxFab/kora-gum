@@ -22,10 +22,6 @@
 
 #include <kora/gum/core.h>
 
-#ifdef WIN32
-# define main app_main
-#endif
-
 struct GUM_absolruler {
     int before, after, center, size, min;
     char bunit, aunit, cunit, sunit, munit;

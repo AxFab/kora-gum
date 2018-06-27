@@ -505,3 +505,11 @@ void gum_resize_win(GUM_window *win, int width, int height)
     cairo_xlib_surface_set_size(win->srf, width, height);
 }
 
+
+void *gum_load_image(const char *name)
+{
+    cairo_surface_t *img = cairo_image_surface_create_from_png(name);
+    if (cairo_surface_status(img) != 0)
+        return NULL;
+    return img;
+}

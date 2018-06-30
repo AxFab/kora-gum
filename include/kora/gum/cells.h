@@ -154,9 +154,9 @@ void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout);
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 
-GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins);
+LIBAPI GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins);
 
-GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename);
+LIBAPI GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename);
 GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value);
 GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 
@@ -170,12 +170,12 @@ void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp);
 
 GUM_skin *gum_skin(GUM_cell *cell);
 void gum_invalid_cell(GUM_cell *cell, GUM_window *win);
-GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
-void gum_cell_dettach(GUM_cell *cell);
-void gum_cell_destroy_children(GUM_cell *cell);
+LIBAPI GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
+LIBAPI void gum_cell_dettach(GUM_cell *cell);
+LIBAPI void gum_cell_destroy_children(GUM_cell *cell);
 
-void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
-GUM_cell *gum_cell_copy(GUM_cell *cell);
+LIBAPI void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
+LIBAPI GUM_cell *gum_cell_copy(GUM_cell *cell);
 
 
 #endif  /* _KORA_GUM_RENDERING_H */

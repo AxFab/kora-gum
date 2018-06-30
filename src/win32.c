@@ -43,7 +43,7 @@ LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-void gum_win32_setup(_In_ HINSTANCE hInstance)
+LIBAPI void gum_win32_setup(_In_ HINSTANCE hInstance)
 {
     appInstance = hInstance;
     wcex.cbSize = sizeof(WNDCLASSEX);

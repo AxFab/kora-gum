@@ -27,7 +27,10 @@
 
 # Exceptions
 !vs/*.sln
+!vs/**/*.cs
 !vs/**/*.vcxproj
 !vs/**/*.vcxproj.*
+!vs/**/*.csproj
+!vs/**/*.csproj.*
 !vs/include/**/*.h
 

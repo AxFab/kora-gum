@@ -22,14 +22,14 @@
 
 #include <kora/gum/core.h>
 
-GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win);
-void gum_event_loop(GUM_event_manager *evm);
+LIBAPI GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win);
+LIBAPI void gum_event_loop(GUM_event_manager *evm);
 
 
 typedef void(*GUM_EventHandler)(GUM_event_manager *evm, GUM_cell *cell, int event);
 
-void gum_refresh(GUM_event_manager *evm);
-void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
+LIBAPI void gum_refresh(GUM_event_manager *evm);
+LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
 
 struct GUM_event {
     int type;

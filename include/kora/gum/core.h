@@ -22,6 +22,12 @@
 
 #include <stddef.h>
 
+#if defined(WIN32) || defined(_WIN32)
+# define LIBAPI __declspec(dllexport)
+#else
+# define LIBAPI
+#endif
+
 typedef struct GUM_cell GUM_cell;
 typedef struct GUM_box GUM_box;
 typedef struct GUM_skin GUM_skin;
@@ -33,8 +39,8 @@ typedef struct GUM_event GUM_event;
 typedef struct GUM_window GUM_window;
 
 /* Driver */
-GUM_window *gum_create_surface(int width, int height);
-void gum_destroy_surface(GUM_window *win);
+LIBAPI GUM_window *gum_create_surface(int width, int height);
+LIBAPI void gum_destroy_surface(GUM_window *win);
 
 void gum_draw_cell(GUM_window *win, GUM_cell *cell);
 void gum_draw_scrolls(GUM_window *win, GUM_cell *cell);
@@ -45,7 +51,7 @@ void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h);
 void gum_text_size(const char *text, int *w, int *h);
 void *gum_image(const char *name);
 void *gum_load_image(const char *name);
-unsigned gum_mix(unsigned src, unsigned dest, float mx);
+LIBAPI unsigned gum_mix(unsigned src, unsigned dest, float mx);
 
 void gum_start_paint(GUM_window *win);
 void gum_end_paint(GUM_window *win);

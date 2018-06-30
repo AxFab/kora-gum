@@ -51,9 +51,6 @@
     <ClCompile Include="..\..\src\core\treecell.c">
       <Filter>Fichiers sources\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\tests\browser.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\win32.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>

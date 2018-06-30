@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BD7A4598-94AE-4CAA-BF9B-D74B23898088}</ProjectGuid>
-    <RootNamespace>gum</RootNamespace>
+    <ProjectGuid>{9CA37061-B495-419C-A6A0-885BA3CA6D6C}</ProjectGuid>
+    <RootNamespace>browser</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -70,6 +70,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\..\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -78,6 +79,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;UNICODE;_UNICODE;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>gum.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,25 +117,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\core\events.c" />
-    <ClCompile Include="..\..\src\core\layout.c" />
-    <ClCompile Include="..\..\src\core\loader.c" />
-    <ClCompile Include="..\..\src\core\skins.c" />
-    <ClCompile Include="..\..\src\core\treecell.c" />
-    <ClCompile Include="..\..\src\utils\css.c" />
-    <ClCompile Include="..\..\src\utils\hmap.c" />
-    <ClCompile Include="..\..\src\utils\xml.c" />
-    <ClCompile Include="..\..\src\win32.c" />
+    <ClCompile Include="..\..\src\tests\browser.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\kora\css.h" />
-    <ClInclude Include="..\..\include\kora\gum\cells.h" />
-    <ClInclude Include="..\..\include\kora\gum\core.h" />
-    <ClInclude Include="..\..\include\kora\gum\events.h" />
-    <ClInclude Include="..\..\include\kora\hmap.h" />
-    <ClInclude Include="..\..\include\kora\keys.h" />
-    <ClInclude Include="..\..\include\kora\xml.h" />
-    <ClInclude Include="..\include\dirent.h" />
+    <None Include="..\..\resx\browser\app2.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\resx\browser\app2.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\gum\gum.vcxproj">
+      <Project>{bd7a4598-94ae-4caa-bf9b-d74b23898088}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

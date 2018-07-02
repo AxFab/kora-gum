@@ -25,6 +25,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <dirent.h>
+#if !defined(WIN32) && !defined(_WIN32)
+# include <sys/stat.h>
+#endif
+
+char *getcwd(char *buf, size_t len);
 
 char current_path[8192];
 GUM_cell *view;
@@ -154,7 +159,7 @@ int main(int argc, char **argv, char**env)
     gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
     gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
 
-    strcpy(current_path, "C:/Users/Fabien");
+    getcwd(current_path, 8192);
     on_refresh(evm, NULL, 0);
 
     fprintf(stderr, "View: %dx%d  - zone %dx%d\n",

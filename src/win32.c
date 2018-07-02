@@ -153,13 +153,27 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         event->type = GUM_EV_BTN_RELEASE;
         event->param0 = 3;
         break;
+    case WM_MOUSEWHEEL: {
+    	short delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
+        event->param0 = abs(delta);
+        event->type = delta < 0 ? GUM_EV_WHEEL_DOWN: GUM_EV_WHEEL_UP;
+        break;
+    }
+    case WM_KEYDOWN:
+        event->type = GUM_EV_KEY_PRESS;
+        event->param0 = msg.wParam;
+        // TODO - Special characters
+        break;
+    case WM_KEYUP:
+        event->type = GUM_EV_KEY_UP;
+        event->param0 = msg.wParam;
+        break;
     case WM_TIMER:
     case 0x60:
     case WM_NCLBUTTONDOWN:
     case 799:
     case 1847:
     case 1848:
-    case 257:
     case 49303:
     case 49305:
     case 260:
@@ -172,14 +186,6 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     }
     TranslateMessage(&msg);
     DispatchMessage(&msg);
-    /*
-    for (int i = 0; i < 1000; i++)
-    {
-    int x = rand() % 300;
-    int y = rand() % 300;
-    SetPixel(win->hdc, x, y, RGB(rand() % 255, 0, 0));
-    }
-    */
     return 0;
 }
 

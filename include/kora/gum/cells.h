@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -177,5 +177,6 @@ LIBAPI void gum_cell_destroy_children(GUM_cell *cell);
 LIBAPI void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
 LIBAPI GUM_cell *gum_cell_copy(GUM_cell *cell);
 
+LIBAPI void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *skinname);
 
 #endif  /* _KORA_GUM_RENDERING_H */

@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -147,7 +147,7 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     }
 
     else {
-        // TODO - Avoid copy is not neccessary, - how to change over/down skins
+        // TODO - Avoid copy is not necessary, - how to change over/down skins
         // cell->skin = gum_skin_property_setter(cell->skin, key, value);
     }
 }

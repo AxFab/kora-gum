@@ -17,6 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
+#include <kora/gum/core.h>
 #include <kora/gum/cells.h>
 #include <kora/gum/events.h>
 #include <kora/xml.h>
@@ -39,10 +40,28 @@ GUM_cell *ico_img;
 GUM_event_manager *evm;
 GUM_cell *root;
 
+GUM_cell *ctx_file;
+GUM_cell *ctx_view;
+
+GUM_skins *skins;
+GUM_cell *nav;
+
 void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event);
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+void on_tab_click(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+	GUM_cell *tab;
+	for (tab = nav->first; tab; tab = tab->next) {
+		if (tab == cell) 
+		    continue;
+		gum_reset_style(skins, tab, "header-tab");
+		// gum_invalid_cell(cell, evm->win);
+    } 
+    gum_reset_style(skins, cell, "header-tab-on");
+	// gum_invalid_cell(cell, evm->win);
+}
 
 void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
@@ -50,6 +69,16 @@ void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)
     strcat(current_path, cell->last->text);
     printf("Click - Go to : %s\n", current_path);
     on_refresh(evm, cell, event);
+}
+
+void on_file_menu(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+	gum_show_context(evm, ctx_file);
+}
+
+void on_view_menu(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+	gum_show_context(evm, ctx_view);
 }
 
 void on_previous(GUM_event_manager *evm, GUM_cell *cell, int event)
@@ -92,13 +121,14 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
         if (ico_img->img_src)
             free(ico_img->img_src);
         if (S_ISDIR(en->d_type))
-            ico_img->img_src = strdup("./icons/DIR.png");
+            ico_img->img_src = strdup("./resx/icons/dir.png");
         else
-            ico_img->img_src = strdup("./icons/TXT.png");
+            ico_img->img_src = strdup("./resx/icons/txt.png");
         // fprintf(stderr, "Dirent %s\n", en->d_name);
         GUM_cell *cpy = gum_cell_copy(icon);
         gum_cell_pushback(view, cpy);
         gum_event_bind(evm, cpy, GUM_EV_CLICK, on_icon_click);
+        gum_event_bind(evm, cpy, GUM_EV_RIGHTCLICK, on_file_menu);
     }
     closedir(dir);
     gum_refresh(evm);
@@ -124,7 +154,7 @@ int main(int argc, char **argv, char**env)
     int height = width * 10 / 16; // 425
 
     // Load models
-    GUM_skins *skins = gum_skins_loadcss(NULL, "./resx/browser/app2.css");
+    skins = gum_skins_loadcss(NULL, "./resx/browser/app2.css");
     root = gum_cell_loadxml("./resx/browser/app2.xml", skins);
     if (root == NULL) {
         printf("Unable to create render model.\n");
@@ -138,9 +168,9 @@ int main(int argc, char **argv, char**env)
         return EXIT_FAILURE;
     }
 
-    // Remouve context menu
-    GUM_cell *ctx_view = gum_get_by_id(root, "ctx-menu-view");
-    GUM_cell *ctx_file = gum_get_by_id(root, "ctx-menu-file");
+    // Remove context menu
+    ctx_view = gum_get_by_id(root, "ctx-menu-view");
+    ctx_file = gum_get_by_id(root, "ctx-menu-file");
     gum_cell_dettach(ctx_view);
     gum_cell_dettach(ctx_file);
 
@@ -158,6 +188,13 @@ int main(int argc, char **argv, char**env)
     gum_event_bind(evm, gum_get_by_id(root, "btn-next"), GUM_EV_CLICK, on_next);
     gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
     gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
+    gum_event_bind(evm, view, GUM_EV_RIGHTCLICK, on_view_menu);
+    
+    // Handle navigation tabs
+    nav = gum_get_by_id(view, "nav-tabs");
+    GUM_cell *tab;
+	for (tab = nav->first; tab; tab = tab->next)
+	    gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click);
 
     getcwd(current_path, 8192);
     on_refresh(evm, NULL, 0);

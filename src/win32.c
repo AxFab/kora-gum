@@ -1,6 +1,6 @@
 /*
 *      This file is part of the KoraOS project.
-*  Copyright (C) 2015  <Fabien Bavent>
+*  Copyright (C) 2015-2018  <Fabien Bavent>
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU Affero General Public License as
@@ -165,7 +165,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         // TODO - Special characters
         break;
     case WM_KEYUP:
-        event->type = GUM_EV_KEY_UP;
+        event->type = GUM_EV_KEY_RELEASE;
         event->param0 = msg.wParam;
         break;
     case WM_TIMER:

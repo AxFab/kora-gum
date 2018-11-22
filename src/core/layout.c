@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -362,7 +362,7 @@ void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp)
     layout.width = width;
     layout.height = height;
     layout.dpi = dpi;
-    layout.dsp = dsp;
+    layout.dsp = dsp; // TODO split x and y
     layout.resize = gum_layout_absolute_wrap;
     layout.minsize = gum_layout_absolute_minsize;
     gum_cell_minsize(cell, &layout);

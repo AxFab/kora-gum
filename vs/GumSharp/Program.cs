@@ -86,7 +86,7 @@ namespace GumSharp
         
         public Cell Remove()
         {
-            Remove_();
+            Remove_(Pointer);
             return this;
         }
         
@@ -96,7 +96,7 @@ namespace GumSharp
         {
             lock(cellCache) {
                 Cell cell;
-                if (!cellCache(ptr, out cell)) {
+                if (!cell Cache.TryGetValue(ptr, out cell)) {
                     cell = new Cell(ptr);
                     cellCache.Add(ptr, cell);
                 }
@@ -217,7 +217,7 @@ namespace GumSharp
             string name = "browser/app2";
             Skins = new SkinsPool();
             Skins.LoadCss("./resx/" + name + ".css");
-            Root = Cell.Load("./resx/" + name + ".xml");
+            Root = Cell.Load("./resx/" + name + ".xml", Skins);
             int width = 680; // TODO - Read from root
             int height = 425;
             Window = Window.Open(width, height);
@@ -280,17 +280,17 @@ namespace GumSharp
         
         static void Main(string[] args)
         {
-            using (GumApp app = Browser())
+            using (GumApp app = new Browser())
                 app.Manager.Run();
         }
         
-        [BindEvent(EventType.Previous)]
+        //[BindEvent(EventType.Previous)]
         [BindEvent("btn-prev", EventType.Click)]
         public void OnPrevious(Cell target)
         {
         }
         
-        [BindEvent(EventType.Next)]
+        //[BindEvent(EventType.Next)]
         [BindEvent("btn-next", EventType.Click)]
         public void OnNext(Cell target)
         {
@@ -310,7 +310,7 @@ namespace GumSharp
                 directory = new FileInfo(directory.DirectoryName);
             if (directory == null)
                 directory = new FileInfo("C:/");
-            foreach (string file in Directory.EnumerateFileEntries(directory.Fullname)) {
+            foreach (string file in Directory.EnumerateFileSystemEntries(directory.Fullname)) {
                 // icon.SetTextAndIcon();
                 // view.Append(icon.Clone());
             }

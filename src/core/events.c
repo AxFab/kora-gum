@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -29,6 +29,7 @@ struct GUM_event_manager {
     int mouse_x, mouse_y;
     int width, height;
     GUM_cell *root;
+    GUM_cell *menu;
     GUM_window *win;
 
     HMP_map actions;
@@ -41,6 +42,9 @@ struct GUM_event_manager {
 
     int click_cnt;
     int spec_btn;
+    
+    int dpi;
+    float dsp;
 };
 
 
@@ -86,6 +90,14 @@ void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_Event
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+static void gum_remove_context(GUM_event_manager *evm) 
+{
+	gum_invalid_cell(evm->menu, evm->win);
+	gum_cell_detach(evm->menu) ;
+	evm->menu = NULL;
+}
 
 static void gum_event_motion(GUM_event_manager *evm, int x, int y)
 {
@@ -141,6 +153,8 @@ static void gum_event_left_press(GUM_event_manager *evm)
 static void gum_event_left_release(GUM_event_manager *evm)
 {
     GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
+    if (evm->menu ! = NULL) 
+        gum_remove_context(evm);
     /* Translate into click */
     if (target && evm->down == target) {
         if (evm->click != target || evm->click_cnt >= 3 || 0/* TODO - TIME OFF */) {
@@ -170,6 +184,8 @@ static void gum_event_button_press(GUM_event_manager *evm, int btn)
 static void gum_event_button_release(GUM_event_manager *evm, int btn)
 {
     evm->click_cnt = 0;
+    if (evm->menu ! = NULL) 
+        gum_remove_context(evm);
     if (evm->spec_btn == btn) {
         if (btn == 3) // Right button
             gum_emit_event(evm, evm->over, GUM_EV_RIGHTCLICK);
@@ -261,21 +277,22 @@ static void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
 
 void gum_refresh(GUM_event_manager *evm)
 {
-    gum_resize(evm->root, evm->width, evm->height, 96, 0.75);
+    gum_resize(evm->root, evm->width, evm->height, evm->dpi, evm->dsp);
     gum_invalid_cell(evm->root, evm->win);
 }
 
 GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
 {
     GUM_event_manager *evm = (GUM_event_manager *)calloc(1, sizeof(GUM_event_manager));
+    evm->dpi = 96;
+    evm->dsp = 0.75;
     evm->root = root;
     evm->win = win;
     hmp_init(&evm->actions, 16);
 
     evm->width = 680;
     evm->height = 425;
-    gum_resize(root, 680, 425, 96, 0.75);
-    // gum_resize(root, win->width, win->height, win->xdpi, win->xdsp);
+    gum_resize(root, evm->width, evm->height, evm->dpi, evm->dsp));
     // TODO -- Full update and paint (or invalidate)
     return evm;
 }
@@ -344,4 +361,25 @@ void gum_event_loop(GUM_event_manager *evm)
 
         gum_handle_event(evm, &event);
     }
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+void gum_show_context(GUM_event_manager *evm, GUM_cell *menu) 
+{
+	gum_resize(menu, 0, 0, evm->dpi, evm->dsp);
+	menu->rulerx.before = evm->mouse_x;
+	menu->rulery.before = evm->mouse_y;
+	if (menu->rulerx.before + menu->box.w > evm->width && menu->rulerx.before > menu->box.w) 
+	   menu->rulerx.before -= menu->box.w;
+	if (menu->rulery.before + menu->box.h > evm->height) {
+		if (menu->rulery.before > menu->box.h) 
+		    menu->rulery.before -= menu->box.h;
+		else
+		    menu->rulery.before = evm->height - menu->box.h;
+    }
+    
+    gum_cell_pushback(evm->root, menu);
+	evm->menu = menu;
+	gum_refresh(evm);
 }

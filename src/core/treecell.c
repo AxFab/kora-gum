@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -45,7 +45,6 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
     return gum_cell_hit_ex(cell, x, y, GUM_CELL_SOLID);
 }
 
-
 void gum_paint(GUM_window *win, GUM_cell *cell)
 {
     gum_start_paint(win);
@@ -68,7 +67,7 @@ void gum_paint(GUM_window *win, GUM_cell *cell)
             }
 
             gum_pop_clip(win, &cell->box);
-            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y))   // TODO
+            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) // TODO
                 gum_draw_scrolls(win, cell);
         }
         if (cell)
@@ -92,7 +91,7 @@ GUM_skin *gum_skin(GUM_cell *cell)
 
 void gum_invalid_cell(GUM_cell *cell, GUM_window *win)
 {
-    // TODO -- Same as get by Id, but start by Last instead of Frist
+    // TODO -- Same as get by Id, but start by Last instead of First
     int x = cell->box.x;
     int y = cell->box.y;
     GUM_cell *ancestors;
@@ -156,6 +155,8 @@ void gum_cell_destroy_children(GUM_cell *cell)
 
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
 {
+	if (child->parent! = NULL) 
+	    gum_cell_dettach(child);
     child->parent = cell;
     child->previous = cell->last;
     child->next = NULL;

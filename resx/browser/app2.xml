@@ -24,7 +24,7 @@
             <header-tool width="24dp" height="24dp" solid="true" text="R" />
         </group>
 
-        <group bottom="0dp" width="wrap" layout="HGroupBottom"
+        <group bottom="0dp" width="wrap" layout="HGroupBottom" id="nav-tabs" 
                padding-left="15dp" padding-right="15dp" gap="10dp">
             <header-tab-on height="32dp" padding="10dp" solid="true" text="Fabien"/>
             <header-tab height="32dp" padding="10dp" solid="true" text="HardDrive1" />
@@ -60,8 +60,8 @@
 
         <itemIcon id="icon" height="30dp" solid="true">
             <img id="icon-img" left="0" top="0" width="30dp" height="30dp"
-                 substyle="true" img="./icons/DIR.png" />
-            <menuLabel id="icon-text" left="36dp" height="wrap" right="12dp" text="Documents" min-width="100dp" substyle="true"/>
+                 substyle="true" />
+            <menuLabel id="icon-text" left="36dp" height="wrap" right="12dp" min-width="100dp" substyle="true"/>
         </itemIcon>
 
 
@@ -116,7 +116,7 @@
                 id="view" overflow-y="true" solid="true" gap="1px"  padding="3px">
             -->
 
-        <menu left="100px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-file">
+        <menu left="100px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-view">
             <menuVRuler left="25px" top="0" bottom="0" width="1px" />
             <group width="wrap" height="wrap" layout="VGroupExtend" >
 
@@ -244,7 +244,7 @@
 
 
 
-        <menu left="300px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-view">
+        <menu left="300px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-file">
             <menuVRuler left="25px" top="0" bottom="0" width="1px" />
             <group width="wrap" height="wrap" layout="VGroupExtend">
 

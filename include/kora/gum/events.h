@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2018  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -30,6 +30,8 @@ typedef void(*GUM_EventHandler)(GUM_event_manager *evm, GUM_cell *cell, int even
 
 LIBAPI void gum_refresh(GUM_event_manager *evm);
 LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
+
+LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);
 
 struct GUM_event {
     int type;

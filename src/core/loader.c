@@ -33,14 +33,14 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         cell->id = strdup(value);
 
     else if (!strcmp("left", key)){
-        if (values[0] == '{') {
+        if (value[0] == '{') {
             cell->rulerx. bunit = CSS_SIZE_PX;
             cell->rell = strdup(&value[1]);
             strchr(cell->rell, '}') [0] = '\0';
         } else
             cell->rulerx.bunit = css_parse_size(value, &cell->rulerx.before);
    } else if (!strcmp("right", key)) {
-        if (values[0] == '{') {
+        if (value[0] == '{') {
             cell->rulerx.aunit = CSS_SIZE_PX;
             cell->relr = strdup(&value[1]);
             strchr(cell->relr, '}') [0] = '\0';

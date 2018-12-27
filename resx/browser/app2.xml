@@ -24,7 +24,7 @@
             <header-tool width="24dp" height="24dp" solid="true" text="R" />
         </group>
 
-        <group bottom="0dp" width="wrap" layout="HGroupBottom" id="nav-tabs" 
+        <group bottom="0dp" width="wrap" layout="HGroupBottom" id="nav-tabs"
                padding-left="15dp" padding-right="15dp" gap="10dp">
             <header-tab-on height="32dp" padding="10dp" solid="true" text="Fabien"/>
             <header-tab height="32dp" padding="10dp" solid="true" text="HardDrive1" />
@@ -67,7 +67,7 @@
 
     </panel>
     <tool-ruler width="wrap" top="118dp" height="1px" />
-    <tool-ruler left="240dp" width="1px" top="118dp" bottom="20dp" ruler-x="true" id="slider/>
+    <tool-ruler left="240dp" width="1px" top="118dp" bottom="20dp" ruler-x="true" id="slider" />
 
         <!-- Onglets
         <group width="wrap" top="0dp" height="40dp">

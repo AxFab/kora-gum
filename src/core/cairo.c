@@ -28,6 +28,8 @@
 #include <string.h>
 #include <cairo/cairo.h>
 #include <cairo/cairo-xlib.h>
+#include <time.h>
+#define _PwNano_ 1000000000
 
 typedef struct xinfo {
     Display *d;
@@ -43,6 +45,13 @@ struct GUM_window {
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+long long gum_system_time()
+{
+    clock_t ticks = clock();
+    ticks *= _PwNano_ / CLOCKS_PER_SEC;
+    return ticks;
+}
 
 struct MwmHints {
     unsigned long flags;
@@ -199,7 +208,7 @@ static cairo_pattern_t *gum_build_gradient(GUM_cell *cell, GUM_skin *skin)
     return grad;
 }
 
-void gum_draw_cell(GUM_window *win, GUM_cell *cell)
+void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 {
     cairo_t *ctx = win->ctx;
     GUM_skin *skin = gum_skin(cell);
@@ -470,12 +479,13 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 }
 
 
-void gum_start_paint(GUM_window *win)
+void gum_start_paint(GUM_window *win, int x, int y)
 {
     cairo_push_group(win->ctx);
     cairo_set_source_rgb(win->ctx, 1, 1, 1);
     cairo_paint(win->ctx);
     cairo_reset_clip(win->ctx);
+    // cairo_translate(win->ctx, x, y);
 }
 
 void gum_end_paint(GUM_window *win)

@@ -145,11 +145,11 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
 {
 	char sname[50];
 	strcpy(sname, name);
-    cell->skin = gum_style_find(builder->skins, sname);
+    cell->skin = gum_style_find(skins, sname);
     strcpy(sname, name);
     strcat(sname, ":over");
-    cell->skin_over = gum_style_find(builder->skins, sname);
+    cell->skin_over = gum_style_find(skins, sname);
     strcpy(sname, name);
     strcat(sname, ":down");
-    cell->skin_down = gum_style_find(builder->skins, sname);
+    cell->skin_down = gum_style_find(skins, sname);
 }

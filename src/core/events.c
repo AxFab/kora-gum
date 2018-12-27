@@ -42,7 +42,7 @@ struct GUM_event_manager {
 
     int click_cnt;
     int spec_btn;
-    
+
     int dpi;
     float dsp;
 };
@@ -92,7 +92,7 @@ void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_Event
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 
-static void gum_remove_context(GUM_event_manager *evm) 
+static void gum_remove_context(GUM_event_manager *evm)
 {
 	gum_invalid_cell(evm->menu, evm->win);
 	gum_cell_detach(evm->menu);
@@ -153,7 +153,7 @@ static void gum_event_left_press(GUM_event_manager *evm)
 static void gum_event_left_release(GUM_event_manager *evm)
 {
     GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
-    if (evm->menu ! = NULL) 
+    if (evm->menu != NULL)
         gum_remove_context(evm);
     /* Translate into click */
     if (target && evm->down == target) {
@@ -184,7 +184,7 @@ static void gum_event_button_press(GUM_event_manager *evm, int btn)
 static void gum_event_button_release(GUM_event_manager *evm, int btn)
 {
     evm->click_cnt = 0;
-    if (evm->menu ! = NULL) 
+    if (evm->menu != NULL)
         gum_remove_context(evm);
     if (evm->spec_btn == btn) {
         if (btn == 3) // Right button
@@ -292,7 +292,7 @@ GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
 
     evm->width = 680;
     evm->height = 425;
-    gum_resize(root, evm->width, evm->height, evm->dpi, evm->dsp));
+    gum_resize(root, evm->width, evm->height, evm->dpi, evm->dsp);
     // TODO -- Full update and paint (or invalidate)
     return evm;
 }
@@ -365,20 +365,20 @@ void gum_event_loop(GUM_event_manager *evm)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_show_context(GUM_event_manager *evm, GUM_cell *menu) 
+void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
 {
 	gum_resize(menu, 0, 0, evm->dpi, evm->dsp);
 	menu->rulerx.before = evm->mouse_x;
 	menu->rulery.before = evm->mouse_y;
-	if (menu->rulerx.before + menu->box.w > evm->width && menu->rulerx.before > menu->box.w) 
+	if (menu->rulerx.before + menu->box.w > evm->width && menu->rulerx.before > menu->box.w)
 	   menu->rulerx.before -= menu->box.w;
 	if (menu->rulery.before + menu->box.h > evm->height) {
-		if (menu->rulery.before > menu->box.h) 
+		if (menu->rulery.before > menu->box.h)
 		    menu->rulery.before -= menu->box.h;
 		else
 		    menu->rulery.before = evm->height - menu->box.h;
     }
-    
+
     gum_cell_pushback(evm->root, menu);
 	evm->menu = menu;
 	gum_refresh(evm);

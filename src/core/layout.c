@@ -35,13 +35,13 @@ static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
         *pSz = MAX(min, container - before - after);
     } else if (pos->bunit) {
         *pPos = before;
-        if (pos->cunit) 
+        if (pos->cunit)
             *pSz = MAX(min, size);
         else
             *pSz = MAX(min, size);
     } else if (pos->aunit) {
         *pPos = container - MAX(min, size) - after;
-        if (pos->cunit) 
+        if (pos->cunit)
             *pSz = MAX(min, size);
         else
             *pSz = MAX(min, size);
@@ -70,20 +70,33 @@ static void gum_layout_absolute_minsize(GUM_cell *cell, GUM_cell *child, GUM_lay
 
 static void gum_layout_absolute_resize(GUM_cell *cell, GUM_layout *layout)
 {
+    GUM_cell *rel;
     cell->box.x = 0;
     cell->box.y = 0;
     cell->box.w = MAX(layout->width, cell->box.minw);
     cell->box.h = MAX(layout->height, cell->box.minh);
-    
+
     if (cell->rell != NULL) {
-        cell->rulerx.before = gum_get_by_id(cell->parent, cell->rell)->box.x;
+        rel = gum_get_by_id(cell->parent, cell->rell);
+        cell->rulerx.before = rel != NULL ? rel->box.x : 0;
         cell->rulerx.bunit = 1;
-    } 
+    }
     if (cell->relr != NULL) {
-        cell->rulerx.after = layout->width - gum_get_by_id(cell->parent, cell->rell)->box.x +gum_get_by_id(cell->parent, cell->rell)->box.w;
+        rel = gum_get_by_id(cell->parent, cell->relr);
+        cell->rulerx.after = layout->width - (rel != NULL ? rel->box.x + rel->box.w : 0);
         cell->rulerx.aunit = 1;
-    } 
-    
+    }
+    if (cell->relt != NULL) {
+        rel = gum_get_by_id(cell->parent, cell->relt);
+        cell->rulery.before = rel != NULL ? rel->box.y : 0;
+        cell->rulery.bunit = 1;
+    }
+    if (cell->relb != NULL) {
+        rel = gum_get_by_id(cell->parent, cell->relb);
+        cell->rulery.after = layout->height - (rel != NULL ? rel->box.y + rel->box.h : 0);
+        cell->rulery.aunit = 1;
+    }
+
     gum_layout_absolute_part(&cell->rulerx, cell->box.minw, layout->width, layout->dpi, layout->dsp, &cell->box.x, &cell->box.w);
     gum_layout_absolute_part(&cell->rulery, cell->box.minh, layout->height, layout->dpi, layout->dsp, &cell->box.y, &cell->box.h);
 }
@@ -323,7 +336,7 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
             gum_layout_absolute(cell, &sub_layout);
 
         for (child = cell->first; child; child = child->next) {
-            if (child->state & GUM_CELL_HIDDEN) 
+            if (child->state & GUM_CELL_HIDDEN)
                 continue;
             gum_cell_minsize(child, &sub_layout);
             sub_layout.minsize(cell, child, &sub_layout);
@@ -360,9 +373,9 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     //         cell->box.x, cell->box.y, cell->box.w, cell->box.h,
     //         cell->box.mincw, cell->box.minch,
     //         cell->box.cx, cell->box.cy, cell->box.cw, cell->box.ch);
-    
+
     // TO-DO, ON BUFFERED, RESIZE SURFACE
-    
+
     // Children CELLs
     GUM_cell *child;
     GUM_layout sub_layout;
@@ -377,7 +390,7 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     cell->box.ch_w = 0;
     cell->box.ch_h = 0;
     for (child = cell->first; child; child = child->next) {
-        if (child->state & GUM_CELL_HIDDEN) 
+        if (child->state & GUM_CELL_HIDDEN)
              continue;
         gum_cell_resize(child, &sub_layout);
         if (child->box.x + child->box.w > cell->box.ch_w)

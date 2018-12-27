@@ -54,11 +54,11 @@ void on_tab_click(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
 	GUM_cell *tab;
 	for (tab = nav->first; tab; tab = tab->next) {
-		if (tab == cell) 
+		if (tab == cell)
 		    continue;
 		gum_reset_style(skins, tab, "header-tab");
 		// gum_invalid_cell(cell, evm->win);
-    } 
+    }
     gum_reset_style(skins, cell, "header-tab-on");
 	// gum_invalid_cell(cell, evm->win);
 }
@@ -178,9 +178,9 @@ int main(int argc, char **argv, char**env)
     gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
     gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
     gum_event_bind(evm, view, GUM_EV_RIGHTCLICK, on_view_menu);
-    
+
     // Handle navigation tabs
-    nav = gum_get_by_id(view, "nav-tabs");
+    nav = gum_get_by_id(root, "nav-tabs");
     GUM_cell *tab;
 	for (tab = nav->first; tab; tab = tab->next)
 	    gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click);

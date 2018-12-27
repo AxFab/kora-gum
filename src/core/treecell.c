@@ -52,7 +52,7 @@ void gum_paint(GUM_window *win, GUM_cell *root)
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        if (! (cell->state & GUM_CELL_HIDDEN)) 
+        if (! (cell->state & GUM_CELL_HIDDEN))
         gum_draw_cell(win, cell, cell == root);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
             if (cell->first) {
@@ -60,11 +60,11 @@ void gum_paint(GUM_window *win, GUM_cell *root)
                 gum_push_clip(win, &cell->box);
                 cell = cell->first;
                 continue;
-            } 
+            }
         }
 
         while (!cell->next) {
-            
+
             if (cell == root || cell->parent == NULL) {
                 gum_end_paint(win);
                 return;
@@ -160,7 +160,7 @@ void gum_cell_destroy_children(GUM_cell *cell)
 
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
 {
-	if (child->parent! = NULL) 
+	if (child->parent != NULL)
 	    gum_cell_detach(child);
     child->parent = cell;
     child->previous = cell->last;

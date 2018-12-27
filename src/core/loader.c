@@ -32,11 +32,21 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     if (!strcmp("id", key))
         cell->id = strdup(value);
 
-    else if (!strcmp("left", key))
-        cell->rulerx.bunit = css_parse_size(value, &cell->rulerx.before);
-    else if (!strcmp("right", key))
-        cell->rulerx.aunit = css_parse_size(value, &cell->rulerx.after);
-    else if (!strcmp("horizontal-center", key))
+    else if (!strcmp("left", key)){
+        if (values[0] == '{') {
+            cell->rulerx. bunit = CSS_SIZE_PX;
+            cell->rell = strdup(&value[1]);
+            strchr(cell->rell, '}') [0] = '\0';
+        } else
+            cell->rulerx.bunit = css_parse_size(value, &cell->rulerx.before);
+   } else if (!strcmp("right", key)) {
+        if (values[0] == '{') {
+            cell->rulerx.aunit = CSS_SIZE_PX;
+            cell->relr = strdup(&value[1]);
+            strchr(cell->relr, '}') [0] = '\0';
+        } else
+            cell->rulerx.aunit = css_parse_size(value, &cell->rulerx.after);
+   } else if (!strcmp("horizontal-center", key))
         cell->rulerx.cunit = css_parse_size(value, &cell->rulerx.center);
     else if (!strcmp("min-width", key))
         cell->rulerx.munit = css_parse_usize(value, &cell->rulerx.min);
@@ -129,6 +139,16 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
             cell->state |= GUM_CELL_SOLID;
         else if (!strcmp("false", value))
             cell->state &= ~GUM_CELL_SOLID;
+    } else if (!strcmp("hidden", key)) {
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_HIDDEN;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_HIDDEN;
+    } else if (!strcmp("buffered", key)) {
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_BUFFERED;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_BUFFERED;
     } else if (!strcmp("overflow-x", key)) {
         if (!strcmp("true", value))
             cell->state |= GUM_CELL_OVERFLOW_X;

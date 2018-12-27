@@ -95,7 +95,7 @@ void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_Event
 static void gum_remove_context(GUM_event_manager *evm) 
 {
 	gum_invalid_cell(evm->menu, evm->win);
-	gum_cell_detach(evm->menu) ;
+	gum_cell_detach(evm->menu);
 	evm->menu = NULL;
 }
 

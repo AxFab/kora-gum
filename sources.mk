@@ -44,3 +44,9 @@ brws_LFLAGS := $(LFLAGS)
 $(eval $(call link,brws,std))
 DV_UTILS += $(bindir)/brws
 
+logon_src-y += $(gum_src-y)
+logon_src-y += $(srcdir)/tests/logon.c
+logon_LFLAGS := $(LFLAGS)
+$(eval $(call link,logon,std))
+DV_UTILS += $(bindir)/logon
+

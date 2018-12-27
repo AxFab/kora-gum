@@ -20,7 +20,7 @@
 #include <kora/gum/cells.h>
 #include <kora/css.h>
 
-/* Condensed algorithm: aboslute position */
+/* Condensed algorithm: absolute position */
 static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
                                      int container, short dpi, float dsp, int *pPos, int *pSz)
 {
@@ -28,15 +28,25 @@ static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
     short size = CSS_GET_UNIT(pos->size, pos->sunit, dpi, dsp, container);
     short before = CSS_GET_UNIT(pos->before, pos->bunit, dpi, dsp, container);
     short after = CSS_GET_UNIT(pos->after, pos->aunit, dpi, dsp, container);
+    short center = CSS_GET_UNIT(pos->center, pos->cunit, dpi, dsp, container);
 
     if (pos->bunit && pos->aunit) {
         *pPos = before;
         *pSz = MAX(min, container - before - after);
     } else if (pos->bunit) {
         *pPos = before;
-        *pSz = MAX(min, size);
+        if (pos->cunit) 
+            *pSz = MAX(min, size);
+        else
+            *pSz = MAX(min, size);
     } else if (pos->aunit) {
         *pPos = container - MAX(min, size) - after;
+        if (pos->cunit) 
+            *pSz = MAX(min, size);
+        else
+            *pSz = MAX(min, size);
+    } else if (pos->cunit) {
+        *pPos = (container - MAX(min, size)) / 2 + center;
         *pSz = MAX(min, size);
     } else {
         *pPos = 0;
@@ -64,6 +74,16 @@ static void gum_layout_absolute_resize(GUM_cell *cell, GUM_layout *layout)
     cell->box.y = 0;
     cell->box.w = MAX(layout->width, cell->box.minw);
     cell->box.h = MAX(layout->height, cell->box.minh);
+    
+    if (cell->rell != NULL) {
+        cell->rulerx.before = gum_get_by_id(cell->parent, cell->rell)->box.x;
+        cell->rulerx.bunit = 1;
+    } 
+    if (cell->relr != NULL) {
+        cell->rulerx.after = layout->width - gum_get_by_id(cell->parent, cell->rell)->box.x +gum_get_by_id(cell->parent, cell->rell)->box.w;
+        cell->rulerx.aunit = 1;
+    } 
+    
     gum_layout_absolute_part(&cell->rulerx, cell->box.minw, layout->width, layout->dpi, layout->dsp, &cell->box.x, &cell->box.w);
     gum_layout_absolute_part(&cell->rulery, cell->box.minh, layout->height, layout->dpi, layout->dsp, &cell->box.y, &cell->box.h);
 }
@@ -303,6 +323,8 @@ static void gum_cell_minsize(GUM_cell *cell, GUM_layout *layout)
             gum_layout_absolute(cell, &sub_layout);
 
         for (child = cell->first; child; child = child->next) {
+            if (child->state & GUM_CELL_HIDDEN) 
+                continue;
             gum_cell_minsize(child, &sub_layout);
             sub_layout.minsize(cell, child, &sub_layout);
         }
@@ -317,6 +339,10 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
 {
     // Invalid cached data
     cell->cachedSkin = NULL;
+    cell->anim. delay = 0 ;
+    cell->anim. ow = cell->box.w;
+    cell->anim. oh = cell->box.h;
+    cell->anim. last = gum_system_time();
     layout->resize(cell, layout);
 
     int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, layout->dpi, layout->dsp, cell->box.w);
@@ -334,6 +360,9 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     //         cell->box.x, cell->box.y, cell->box.w, cell->box.h,
     //         cell->box.mincw, cell->box.minch,
     //         cell->box.cx, cell->box.cy, cell->box.cw, cell->box.ch);
+    
+    // TO-DO, ON BUFFERED, RESIZE SURFACE
+    
     // Children CELLs
     GUM_cell *child;
     GUM_layout sub_layout;
@@ -348,6 +377,8 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     cell->box.ch_w = 0;
     cell->box.ch_h = 0;
     for (child = cell->first; child; child = child->next) {
+        if (child->state & GUM_CELL_HIDDEN) 
+             continue;
         gum_cell_resize(child, &sub_layout);
         if (child->box.x + child->box.w > cell->box.ch_w)
             cell->box.ch_w = child->box.x + child->box.w;

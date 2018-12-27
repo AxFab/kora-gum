@@ -136,17 +136,6 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-#if defined(WIN32) || defined(_WIN32)
-#define main app_main 
-int app_main(int argc, char **argv, char**env);
-extern void gum_win32_setup(_In_ HINSTANCE hInstance);
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
-{
-    gum_win32_setup(hInstance);
-    return app_main(0, NULL, NULL);
-}
-#endif
-
 /* Graphical User-interface Module */
 int main(int argc, char **argv, char**env)
 {
@@ -171,15 +160,15 @@ int main(int argc, char **argv, char**env)
     // Remove context menu
     ctx_view = gum_get_by_id(root, "ctx-menu-view");
     ctx_file = gum_get_by_id(root, "ctx-menu-file");
-    gum_cell_dettach(ctx_view);
-    gum_cell_dettach(ctx_file);
+    gum_cell_detach(ctx_view);
+    gum_cell_detach(ctx_file);
 
     // Prepare widget using template
     view = gum_get_by_id(root, "view");
     icon = gum_get_by_id(root, "icon");
     ico_txt = gum_get_by_id(icon, "icon-text");
     ico_img = gum_get_by_id(icon, "icon-img");
-    gum_cell_dettach(icon);
+    gum_cell_detach(icon);
 
     evm = gum_event_manager(root, win);
     gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent);

@@ -50,12 +50,12 @@
         </group>
         <tool-search left="152dp" right="188dp" top="8dp" height="28dp" text="/home/fabien" editable="true" solid="true" />
     </tool-bar>
-    <panel left="0dp" width="240dp" top="118dp" bottom="20dp">
+    <panel left="0dp" right="{slider}" top="118dp" bottom="20dp">
         <!-- Favorite / Navigation -->
         <img left="0" top="0" img="./icons/DIR.png" width="256px" height="256px" />
     </panel>
-    <panel left="240dp" right="0dp" top="118dp" bottom="20dp"
-           id="view" layout="ColumnGrid" gap="3dp" padding="3dp"
+    <panel left="{slider}" right="0dp" top="118dp" bottom="20dp"
+           id="view" layout="ColumnGrid" gap="3dp" padding="8dp"
            overflow-x="true" solid="true">
 
         <itemIcon id="icon" height="30dp" solid="true">
@@ -67,7 +67,7 @@
 
     </panel>
     <tool-ruler width="wrap" top="118dp" height="1px" />
-    <tool-ruler left="240dp" width="1px" top="118dp" bottom="20dp" />
+    <tool-ruler left="240dp" width="1px" top="118dp" bottom="20dp" ruler-x="true" id="slider/>
 
         <!-- Onglets
         <group width="wrap" top="0dp" height="40dp">

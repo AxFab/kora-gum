@@ -45,29 +45,34 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
     return gum_cell_hit_ex(cell, x, y, GUM_CELL_SOLID);
 }
 
-void gum_paint(GUM_window *win, GUM_cell *cell)
+void gum_paint(GUM_window *win, GUM_cell *root)
 {
-    gum_start_paint(win);
+	GUM_cell *cell = root;
+    gum_start_paint(win, - root->box.w, - root->box.h);
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        gum_draw_cell(win, cell);
-        if (cell->first) {
-            // TODO - prune if cell is outside drawing clip
-            gum_push_clip(win, &cell->box);
-            cell = cell->first;
-            continue;
+        if (! (cell->state & GUM_CELL_HIDDEN)) 
+        gum_draw_cell(win, cell, cell == root);
+        if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
+            if (cell->first) {
+                // TODO - prune if cell is outside drawing clip
+                gum_push_clip(win, &cell->box);
+                cell = cell->first;
+                continue;
+            } 
         }
 
         while (!cell->next) {
-            cell = cell->parent;
-            if (cell == NULL) {
+            
+            if (cell == root || cell->parent == NULL) {
                 gum_end_paint(win);
                 return;
             }
 
+            cell = cell->parent;
             gum_pop_clip(win, &cell->box);
-            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y)) // TODO
+            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y) &&! (cell->state & GUM_CELL_HIDDEN) ) // TODO
                 gum_draw_scrolls(win, cell);
         }
         if (cell)
@@ -122,7 +127,7 @@ GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
     return NULL;
 }
 
-void gum_cell_dettach(GUM_cell *cell)
+void gum_cell_detach(GUM_cell *cell)
 {
     if (cell->previous)
         cell->previous->next = cell->next;
@@ -156,7 +161,7 @@ void gum_cell_destroy_children(GUM_cell *cell)
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
 {
 	if (child->parent! = NULL) 
-	    gum_cell_dettach(child);
+	    gum_cell_detach(child);
     child->parent = cell;
     child->previous = cell->last;
     child->next = NULL;

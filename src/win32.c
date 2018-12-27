@@ -29,6 +29,9 @@ struct GUM_window {
     HDC hdc;
     int x, y;
     PAINTSTRUCT ps;
+    HBITMAP hbmp;
+    HBITMAP old;
+    RECT inval;
 };
 
 static TCHAR szWindowClass[] = _T("gum");
@@ -36,15 +39,17 @@ static TCHAR szTitle[] = _T("Application");
 static WNDCLASSEX wcex;
 HINSTANCE appInstance;
 
-int app_main(int argc, char **argv);
 
 LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-LIBAPI void gum_win32_setup(_In_ HINSTANCE hInstance)
+bool win32_init = false;
+
+void gum_win32_setup() 
 {
+	HINSTANCE HINSTANCE = GetModuleHandle (NULL) ;
     appInstance = hInstance;
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -59,9 +64,10 @@ LIBAPI void gum_win32_setup(_In_ HINSTANCE hInstance)
     wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
     if (!RegisterClassEx(&wcex)) {
-        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Win32 Guided Tour"), 0);
+        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Win32 Error"), 0);
         exit(-1);
     }
+    win32_init = true;
 }
 
 
@@ -70,17 +76,24 @@ HFONT  hFont;
 
 GUM_window *gum_create_surface(int width, int height)
 {
+	if (!win32_init) 
+	    gum_win32_setup() ;
     HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, width + (16), height + (39), NULL, NULL,
                              appInstance, NULL);
     if (!hwnd) {
         DWORD err = GetLastError();
-        MessageBox(NULL, _T("Can't create the window!"), _T("Win32 Guided Tour"), 0);
+        MessageBox(NULL, _T("Can't create the window!"), _T("Win32 Error"), 0);
         return NULL;
     }
+
+    UINT timer;
+    SetTimer (hwnd, (UINT_PTR) & timer, 20, NULL);
+
 
     GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
     win->hwnd = hwnd;
     win->hdc = GetDC(win->hwnd);
+    win->hbmp = 0;
     //RECT rcClient;
     //GetClientRect(hwnd, &rcClient);
 
@@ -95,7 +108,19 @@ void gum_destroy_surface(GUM_window *win)
     ReleaseDC(win->hwnd, win->hdc);
 }
 
+GUM_window *gum_surface(GUM_window *parent, int width, int height)
+{
+	HBITMAP hbmp = CreateCompatibleBitmap(parent->hdc, width, height) ;
+	GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
+	win->hwnd = 0;
+	win->hbmp = hbmp;
+	win->hdc = CreateCompatibleDC(parent->hdc) ;
+	return win;
+} 
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+void gum_invalid_surface_push(GUM_window *win) ;
 
 int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 {
@@ -169,6 +194,9 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         event->param0 = msg.wParam;
         break;
     case WM_TIMER:
+        event->type = -1;
+        gum_invalid_surface_push(win);
+        break;
     case 0x60:
     case WM_NCLBUTTONDOWN:
     case 799:
@@ -178,8 +206,6 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     case 49305:
     case 260:
     case 674:
-        event->type = -1;
-        break;
     default:
         event->type = -1;
         break;
@@ -191,6 +217,16 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+void gum_invalid_surface_push(GUM_window *win)
+{
+	RECT r = win->inval;
+    win->inval.left = 0;
+    win->inval.right = 0;
+    win->inval.top = 0;
+    win->inval.bottom = 0;
+    if (r.left != r.right && r.top != r.bottom)
+        InvalidateRect(win->hwnd, &r, TRUE);
+} 
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
     RECT r;
@@ -216,15 +252,22 @@ void gum_text_size(const char *text, int *w, int *h)
 #define MIN_ALPHA 0x1000000
 #define M_PI 3.141592653589793
 #define COLOR_REF(n) ( (((n) & 0xFF0000) >> 16) | ((n) & 0xFF00) | (((n) & 0xFF) << 16) )
-void gum_start_paint(GUM_window *win)
+void gum_start_paint(GUM_window *win, int x, int y)
 {
-    win->x = win->y = 0;
+    win->x = x;
+    win->y = y;
+    if (win->hbmp != NULL) 
+        win->old = SelectObject(win->hdc, win->hbmp) ;
+    else 
     win->hdc = BeginPaint(win->hwnd, &win->ps);
 }
 
 void gum_end_paint(GUM_window *win)
 {
-    EndPaint(win->hwnd, &win->ps);
+	if (win->hbmp != NULL) 
+	    SelectObject(win->hdc, win->old) ;
+	else
+        EndPaint(win->hwnd, &win->ps);
 }
 
 void gum_push_clip(GUM_window *win, GUM_box *box)
@@ -313,7 +356,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
 
         SelectObject(win->hdc, hFont);
         SetTextColor(win->hdc, COLOR_REF(skin->txcolor));
-        DrawText(win->hdc, szBuf, wcslen(szBuf), &r, alg);
+        DrawText(win->hdc, szBuf, wcslen(szBuf), &r, alg | DT_SINGLELINE);
     }
 }
 

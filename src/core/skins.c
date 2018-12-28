@@ -152,4 +152,5 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
     strcpy(sname, name);
     strcat(sname, ":down");
     cell->skin_down = gum_style_find(skins, sname);
+    cell->cachedSkin = NULL ;
 }

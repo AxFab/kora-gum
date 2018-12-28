@@ -61,6 +61,7 @@ void on_tab_click(GUM_event_manager *evm, GUM_cell *cell, int event)
     }
     gum_reset_style(skins, cell, "header-tab-on");
 	// gum_invalid_cell(cell, evm->win);
+	gum_refresh(evm);
 }
 
 void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)

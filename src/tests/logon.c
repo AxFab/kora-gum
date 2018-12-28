@@ -31,6 +31,42 @@ GUM_event_manager *evm;
 GUM_cell *root;
 GUM_skins *skins;
 
+GUM_cell *user;
+GUM_cell *users;
+
+char *names[] = {
+	"Fabien", 
+} ;
+
+char *pics[] = {
+	"./resx/logon/pic0.png", 
+} ;
+
+void on_select(GUM_event_manager *evm, GUM_cell *cell, int event) 
+{
+	GUM_cell *usr = users->first ;
+	while (usr) {
+		usr->last->state |= GUM_CELL_HIDDEN;
+		usr = usr->next;
+	} 
+	
+	printf ("Load user '%s' \n", cell->first->next->text) ;
+	cell->last->state & = ~GUM_CELL_HIDDEN;
+	// give focus
+	gum_refresh(evm);
+} 
+
+void load_users() 
+{
+	int i;
+	gum_cell_destroy_children(users);
+	for (i = 0; i < 1; ++i) {
+		GUM_cell *usr = gum_cell_copy(user) ;
+		gum_event_bind(evm, usr, GUM_EV_CLICK, on_select );
+		gum_cell_pushback(users, usr) ;
+	} 
+	gum_refresh(evm);
+} 
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -55,9 +91,13 @@ int main(int argc, char **argv, char**env)
         return EXIT_FAILURE;
     }
 
+    users = gum_get_by_id(root, "users") ;
+    user = gum_get_by_id(root, "user") ;
+    gum_cell_detach(user) ;
+
     evm = gum_event_manager(root, win);
     // gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent);
-
+    load_users() ;
 
     gum_event_loop(evm);
     gum_destroy_surface(win);

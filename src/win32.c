@@ -34,6 +34,12 @@ struct GUM_window {
     RECT inval;
 };
 
+long long gum_system_time() 
+{
+	
+} 
+
+
 static TCHAR szWindowClass[] = _T("gum");
 static TCHAR szTitle[] = _T("Application");
 static WNDCLASSEX wcex;
@@ -225,16 +231,25 @@ void gum_invalid_surface_push(GUM_window *win)
     win->inval.top = 0;
     win->inval.bottom = 0;
     if (r.left != r.right && r.top != r.bottom)
-        InvalidateRect(win->hwnd, &r, TRUE);
+        InvalidateRect(win->hwnd, &r, FALSE);
 } 
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
-    RECT r;
-    r.left = x;
-    r.right = x + w;
-    r.top = y;
-    r.bottom = y + h;
-    InvalidateRect(win->hwnd, &r, TRUE);
+	if (win->inval.right == 0) {
+		win->inval.left = x;
+        win->inval.right = x + w;
+    } else {
+        win->inval.left = MAX(x, win->inval.left);
+        win->inval.right = MIN(x + w, win->inval.right) ;
+    } 
+    
+    if (win->inval.bottom == 0) {
+		win->inval.top = y;
+        win->inval.bottom = y + h;
+    } else {
+        win->inval.top = MAX(y, win->inval.top);
+        win->inval.bottom = MIN(y + h, win->inval.bottom) ;
+    } 
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)
@@ -282,7 +297,25 @@ void gum_pop_clip(GUM_window *win, GUM_box *box)
     win->y -= box->cy - box->sy;
 }
 
-void gum_draw_cell(GUM_window *win, GUM_cell *cell)
+void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim ) 
+{
+	GUM_box bx = box;
+	
+} 
+
+void gum_draw_img(GUM_window *win, HBITMAP bmp, GUM_box *box) 
+{
+	BITMAP bmp;
+    HDC hdcMem = CreateCompatibleDC(win->hdc);
+    HBITMAP hbmOld = SelectObject(hdcMem, bmp);
+    GetObject(bmp, sizeof(bm), &bm);
+    StretchBlt(win->hdc, box->x + win->x, box->y + win->y, box->w, box->h, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+    // SelectObject(win->hdc, hbmOld);
+    DeleteDC(hdcMem);
+} 
+
+
+void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 {
     GUM_skin *skin = gum_skin(cell);
     if (skin == NULL)
@@ -293,6 +326,14 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
         cell->gradient = NULL;
         cell->cachedSkin = skin;
     }
+    
+    if (! top && cell->state & GUM_CELL_BUFFERED) {
+        if (cell->surface == NULL) 
+            cell->surface = gum_surface(win, cell->box.w, cell->box. h) ;    gum_paint(cell->surface, cell) ;
+        gum_draw_pic(win, cell->surface, & cell->box, & cell->anim) ;
+        return ;    
+   } 
+    
     if (cell->image == NULL && cell->img_src != NULL)
         cell->image = gum_image(cell->img_src);
 
@@ -303,14 +344,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
     r.bottom = cell->box.y + cell->box.h + win->y;
     SetBkMode(win->hdc, TRANSPARENT);
     if (cell->image != NULL) {
-        BITMAP bm;
-        HBITMAP bmp = (HBITMAP)cell->image;
-        HDC hdcMem = CreateCompatibleDC(win->hdc);
-        HBITMAP hbmOld = SelectObject(hdcMem, bmp);
-        GetObject(bmp, sizeof(bm), &bm);
-        StretchBlt(win->hdc, cell->box.x + win->x, cell->box.y + win->y, cell->box.w, cell->box.h, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
-        SelectObject(hdcMem, hbmOld);
-        DeleteDC(hdcMem);
+        gum_draw_img(win, cell->image, & cell->box) ;
 
     } else if (skin->bgcolor >= MIN_ALPHA && skin->grcolor >= MIN_ALPHA) {
         for (int i = 0; i < cell->box.h; ++i) {

@@ -79,22 +79,18 @@ static void gum_layout_absolute_resize(GUM_cell *cell, GUM_layout *layout)
     if (cell->rell != NULL) {
         rel = gum_get_by_id(cell->parent, cell->rell);
         cell->rulerx.before = rel != NULL ? rel->box.x : 0;
-        cell->rulerx.bunit = 1;
     }
     if (cell->relr != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relr);
         cell->rulerx.after = layout->width - (rel != NULL ? rel->box.x + rel->box.w : 0);
-        cell->rulerx.aunit = 1;
     }
     if (cell->relt != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relt);
         cell->rulery.before = rel != NULL ? rel->box.y : 0;
-        cell->rulery.bunit = 1;
     }
     if (cell->relb != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relb);
         cell->rulery.after = layout->height - (rel != NULL ? rel->box.y + rel->box.h : 0);
-        cell->rulery.aunit = 1;
     }
 
     gum_layout_absolute_part(&cell->rulerx, cell->box.minw, layout->width, layout->dpi, layout->dsp, &cell->box.x, &cell->box.w);

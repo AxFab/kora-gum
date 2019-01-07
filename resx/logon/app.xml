@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<panel min-width="320px" min-height="220px" width="wrap" height="wrap">
+<panel min-width="320px" min-height="220px" width="wrap" height="wrap" img="./resx/logon/wall4.png">
     <group horizontal-center="0" vertical-center="0" layout="VGroupCenter" gap="40dp">
         <group layout="HGroupTop" id="users" gap="40dp">
-            <panel id="user" layout="VGroupLeft" width="150dp" height="230dp" solid="true" >
+            <group id="user" layout="VGroupLeft" width="150dp" height="230dp" solid="true" >
                 <panel-image width="150dp" height="150dp" substyle="true" />
-                <panel-name width="150dp" height="40dp"substyle="true" />
-                <panel-psword width="150dp" height="40dp" substyle="true" />
-            </panel>
+                <panel-name width="150dp" height="40dp" substyle="true" />
+                <panel-psword width="150dp" height="40dp" substyle="true" hidden="true" text="xxx" />
+            </group>
         </group>
+        <panel width="340dp" height="40dp" >
+            <button left="0" width="50%" height="wrap" text="Log in as guest" solid="true" />
+            <button right="0" width="50%" height="wrap" text="Manage users" solid="true" />
+        </panel>
     </group>
-    <panel width="240dp" height="40dp" >
-        <button left="0" width="50%" height="wrap" text="Log in as guest" />
-        <button right="0" width="50%" height="wrap" text="Manage users" />
-    </panel>
 </panel>

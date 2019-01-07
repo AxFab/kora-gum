@@ -94,9 +94,9 @@ void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_Event
 
 static void gum_remove_context(GUM_event_manager *evm)
 {
-	gum_invalid_cell(evm->menu, evm->win);
-	gum_cell_detach(evm->menu);
-	evm->menu = NULL;
+    gum_invalid_cell(evm->menu, evm->win);
+    gum_cell_detach(evm->menu);
+    evm->menu = NULL;
 }
 
 static void gum_event_motion(GUM_event_manager *evm, int x, int y)
@@ -367,19 +367,19 @@ void gum_event_loop(GUM_event_manager *evm)
 
 void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
 {
-	gum_resize(menu, 0, 0, evm->dpi, evm->dsp);
-	menu->rulerx.before = evm->mouse_x;
-	menu->rulery.before = evm->mouse_y;
-	if (menu->rulerx.before + menu->box.w > evm->width && menu->rulerx.before > menu->box.w)
-	   menu->rulerx.before -= menu->box.w;
-	if (menu->rulery.before + menu->box.h > evm->height) {
-		if (menu->rulery.before > menu->box.h)
-		    menu->rulery.before -= menu->box.h;
-		else
-		    menu->rulery.before = evm->height - menu->box.h;
+    gum_resize(menu, 0, 0, evm->dpi, evm->dsp);
+    menu->rulerx.before = evm->mouse_x;
+    menu->rulery.before = evm->mouse_y;
+    if (menu->rulerx.before + menu->box.w > evm->width && menu->rulerx.before > menu->box.w)
+        menu->rulerx.before -= menu->box.w;
+    if (menu->rulery.before + menu->box.h > evm->height) {
+        if (menu->rulery.before > menu->box.h)
+            menu->rulery.before -= menu->box.h;
+        else
+            menu->rulery.before = evm->height - menu->box.h;
     }
 
     gum_cell_pushback(evm->root, menu);
-	evm->menu = menu;
-	gum_refresh(evm);
+    evm->menu = menu;
+    gum_refresh(evm);
 }

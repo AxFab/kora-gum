@@ -34,10 +34,20 @@ struct GUM_window {
     RECT inval;
 };
 
-long long gum_system_time() 
+long long gum_system_time()
 {
-	
-} 
+    // January 1, 1970 (start of Unix epoch) in ticks
+    const INT64 UNIX_START = 0x019DB1DED53E8000;
+
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+
+    LARGE_INTEGER li;
+    li.LowPart = ft.dwLowDateTime;
+    li.HighPart = ft.dwHighDateTime;
+    // Convert ticks since EPOCH into nano-seconds
+    return (li.QuadPart - UNIX_START) * 100;
+}
 
 
 static TCHAR szWindowClass[] = _T("gum");
@@ -53,9 +63,9 @@ LRESULT CALLBACK WndProc(_In_ HWND hwnd, _In_ UINT   uMsg, _In_ WPARAM wParam, _
 
 bool win32_init = false;
 
-void gum_win32_setup() 
+void gum_win32_setup()
 {
-	HINSTANCE HINSTANCE = GetModuleHandle (NULL) ;
+    HINSTANCE HINSTANCE = GetModuleHandle(NULL) ;
     appInstance = hInstance;
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -82,8 +92,8 @@ HFONT  hFont;
 
 GUM_window *gum_create_surface(int width, int height)
 {
-	if (!win32_init) 
-	    gum_win32_setup() ;
+    if (!win32_init)
+        gum_win32_setup() ;
     HWND hwnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, width + (16), height + (39), NULL, NULL,
                              appInstance, NULL);
     if (!hwnd) {
@@ -93,7 +103,7 @@ GUM_window *gum_create_surface(int width, int height)
     }
 
     UINT timer;
-    SetTimer (hwnd, (UINT_PTR) & timer, 20, NULL);
+    SetTimer(hwnd, (UINT_PTR) & timer, 20, NULL);
 
 
     GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
@@ -116,13 +126,13 @@ void gum_destroy_surface(GUM_window *win)
 
 GUM_window *gum_surface(GUM_window *parent, int width, int height)
 {
-	HBITMAP hbmp = CreateCompatibleBitmap(parent->hdc, width, height) ;
-	GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
-	win->hwnd = 0;
-	win->hbmp = hbmp;
-	win->hdc = CreateCompatibleDC(parent->hdc) ;
-	return win;
-} 
+    HBITMAP hbmp = CreateCompatibleBitmap(parent->hdc, width, height) ;
+    GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
+    win->hwnd = 0;
+    win->hbmp = hbmp;
+    win->hdc = CreateCompatibleDC(parent->hdc) ;
+    return win;
+}
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -185,9 +195,9 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         event->param0 = 3;
         break;
     case WM_MOUSEWHEEL: {
-    	short delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
+        short delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
         event->param0 = abs(delta);
-        event->type = delta < 0 ? GUM_EV_WHEEL_DOWN: GUM_EV_WHEEL_UP;
+        event->type = delta < 0 ? GUM_EV_WHEEL_DOWN : GUM_EV_WHEEL_UP;
         break;
     }
     case WM_KEYDOWN:
@@ -225,31 +235,31 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
 void gum_invalid_surface_push(GUM_window *win)
 {
-	RECT r = win->inval;
+    RECT r = win->inval;
     win->inval.left = 0;
     win->inval.right = 0;
     win->inval.top = 0;
     win->inval.bottom = 0;
     if (r.left != r.right && r.top != r.bottom)
         InvalidateRect(win->hwnd, &r, FALSE);
-} 
+}
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
-	if (win->inval.right == 0) {
-		win->inval.left = x;
+    if (win->inval.right == 0) {
+        win->inval.left = x;
         win->inval.right = x + w;
     } else {
         win->inval.left = MAX(x, win->inval.left);
         win->inval.right = MIN(x + w, win->inval.right) ;
-    } 
-    
+    }
+
     if (win->inval.bottom == 0) {
-		win->inval.top = y;
+        win->inval.top = y;
         win->inval.bottom = y + h;
     } else {
         win->inval.top = MAX(y, win->inval.top);
         win->inval.bottom = MIN(y + h, win->inval.bottom) ;
-    } 
+    }
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)
@@ -271,17 +281,17 @@ void gum_start_paint(GUM_window *win, int x, int y)
 {
     win->x = x;
     win->y = y;
-    if (win->hbmp != NULL) 
+    if (win->hbmp != NULL)
         win->old = SelectObject(win->hdc, win->hbmp) ;
-    else 
-    win->hdc = BeginPaint(win->hwnd, &win->ps);
+    else
+        win->hdc = BeginPaint(win->hwnd, &win->ps);
 }
 
 void gum_end_paint(GUM_window *win)
 {
-	if (win->hbmp != NULL) 
-	    SelectObject(win->hdc, win->old) ;
-	else
+    if (win->hbmp != NULL)
+        SelectObject(win->hdc, win->old) ;
+    else
         EndPaint(win->hwnd, &win->ps);
 }
 
@@ -297,22 +307,22 @@ void gum_pop_clip(GUM_window *win, GUM_box *box)
     win->y -= box->cy - box->sy;
 }
 
-void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim ) 
+void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim)
 {
-	GUM_box bx = box;
-	
-} 
+    GUM_box bx = box;
 
-void gum_draw_img(GUM_window *win, HBITMAP bmp, GUM_box *box) 
+}
+
+void gum_draw_img(GUM_window *win, HBITMAP bmp, GUM_box *box)
 {
-	BITMAP bmp;
+    BITMAP bmp;
     HDC hdcMem = CreateCompatibleDC(win->hdc);
     HBITMAP hbmOld = SelectObject(hdcMem, bmp);
     GetObject(bmp, sizeof(bm), &bm);
     StretchBlt(win->hdc, box->x + win->x, box->y + win->y, box->w, box->h, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
     // SelectObject(win->hdc, hbmOld);
     DeleteDC(hdcMem);
-} 
+}
 
 
 void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
@@ -326,14 +336,15 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
         cell->gradient = NULL;
         cell->cachedSkin = skin;
     }
-    
+
     if (! top && cell->state & GUM_CELL_BUFFERED) {
-        if (cell->surface == NULL) 
-            cell->surface = gum_surface(win, cell->box.w, cell->box. h) ;    gum_paint(cell->surface, cell) ;
+        if (cell->surface == NULL)
+            cell->surface = gum_surface(win, cell->box.w, cell->box. h) ;
+        gum_paint(cell->surface, cell) ;
         gum_draw_pic(win, cell->surface, & cell->box, & cell->anim) ;
-        return ;    
-   } 
-    
+        return ;
+    }
+
     if (cell->image == NULL && cell->img_src != NULL)
         cell->image = gum_image(cell->img_src);
 
@@ -343,10 +354,10 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     r.right = cell->box.x + cell->box.w + win->x;
     r.bottom = cell->box.y + cell->box.h + win->y;
     SetBkMode(win->hdc, TRANSPARENT);
-    if (cell->image != NULL) {
+    if (cell->image != NULL)
         gum_draw_img(win, cell->image, & cell->box) ;
 
-    } else if (skin->bgcolor >= MIN_ALPHA && skin->grcolor >= MIN_ALPHA) {
+    else if (skin->bgcolor >= MIN_ALPHA && skin->grcolor >= MIN_ALPHA) {
         for (int i = 0; i < cell->box.h; ++i) {
             r.top = cell->box.y + win->y + i;
             r.bottom = r.top + 1;
@@ -422,13 +433,13 @@ const char *memrchr(const void *buf, int byte, size_t len)
 
 
 
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */ 
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 #if 0
 // Creates a stream object initialized with the data from an executable resource.
-IStream * CreateStreamOnResource(LPCTSTR lpName, LPCTSTR lpType)
+IStream *CreateStreamOnResource(LPCTSTR lpName, LPCTSTR lpType)
 {
     // initialize return value
-    IStream * ipStream = NULL;
+    IStream *ipStream = NULL;
 
     // find the resource
     HRSRC hrsrc = FindResource(NULL, lpName, lpType);
@@ -475,14 +486,14 @@ Return:
 
 
 // Loads a PNG image from the specified stream (using Windows Imaging Component).
-IWICBitmapSource * LoadBitmapFromStream(IStream * ipImageStream)
+IWICBitmapSource *LoadBitmapFromStream(IStream *ipImageStream)
 {
     // initialize return value
-    IWICBitmapSource * ipBitmap = NULL;
+    IWICBitmapSource *ipBitmap = NULL;
 
     // load WIC's PNG decoder
-    IWICBitmapDecoder * ipDecoder = NULL;
-    if (FAILED(CoCreateInstance(CLSID_WICPngDecoder, NULL, CLSCTX_INPROC_SERVER, __uuidof(ipDecoder), reinterpret_cast<void**>(&ipDecoder))))
+    IWICBitmapDecoder *ipDecoder = NULL;
+    if (FAILED(CoCreateInstance(CLSID_WICPngDecoder, NULL, CLSCTX_INPROC_SERVER, __uuidof(ipDecoder), reinterpret_cast<void **>(&ipDecoder))))
         goto Return;
 
     // load the PNG
@@ -495,7 +506,7 @@ IWICBitmapSource * LoadBitmapFromStream(IStream * ipImageStream)
         goto ReleaseDecoder;
 
     // load the first frame (i.e., the image)
-    IWICBitmapFrameDecode * ipFrame = NULL;
+    IWICBitmapFrameDecode *ipFrame = NULL;
     if (FAILED(ipDecoder->GetFrame(0, &ipFrame)))
         goto ReleaseDecoder;
 
@@ -512,7 +523,7 @@ Return:
 }
 
 // Creates a 32 - bit DIB from the specified WIC bitmap.
-HBITMAP CreateHBITMAP(IWICBitmapSource * ipBitmap)
+HBITMAP CreateHBITMAP(IWICBitmapSource *ipBitmap)
 {
     // initialize return value
     HBITMAP hbmp = NULL;
@@ -534,7 +545,7 @@ HBITMAP CreateHBITMAP(IWICBitmapSource * ipBitmap)
     bminfo.bmiHeader.biCompression = BI_RGB;
 
     // create a DIB section that can hold the image
-    void * pvImageBits = NULL;
+    void *pvImageBits = NULL;
     HDC hdcScreen = GetDC(NULL);
     hbmp = CreateDIBSection(hdcScreen, &bminfo, DIB_RGB_COLORS, &pvImageBits, NULL, 0);
     ReleaseDC(NULL, hdcScreen);
@@ -544,8 +555,7 @@ HBITMAP CreateHBITMAP(IWICBitmapSource * ipBitmap)
     // extract the image into the HBITMAP
     const UINT cbStride = width * 4;
     const UINT cbImage = cbStride * height;
-    if (FAILED(ipBitmap->CopyPixels(NULL, cbStride, cbImage, static_cast<BYTE *>(pvImageBits))))
-    {
+    if (FAILED(ipBitmap->CopyPixels(NULL, cbStride, cbImage, static_cast<BYTE *>(pvImageBits)))) {
         // couldn't extract image; delete HBITMAP
         DeleteObject(hbmp);
         hbmp = NULL;
@@ -561,12 +571,12 @@ HBITMAP LoadPNGImage(TCHAR *file)
     HBITMAP hbmpSplash = NULL;
 
     // load the PNG image data into a stream
-    IStream * ipImageStream = CreateStreamOnResource(file, _T("PNG"));
+    IStream *ipImageStream = CreateStreamOnResource(file, _T("PNG"));
     if (ipImageStream == NULL)
         goto Return;
 
     // load the bitmap with WIC
-    IWICBitmapSource * ipBitmap = LoadBitmapFromStream(ipImageStream);
+    IWICBitmapSource *ipBitmap = LoadBitmapFromStream(ipImageStream);
     if (ipBitmap == NULL)
         goto ReleaseStream;
 

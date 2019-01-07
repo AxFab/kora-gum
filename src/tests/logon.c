@@ -33,45 +33,49 @@ GUM_skins *skins;
 
 GUM_cell *user;
 GUM_cell *users;
+GUM_cell *selected_user;
 
-char *names[] = {
-	"Fabien", 
-} ;
-
-char *pics[] = {
-	"./resx/logon/pic0.png", 
-} ;
-
-void on_select(GUM_event_manager *evm, GUM_cell *cell, int event) 
+void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-	GUM_cell *usr = users->first ;
-	while (usr) {
-		usr->last->state |= GUM_CELL_HIDDEN;
-		usr = usr->next;
-	} 
-	
-	printf ("Load user '%s' \n", cell->first->next->text) ;
-	cell->last->state & = ~GUM_CELL_HIDDEN;
-	// give focus
-	gum_refresh(evm);
-} 
+    GUM_cell *usr = users->first ;
+    while (usr) {
+        usr->last->state |= GUM_CELL_HIDDEN;
+        usr = usr->next;
+    }
 
-void load_users() 
+    if (cell != selected_user) {
+        selected_user = cell;
+        printf("Select user '%s' \n", cell->first->next->text);
+        cell->last->state &= ~GUM_CELL_HIDDEN;
+    } else {
+        printf("Unselect user\n");
+        selected_user = NULL;
+    }
+    // give focus
+    gum_refresh(evm);
+}
+
+void load_users()
 {
-	int i;
-	gum_cell_destroy_children(users);
-	for (i = 0; i < 1; ++i) {
-		GUM_cell *usr = gum_cell_copy(user) ;
-		gum_event_bind(evm, usr, GUM_EV_CLICK, on_select );
-		gum_cell_pushback(users, usr) ;
-	} 
-	gum_refresh(evm);
-} 
+    gum_cell_destroy_children(users);
+    FILE *info = fopen("./resx/logon/password.txt", "r");
+    if (info == NULL)
+        return;
+    char buf[512];
+    while (fgets(buf, 512, info)) {
+        GUM_cell *usr = gum_cell_copy(user) ;
+        usr->first->next->text = strdup(strtok(buf, ";\n"));
+        usr->first->img_src = strdup(strtok(NULL, ";\n"));
+        gum_event_bind(evm, usr, GUM_EV_CLICK, on_select);
+        gum_cell_pushback(users, usr) ;
+    }
+    gum_refresh(evm);
+}
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
-int main(int argc, char **argv, char**env)
+int main(int argc, char **argv, char **env)
 {
     int width = 680;
     int height = width * 10 / 16; // 425

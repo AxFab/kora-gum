@@ -32,21 +32,21 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     if (!strcmp("id", key))
         cell->id = strdup(value);
 
-    else if (!strcmp("left", key)){
+    else if (!strcmp("left", key)) {
         if (value[0] == '{') {
             cell->rulerx. bunit = CSS_SIZE_PX;
             cell->rell = strdup(&value[1]);
             strchr(cell->rell, '}') [0] = '\0';
         } else
             cell->rulerx.bunit = css_parse_size(value, &cell->rulerx.before);
-   } else if (!strcmp("right", key)) {
+    } else if (!strcmp("right", key)) {
         if (value[0] == '{') {
             cell->rulerx.aunit = CSS_SIZE_PX;
             cell->relr = strdup(&value[1]);
             strchr(cell->relr, '}') [0] = '\0';
         } else
             cell->rulerx.aunit = css_parse_size(value, &cell->rulerx.after);
-   } else if (!strcmp("horizontal-center", key))
+    } else if (!strcmp("horizontal-center", key))
         cell->rulerx.cunit = css_parse_size(value, &cell->rulerx.center);
     else if (!strcmp("min-width", key))
         cell->rulerx.munit = css_parse_usize(value, &cell->rulerx.min);

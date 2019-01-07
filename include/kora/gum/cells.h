@@ -84,18 +84,18 @@ enum {
     GUM_CELL_OVERFLOW_Y = (1 << 6),
 
     GUM_CELL_SUBSTYLE = (1 << 7),
-    
-    GUM_CELL_HIDDEN = (1 << 8), 
-    GUM_CELL_BUFFERED = (1 << 9), 
+
+    GUM_CELL_HIDDEN = (1 << 8),
+    GUM_CELL_BUFFERED = (1 << 9),
 };
 
 long long gum_system_time();
 
-typedef struct GUM_anim GUM_anim; 
+typedef struct GUM_anim GUM_anim;
 struct GUM_anim {
-	int ow, oh;
-	int delay, duration;
-	long long last;
+    int ow, oh;
+    int delay, duration;
+    long long last;
 };
 
 struct GUM_cell {
@@ -113,7 +113,7 @@ struct GUM_cell {
     GUM_skin *skin_down;
     char *text; // Text value
     char *img_src;
-    
+
     char *rell;
     char *relr;
     char *relt;
@@ -137,7 +137,7 @@ struct GUM_cell {
     int text_pen;
 
     void (*layout)(GUM_cell *cell, GUM_layout *layout);
-    
+
     GUM_anim anim;
 };
 

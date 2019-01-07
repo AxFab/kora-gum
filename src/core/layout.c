@@ -387,7 +387,7 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     cell->box.ch_h = 0;
     for (child = cell->first; child; child = child->next) {
         if (child->state & GUM_CELL_HIDDEN)
-             continue;
+            continue;
         gum_cell_resize(child, &sub_layout);
         if (child->box.x + child->box.w > cell->box.ch_w)
             cell->box.ch_w = child->box.x + child->box.w;

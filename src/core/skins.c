@@ -143,8 +143,8 @@ unsigned gum_mix(unsigned src, unsigned dest, float mx)
 
 void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
 {
-	char sname[50];
-	strcpy(sname, name);
+    char sname[50];
+    strcpy(sname, name);
     cell->skin = gum_style_find(skins, sname);
     strcpy(sname, name);
     strcat(sname, ":over");

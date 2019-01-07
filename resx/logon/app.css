@@ -4,3 +4,36 @@
 .panel {
   background: #f2f2f2;
 }
+
+
+.panel-image {
+  background: #2f2f2f;
+}
+
+.panel-name {
+  background: #f2f2f2;
+    color:black;
+}
+
+.panel-name:over {
+    background: #10a6a6;
+}
+
+.panel-psword {
+  background: #f2f2f2;
+    color:black;
+}
+
+.panel-psword:over {
+    background: #10a6a6;
+}
+
+.button {
+  background: #f2f2f2;
+    color:black;
+}
+
+.button:over {
+    background: #10a6a6;
+}
+

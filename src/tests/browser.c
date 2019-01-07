@@ -52,16 +52,16 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event);
 
 void on_tab_click(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-	GUM_cell *tab;
-	for (tab = nav->first; tab; tab = tab->next) {
-		if (tab == cell)
-		    continue;
-		gum_reset_style(skins, tab, "header-tab");
-		// gum_invalid_cell(cell, evm->win);
+    GUM_cell *tab;
+    for (tab = nav->first; tab; tab = tab->next) {
+        if (tab == cell)
+            continue;
+        gum_reset_style(skins, tab, "header-tab");
+        // gum_invalid_cell(cell, evm->win);
     }
     gum_reset_style(skins, cell, "header-tab-on");
-	// gum_invalid_cell(cell, evm->win);
-	gum_refresh(evm);
+    // gum_invalid_cell(cell, evm->win);
+    gum_refresh(evm);
 }
 
 void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)
@@ -74,12 +74,12 @@ void on_icon_click(GUM_event_manager *evm, GUM_cell *cell, int event)
 
 void on_file_menu(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-	gum_show_context(evm, ctx_file);
+    gum_show_context(evm, ctx_file);
 }
 
 void on_view_menu(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-	gum_show_context(evm, ctx_view);
+    gum_show_context(evm, ctx_view);
 }
 
 void on_previous(GUM_event_manager *evm, GUM_cell *cell, int event)
@@ -138,7 +138,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 /* Graphical User-interface Module */
-int main(int argc, char **argv, char**env)
+int main(int argc, char **argv, char **env)
 {
     int width = 680;
     int height = width * 10 / 16; // 425
@@ -183,8 +183,8 @@ int main(int argc, char **argv, char**env)
     // Handle navigation tabs
     nav = gum_get_by_id(root, "nav-tabs");
     GUM_cell *tab;
-	for (tab = nav->first; tab; tab = tab->next)
-	    gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click);
+    for (tab = nav->first; tab; tab = tab->next)
+        gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click);
 
     getcwd(current_path, 8192);
     on_refresh(evm, NULL, 0);

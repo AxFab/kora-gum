@@ -47,13 +47,13 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 
 void gum_paint(GUM_window *win, GUM_cell *root)
 {
-	GUM_cell *cell = root;
+    GUM_cell *cell = root;
     gum_start_paint(win, - root->box.x, - root->box.y);
     for (;;) {
         // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
         //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
-        if (! (cell->state & GUM_CELL_HIDDEN))
-        gum_draw_cell(win, cell, cell == root);
+        if (!(cell->state & GUM_CELL_HIDDEN))
+            gum_draw_cell(win, cell, cell == root);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
             // TODO - prune if cell is outside drawing clip
             if (cell->first) {
@@ -72,7 +72,7 @@ void gum_paint(GUM_window *win, GUM_cell *root)
 
             cell = cell->parent;
             gum_pop_clip(win, &cell->box);
-            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y) &&! (cell->state & GUM_CELL_HIDDEN) ) // TODO
+            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y) && !(cell->state & GUM_CELL_HIDDEN))  // TODO
                 gum_draw_scrolls(win, cell);
         }
         if (cell)
@@ -160,8 +160,8 @@ void gum_cell_destroy_children(GUM_cell *cell)
 
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
 {
-	if (child->parent != NULL)
-	    gum_cell_detach(child);
+    if (child->parent != NULL)
+        gum_cell_detach(child);
     child->parent = cell;
     child->previous = cell->last;
     child->next = NULL;

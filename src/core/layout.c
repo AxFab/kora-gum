@@ -351,8 +351,19 @@ static void gum_cell_resize(GUM_cell *cell, GUM_layout *layout)
     cell->anim. delay = 0 ;
     cell->anim. ow = cell->box.w;
     cell->anim. oh = cell->box.h;
-    cell->anim. last = gum_system_time();
+    
     layout->resize(cell, layout);
+    // TODO -- Animation, request paint 
+    if (cell->anim.ow != cell->box.w || cell->anim.oh != cell->box.h) {
+        cell->anim.elapsed += gum_system_time() - cell->anim.last;
+        float progress = MIN(MAX(cell->anim.elapsed * 1.0f / 500000000.0f, 0.0f), 1.0f);
+       cell->box.w = progress * (cell->box.w - cell->anim.ow) + cell->anim.ow;
+       cell->box.h = progress * (cell->box.h - cell->anim.oh) + cell->anim.oh;
+    } else {
+        cell->anim.elapsed = 0;
+    } 
+   
+    cell->anim.last = gum_system_time();
 
     int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, layout->dpi, layout->dsp, cell->box.w);
     int pad_right = CSS_GET_UNIT(cell->padding.right, cell->padding.runit, layout->dpi, layout->dsp, cell->box.w);

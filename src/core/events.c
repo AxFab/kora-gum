@@ -77,6 +77,14 @@ static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags,
 
     if (skin != gum_skin(cell))
         gum_invalid_cell(cell, evm->win);
+    else {
+        GUM_cell *child;
+        for (child = cell->first; child; child->next) {
+            // TODO -- Is there a better way to ensure childs are changing too? 
+            if (child->state & GUM_CELL_SUBSTYLE) 
+                gum_invalid_cell(child, evm->win);
+        } 
+    } 
 
     gum_emit_event(evm, cell, event);
 }
@@ -344,6 +352,10 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
         break;
     case GUM_EV_KEY_RELEASE:
         gum_event_key_release(evm, event->param0, event->param1);
+        break;
+    case GUM_EV_TICK :
+        gum_resize(evm->root, evm->width, evm->height, evm->dpi, evm->dsp);
+        gum_invalid_surface_push(evm->win);
         break;
     }
     // fprintf(stderr, "Event %d leave\n", event->type);

@@ -299,12 +299,15 @@ void gum_push_clip(GUM_window *win, GUM_box *box)
 {
     win->x += box->cx - box->sx;
     win->y += box->cy - box->sy;
+    HRGN clip = CreateRectReg(win->x, win->y, win->x + box->cw, win->y + box->ch);
+    SelectClipRgn(win->hdc, clip);
 }
 
 void gum_pop_clip(GUM_window *win, GUM_box *box)
 {
     win->x -= box->cx - box->sx;
     win->y -= box->cy - box->sy;
+    SelectClipRgn(win->hdc, NULL);
 }
 
 void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim)

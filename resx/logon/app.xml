@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <panel min-width="320px" min-height="220px" width="wrap" height="wrap" img="./resx/logon/wall4.png">
     <group horizontal-center="0" vertical-center="0" layout="VGroupCenter" gap="40dp">
-        <group layout="HGroupTop" id="users" gap="40dp">
-            <group id="user" layout="VGroupLeft" width="150dp" height="230dp" solid="true" >
+        <group layout="HGroupTop" id="users" gap="40dp" height="230dp">
+            <group id="user" layout="VGroupLeft" width="150dp" solid="true" >
                 <panel-image width="150dp" height="150dp" substyle="true" />
                 <panel-name width="150dp" height="40dp" substyle="true" />
                 <panel-psword width="150dp" height="40dp" substyle="true" hidden="true" text="xxx" />

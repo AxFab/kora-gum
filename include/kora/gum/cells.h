@@ -93,9 +93,11 @@ long long gum_system_time();
 
 typedef struct GUM_anim GUM_anim;
 struct GUM_anim {
-    int ow, oh;
     int delay, duration;
     long long last;
+    float elapsed;
+    // method pre/post!
+    int ow, oh;
 };
 
 struct GUM_cell {

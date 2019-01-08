@@ -47,8 +47,9 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
         selected_user = cell;
         printf("Select user '%s' \n", cell->first->next->text);
         cell->last->state &= ~GUM_CELL_HIDDEN;
-    } else {
+    } else if (selected_user != NULL) {
         printf("Unselect user\n");
+        selected_user->last->state |= GUM_CELL_HIDDEN;
         selected_user = NULL;
     }
     // give focus

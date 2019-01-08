@@ -67,6 +67,8 @@ enum {
     GUM_EV_WHEEL_CLICK,
 
     GUM_EV_RESIZE,
+    
+    GUM_EV_TICK, 
 };
 
 

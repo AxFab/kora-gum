@@ -35,7 +35,7 @@ LIBAPI void gum_refresh(GUM_event_manager *evm);
 LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
 
 LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);
-void gum_do_visual( GUM_cell *cell, , GUM_window *win, struct GUM_sideruler *inval) ;
+void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval) ;
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -73,8 +73,8 @@ enum {
     GUM_EV_WHEEL_CLICK,
 
     GUM_EV_RESIZE,
-    
-    GUM_EV_TICK, 
+
+    GUM_EV_TICK,
 };
 
 

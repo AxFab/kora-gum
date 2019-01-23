@@ -39,6 +39,7 @@ typedef struct GUM_event_manager GUM_event_manager;
 typedef struct GUM_event GUM_event;
 typedef struct GUM_window GUM_window;
 typedef struct GUM_gctx GUM_gctx;
+typedef struct GUM_sideruler GUM_sideruler;
 
 /* Driver */
 LIBAPI GUM_window *gum_create_surface(int width, int height);

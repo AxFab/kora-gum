@@ -48,11 +48,12 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
         printf("Select user '%s' \n", gum_get_by_id(cell, "usr")->text);
         gum_get_by_id(cell, "hid")->state &= ~GUM_CELL_HIDDEN;
         gum_invalid_measure(gum_get_by_id(cell, "usr")) ;
-        gum_set_focus(gum_get_by_id(cell, "pwd")) ;
+        gum_set_focus(evm, gum_get_by_id(cell, "pwd")) ;
     } else if (selected_user != NULL) {
         printf("Unselect user\n");
         gum_get_by_id(selected_user, "hid")->state |= GUM_CELL_HIDDEN;
         selected_user = NULL;
+        gum_set_focus(evm, NULL);
     }
     // give focus
     gum_refresh(evm);
@@ -78,8 +79,8 @@ void load_users()
 
 void on_lang(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
-	printf("Language menu\n") ;
-} 
+    printf("Language menu\n") ;
+}
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 

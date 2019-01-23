@@ -23,7 +23,7 @@ CFLAGS += -I$(topdir)/include
 # CFLAGS += -D__GUM_X11
 
 # LFLAGS += -L/usr/X11R6/lib -lX11
-LFLAGS += -L/usr/X11R6/lib -L/usr/include/cairo -lX11 -lcairo
+LFLAGS += -L/usr/X11R6/lib -L/usr/include/cairo -lX11 -lcairo -lrt
 
 
 # C O M P I L E   M O D E -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

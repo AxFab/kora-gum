@@ -49,14 +49,17 @@ void gum_paint(GUM_window *win, GUM_cell *root)
 {
     GUM_cell *cell = root;
     gum_start_paint(win, - root->box.x, - root->box.y);
+    char pad[50];
     for (;;) {
-        // fprintf(stderr, "Paint %s [%d, %d, %d, %d]\n",
-        //     cell->id, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
+        memset(pad, ' ', cell->depth * 2);
+        pad[cell->depth * 2] = '\0';
+        fprintf(stderr, "%sPaint <%s.%s> [%d, %d, %d, %d]\n", pad,
+                cell->id, cell->name, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
         if (!(cell->state & GUM_CELL_HIDDEN))
             gum_draw_cell(win, cell, cell == root);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
             // TODO - prune if cell is outside drawing clip
-            if (cell->first &&! (cell->state & GUM_CELL_HIDDEN)) {
+            if (cell->first && !(cell->state & GUM_CELL_HIDDEN)) {
                 gum_push_clip(win, &cell->box);
                 cell = cell->first;
                 continue;
@@ -209,24 +212,26 @@ GUM_cell *gum_cell_copy(GUM_cell *cell)
 }
 
 
-GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2) 
+GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2)
 {
-	while(cell1) {
-		GUM_cell *cell = cell2;
-		while (cell) {
-			if (cell == cell1) 
-			    return cell;
-			cell = cell->parent;
-		} 
-		cell1 = cell1->parent;
-	}
-	return cell2;
-} 
+    if (cell2 == NULL)
+        return cell1;
+    while (cell1) {
+        GUM_cell *cell = cell2;
+        while (cell) {
+            if (cell == cell1)
+                return cell;
+            cell = cell->parent;
+        }
+        cell1 = cell1->parent;
+    }
+    return cell2;
+}
 
 
 GUM_event_manager *gum_fetch_manager(GUM_cell *cell)
 {
-	while (cell->parent)
+    while (cell->parent)
         cell = cell->parent;
     return cell->manager;
-} 
+}

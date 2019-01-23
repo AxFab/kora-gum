@@ -189,7 +189,8 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
 
     // Create a new cell and attach it to the tree
     GUM_cell *cell = (GUM_cell *)calloc(1, sizeof(GUM_cell));
-    // cell->id = strdup(node->node_name); // TODO -- Debug only
+    cell->name = strdup(node->node_name);
+    cell->depth = builder->cursor ? builder->cursor->depth + 1 : 0;
     if (builder->cursor)
         gum_cell_pushback(builder->cursor, cell);
 

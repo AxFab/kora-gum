@@ -73,6 +73,7 @@ enum {
     MWH_FUNC_CLOSE = (1L << 5),
 };
 
+
 GUM_window *gum_create_surface(int width, int height)
 {
     Display *dsp;
@@ -123,24 +124,6 @@ void gum_destroy_surface(GUM_window *win)
     cairo_surface_destroy(win->srf);
     XCloseDisplay(dsp);
     free(win);
-}
-
-void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
-{
-    Display *dsp = cairo_xlib_surface_get_display(win->srf);
-    Drawable da = cairo_xlib_surface_get_drawable(win->srf);
-    // printf("Invalid <%d, %d, %d, %d>\n", x, y, width, height);
-    XExposeEvent paint;
-    memset(&paint, 0, sizeof(XExposeEvent));
-    paint.type = Expose;
-    paint.send_event = True;
-    paint.display = dsp;
-    paint.window = da;
-    paint.x = x;
-    paint.y = y;
-    paint.width = w;
-    paint.height = h;
-    XSendEvent(dsp, da, True, ExposureMask, (XEvent *)&paint);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -381,100 +364,102 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     XKeyEvent *key = (XKeyEvent *)&e;
     XResizeRequestEvent *resz = (XResizeRequestEvent *)&e;
 
-    XNextEvent(cairo_xlib_surface_get_display(win->srf), &e);
-    switch (e.type) {
-    case Expose:
-        event->type = GUM_EV_EXPOSE;
-        // printf("Event Expose\n");
-        break;
+    do {
+        XNextEvent(cairo_xlib_surface_get_display(win->srf), &e);
+        switch (e.type) {
+        case Expose:
+            event->type = GUM_EV_EXPOSE;
+            // printf("Event Expose\n");
+            break;
 
-    case KeyPress:
-        event->type = GUM_EV_KEY_PRESS;
-        unicode = key_unicode(key->keycode, key->state);
-        // printf("Event KeyPress <%x.%x-%x>\n", key->state, key->keycode, unicode);
-        event->param0 = unicode;
-        event->param1 = (key->state << 16) | key->keycode;
-        break;
-    case KeyRelease:
-        event->type = GUM_EV_KEY_RELEASE;
-        unicode = key_unicode(key->keycode, key->state);
-        // printf("Event KeyRelease <%x.%x-%x>\n", key->state, key->keycode, unicode);
-        event->param0 = unicode;
-        event->param1 = (key->state << 16) | key->keycode;
-        break;
-    case MotionNotify:
-        event->type = GUM_EV_MOTION;
-        event->param0 = motion->x;
-        event->param1 = motion->y;
-        // printf("Event Motion <%d, %d>\n", motion->x, motion->y);
-        break;
-    case ButtonPress:
-        if (btn->button == 4) {
-            // printf("Event Wheel Up\n");
-            event->type = GUM_EV_WHEEL_UP;
-        } else if (btn->button == 5) {
-            // printf("Event Wheel Down\n");
-            event->type = GUM_EV_WHEEL_DOWN;
-        } else {
-            // printf("Event ButtonPress <%x.%x>\n", btn->state, btn->button);
-            event->type = GUM_EV_BTN_PRESS;
-            event->param0 = btn->button;
-            event->param1 = btn->state;
-        }
-        break;
-    case ButtonRelease:
-        if (btn->button == 4 || btn->button == 5)
+        case KeyPress:
+            event->type = GUM_EV_KEY_PRESS;
+            unicode = key_unicode(key->keycode, key->state);
+            // printf("Event KeyPress <%x.%x-%x>\n", key->state, key->keycode, unicode);
+            event->param0 = unicode;
+            event->param1 = (key->state << 16) | key->keycode;
+            break;
+        case KeyRelease:
+            event->type = GUM_EV_KEY_RELEASE;
+            unicode = key_unicode(key->keycode, key->state);
+            // printf("Event KeyRelease <%x.%x-%x>\n", key->state, key->keycode, unicode);
+            event->param0 = unicode;
+            event->param1 = (key->state << 16) | key->keycode;
+            break;
+        case MotionNotify:
+            event->type = GUM_EV_MOTION;
+            event->param0 = motion->x;
+            event->param1 = motion->y;
+            // printf("Event Motion <%d, %d>\n", motion->x, motion->y);
+            break;
+        case ButtonPress:
+            if (btn->button == 4) {
+                // printf("Event Wheel Up\n");
+                event->type = GUM_EV_WHEEL_UP;
+            } else if (btn->button == 5) {
+                // printf("Event Wheel Down\n");
+                event->type = GUM_EV_WHEEL_DOWN;
+            } else {
+                // printf("Event ButtonPress <%x.%x>\n", btn->state, btn->button);
+                event->type = GUM_EV_BTN_PRESS;
+                event->param0 = btn->button;
+                event->param1 = btn->state;
+            }
+            break;
+        case ButtonRelease:
+            if (btn->button == 4 || btn->button == 5)
+                event->type = -1;
+
+            else {
+                // printf("Event ButtonRelease <%x.%x>\n", btn->state, btn->button);
+                event->type = GUM_EV_BTN_RELEASE;
+                event->param0 = btn->button;
+                event->param1 = btn->state;
+            }
+            break;
+        case ResizeRequest:
+            event->type = GUM_EV_RESIZE;
+            cairo_xlib_surface_set_size(win->srf, resz->width, resz->height);
+            event->param0 = resz->width;
+            event->param1 = resz->height;
+            break;
+        case EnterNotify:
+            // printf("EnterNotify\n");
             event->type = -1;
-
-        else {
-            // printf("Event ButtonRelease <%x.%x>\n", btn->state, btn->button);
-            event->type = GUM_EV_BTN_RELEASE;
-            event->param0 = btn->button;
-            event->param1 = btn->state;
+            break;
+        case LeaveNotify:
+            // printf("LeaveNotify\n");
+            event->type = -1;
+            break;
+        case FocusIn:
+        case FocusOut:
+        case KeymapNotify:
+        case GraphicsExpose:
+        case NoExpose:
+        case CirculateRequest:
+        case ConfigureRequest:
+        case MapRequest:
+        case CirculateNotify:
+        case ConfigureNotify:
+        case CreateNotify:
+        case GravityNotify:
+        case MapNotify:
+        case MappingNotify:
+        case ReparentNotify:
+        case UnmapNotify:
+        case VisibilityNotify:
+        case ColormapNotify:
+        case ClientMessage:
+        case PropertyNotify:
+        case SelectionClear:
+        case SelectionNotify:
+        case SelectionRequest:
+        default:
+            // printf("Event %d\n", e.type);
+            event->type = -1;
+            break;
         }
-        break;
-    case ResizeRequest:
-        event->type = GUM_EV_RESIZE;
-        cairo_xlib_surface_set_size(win->srf, resz->width, resz->height);
-        event->param0 = resz->width;
-        event->param1 = resz->height;
-        break;
-    case EnterNotify:
-        // printf("EnterNotify\n");
-        event->type = -1;
-        break;
-    case LeaveNotify:
-        // printf("LeaveNotify\n");
-        event->type = -1;
-        break;
-    case FocusIn:
-    case FocusOut:
-    case KeymapNotify:
-    case GraphicsExpose:
-    case NoExpose:
-    case CirculateRequest:
-    case ConfigureRequest:
-    case MapRequest:
-    case CirculateNotify:
-    case ConfigureNotify:
-    case CreateNotify:
-    case GravityNotify:
-    case MapNotify:
-    case MappingNotify:
-    case ReparentNotify:
-    case UnmapNotify:
-    case VisibilityNotify:
-    case ColormapNotify:
-    case ClientMessage:
-    case PropertyNotify:
-    case SelectionClear:
-    case SelectionNotify:
-    case SelectionRequest:
-    default:
-        // printf("Event %d\n", e.type);
-        event->type = -1;
-        break;
-    }
+    } while (event->type == -1);
     return 0;
 }
 
@@ -522,4 +507,9 @@ void *gum_load_image(const char *name)
     if (cairo_surface_status(img) != 0)
         return NULL;
     return img;
+}
+
+void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
+{
+    gum_paint(win, cell);
 }

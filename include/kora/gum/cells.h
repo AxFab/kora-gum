@@ -41,13 +41,13 @@ struct GUM_box {
     int ch_w, ch_h;
 };
 
-struct GUM_gctx{
-	int dpi_x;
-	int dpi_x;
-	int width;
-	int height;
-	float dsp_x;
-	float dsp_y;
+struct GUM_gctx {
+    int dpi_x;
+    int dpi_y;
+    int width;
+    int height;
+    float dsp_x;
+    float dsp_y;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -77,7 +77,7 @@ struct GUM_skin {
     char u_top_right;
     char u_bottom_right;
     char u_bottom_left;
-    
+
     char *font_family;
     int font_size;
     void *font;
@@ -100,8 +100,8 @@ enum {
 
     GUM_CELL_HIDDEN = (1 << 8),
     GUM_CELL_BUFFERED = (1 << 9),
-    
-    
+
+
     GUM_CELL_MEASURE = (1 << 16),
 };
 
@@ -114,17 +114,20 @@ struct GUM_anim {
     float elapsed;
     // method pre/post!
     int ow, oh;
+    int ew, eh;
 };
 
 struct GUM_cell {
     struct GUM_absolruler rulerx;
     struct GUM_absolruler rulery;
-    struct GUM_sideruler padding;
+    GUM_sideruler padding;
     int gap_x, gap_y;
     char gxunit, gyunit;
-    // struct GUM_sideruler margin;
+    // GUM_sideruler margin;
 
     char *id; // Identifier of the cell
+    char *name;
+    int depth;
     GUM_box box; // Boxing compiled attribute (size, client, min...)
     GUM_skin *skin;
     GUM_skin *skin_over;
@@ -207,7 +210,7 @@ void gum_paint(GUM_window *win, GUM_cell *cell);
 void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit);
 void gum_resize_px(GUM_cell *cell, int width, int height);
 void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx);
-void gum_do_measure(GUM_cell *cell, GUM_gctx *ctx);
+bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx);
 
 GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2);
 GUM_event_manager *gum_fetch_manager(GUM_cell *cell);

@@ -66,9 +66,9 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
         skin->hunit |= css_parse_usize(value, &skin->height);
 
     else if (!strcmp("font-family", property))
-        skin->font_family |= strdup(value);
-     else if (!strcmp("font-size", property))
-        skin->font_size |= strtol(value, NULL, 10);
+        skin->font_family = strdup(value);
+    else if (!strcmp("font-size", property))
+        skin->font_size = strtol(value, NULL, 10);
 
     else if (!strcmp("text-align", property)) {
         if (!strcmp("left", value))

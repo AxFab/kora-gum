@@ -34,7 +34,7 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
 
     else if (!strcmp("left", key)) {
         if (value[0] == '{') {
-            cell->rulerx. bunit = CSS_SIZE_PX;
+            cell->rulerx.bunit = CSS_SIZE_PX;
             cell->rell = strdup(&value[1]);
             strchr(cell->rell, '}') [0] = '\0';
         } else

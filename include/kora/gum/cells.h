@@ -41,6 +41,15 @@ struct GUM_box {
     int ch_w, ch_h;
 };
 
+struct GUM_gctx{
+	int dpi_x;
+	int dpi_x;
+	int width;
+	int height;
+	float dsp_x;
+	float dsp_y;
+};
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 struct GUM_skin {
@@ -68,6 +77,10 @@ struct GUM_skin {
     char u_top_right;
     char u_bottom_right;
     char u_bottom_left;
+    
+    char *font_family;
+    int font_size;
+    void *font;
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -87,6 +100,9 @@ enum {
 
     GUM_CELL_HIDDEN = (1 << 8),
     GUM_CELL_BUFFERED = (1 << 9),
+    
+    
+    GUM_CELL_MEASURE = (1 << 16),
 };
 
 long long gum_system_time();
@@ -141,6 +157,7 @@ struct GUM_cell {
     void (*layout)(GUM_cell *cell, GUM_layout *layout);
 
     GUM_anim anim;
+    GUM_event_manager *manager;
 };
 
 struct GUM_layout {
@@ -148,8 +165,8 @@ struct GUM_layout {
     // int pad_width, pad_height;
     int width;
     int height;
-    int dpi;
-    float dsp;
+    int dpi_x, dpi_y;
+    float dsp_x, dsp_y;
     int flags;
     int cursor, cursor2, cursor3;
     int gap_x, gap_y;
@@ -187,8 +204,13 @@ GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask);
 void gum_paint(GUM_window *win, GUM_cell *cell);
-void gum_resize(GUM_cell *cell, int width, int height, int dpi, float dsp);
+void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit);
+void gum_resize_px(GUM_cell *cell, int width, int height);
+void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx);
+void gum_do_measure(GUM_cell *cell, GUM_gctx *ctx);
 
+GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2);
+GUM_event_manager *gum_fetch_manager(GUM_cell *cell);
 
 GUM_skin *gum_skin(GUM_cell *cell);
 void gum_invalid_cell(GUM_cell *cell, GUM_window *win);
@@ -200,5 +222,12 @@ LIBAPI void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
 LIBAPI GUM_cell *gum_cell_copy(GUM_cell *cell);
 
 LIBAPI void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *skinname);
+
+LIBAPI void gum_invalid_properties(GUM_cell *cell);
+LIBAPI void gum_invalid_measure(GUM_cell *cell);
+LIBAPI void gum_invalid_layout(GUM_cell *cell);
+LIBAPI void gum_invalid_visual(GUM_cell *cell);
+GUM_gctx *gum_graphic_context(GUM_cell *cell) ;
+void gum_invalid_all(GUM_cell *cell);
 
 #endif  /* _KORA_GUM_RENDERING_H */

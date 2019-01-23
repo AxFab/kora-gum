@@ -56,7 +56,7 @@ void gum_paint(GUM_window *win, GUM_cell *root)
             gum_draw_cell(win, cell, cell == root);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
             // TODO - prune if cell is outside drawing clip
-            if (cell->first) {
+            if (cell->first &&! (cell->state & GUM_CELL_HIDDEN)) {
                 gum_push_clip(win, &cell->box);
                 cell = cell->first;
                 continue;
@@ -92,20 +92,6 @@ GUM_skin *gum_skin(GUM_cell *cell)
         return cell->skin_over;
 
     return cell->skin;
-}
-
-void gum_invalid_cell(GUM_cell *cell, GUM_window *win)
-{
-    // TODO -- Same as get by Id, but start by Last instead of First
-    int x = cell->box.x;
-    int y = cell->box.y;
-    GUM_cell *ancestors;
-    for (ancestors = cell->parent; ancestors; ancestors = ancestors->parent) {
-        x += ancestors->box.cx;
-        y += ancestors->box.cy;
-    }
-
-    gum_invalid_surface(win, x, y, cell->box.w, cell->box.h);
 }
 
 
@@ -171,6 +157,7 @@ void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
     else
         cell->first = child;
     cell->last = child;
+    gum_invalid_all(cell);
 }
 
 
@@ -221,3 +208,25 @@ GUM_cell *gum_cell_copy(GUM_cell *cell)
     return root;
 }
 
+
+GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2) 
+{
+	while(cell1) {
+		GUM_cell *cell = cell2;
+		while (cell) {
+			if (cell == cell1) 
+			    return cell;
+			cell = cell->parent;
+		} 
+		cell1 = cell1->parent;
+	}
+	return cell2;
+} 
+
+
+GUM_event_manager *gum_fetch_manager(GUM_cell *cell)
+{
+	while (cell->parent)
+        cell = cell->parent;
+    return cell->manager;
+} 

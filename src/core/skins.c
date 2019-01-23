@@ -65,6 +65,11 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
     else if (!strcmp("height", property))
         skin->hunit |= css_parse_usize(value, &skin->height);
 
+    else if (!strcmp("font-family", property))
+        skin->font_family |= strdup(value);
+     else if (!strcmp("font-size", property))
+        skin->font_size |= strtol(value, NULL, 10);
+
     else if (!strcmp("text-align", property)) {
         if (!strcmp("left", value))
             skin->align = 1;
@@ -93,6 +98,7 @@ void gum_skins_setter(GUM_skins *skins, const char *name, const char *property, 
     GUM_skin *skin = hmp_get(&skins->map, name, lg);
     if (skin == NULL) {
         skin = (GUM_skin *)calloc(1, sizeof(GUM_skin));
+        skin->font_size = 10;
         hmp_put(&skins->map, name, lg, skin);
     }
 
@@ -152,5 +158,6 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
     strcpy(sname, name);
     strcat(sname, ":down");
     cell->skin_down = gum_style_find(skins, sname);
-    cell->cachedSkin = NULL ;
+    cell->cachedSkin = NULL;
+    gum_invalid_visual(cell);
 }

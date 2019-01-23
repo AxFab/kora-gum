@@ -58,10 +58,16 @@
            id="view" layout="ColumnGrid" gap="3dp" padding="8dp"
            overflow-x="true" solid="true">
 
-        <itemIcon id="icon" height="30dp" solid="true">
+        <!-- <itemIcon id="icon" height="30dp" solid="true">
             <img id="icon-img" left="0" top="0" width="30dp" height="30dp"
                  substyle="true" />
             <menuLabel id="icon-text" left="36dp" height="wrap" right="12dp" min-width="100dp" substyle="true"/>
+        </itemIcon>-->
+
+        <itemIcon id="icon" width="80dp" height="85dp" solid="true">
+            <img id="icon-img" left="10dp" top="0" width="60dp" height="60dp"
+                 substyle="true" />
+            <menuLabel id="icon-text" left="0dp" top="65dp" height="15dp" width="80dp" substyle="true"/>
         </itemIcon>
 
 

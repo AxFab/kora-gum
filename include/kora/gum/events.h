@@ -22,16 +22,22 @@
 
 #include <kora/gum/core.h>
 
+#define CLICK_TIMEOUT  (200000LL) /* 200 ms, in us */
+
 LIBAPI GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win);
 LIBAPI void gum_event_loop(GUM_event_manager *evm);
 
 
 typedef void(*GUM_EventHandler)(GUM_event_manager *evm, GUM_cell *cell, int event);
 
+LIBAPI void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell);
 LIBAPI void gum_refresh(GUM_event_manager *evm);
 LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
 
 LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);
+void gum_do_visual( GUM_cell *cell, , GUM_window *win, struct GUM_sideruler *inval) ;
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 struct GUM_event {
     int type;

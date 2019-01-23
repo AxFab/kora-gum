@@ -2,38 +2,79 @@
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 /* Container */
 .panel {
-  background: #f2f2f2;
+    background: #f2f2f2;
 }
 
 
 .panel-image {
-  background: #2f2f2f;
+    background: #2f2f2f;
 }
 
 .panel-name {
-  background: #f2f2f2;
+    background: #f2f2f2;
     color:black;
+    font-size:13;
 }
 
 .panel-name:over {
     background: #10a6a6;
+    font-size:13;
 }
 
 .panel-psword {
-  background: #f2f2f2;
-    color:black;
+    background: #f2f2f2;
 }
 
 .panel-psword:over {
     background: #10a6a6;
 }
 
+.psword {
+	text-align: left;
+	color: black;
+	font-family: Verdana;
+	font-size: 15;
+} 
+
 .button {
-  background: #f2f2f2;
+    background: #f2f2f2;
     color:black;
 }
 
 .button:over {
     background: #10a6a6;
+}
+
+.submit {
+	background: #1010a6;
+} 
+
+.submit:over {
+	background: #10a6a6;
+} 
+
+.label {
+	color: white;
+	font-size: 13;
+}
+
+.label:over {
+	background : white;
+	color: black;
+	font-size: 13;
+}
+
+
+.labeli {
+	color: white;
+	font-size: 13;
+	font-family: Wingdings;
+}
+
+.labeli:over {
+	background : white;
+	color: black;
+	font-size: 13;
+	font-family: Wingdings;
 }
 

@@ -39,17 +39,19 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
     GUM_cell *usr = users->first ;
     while (usr) {
-        usr->last->state |= GUM_CELL_HIDDEN;
+        gum_get_by_id(usr, "hid")->state |= GUM_CELL_HIDDEN;
         usr = usr->next;
     }
 
     if (cell != selected_user) {
         selected_user = cell;
-        printf("Select user '%s' \n", cell->first->next->text);
-        cell->last->state &= ~GUM_CELL_HIDDEN;
+        printf("Select user '%s' \n", gum_get_by_id(cell, "usr")->text);
+        gum_get_by_id(cell, "hid")->state &= ~GUM_CELL_HIDDEN;
+        gum_invalid_measure(gum_get_by_id(cell, "usr")) ;
+        gum_set_focus(gum_get_by_id(cell, "pwd")) ;
     } else if (selected_user != NULL) {
         printf("Unselect user\n");
-        selected_user->last->state |= GUM_CELL_HIDDEN;
+        gum_get_by_id(selected_user, "hid")->state |= GUM_CELL_HIDDEN;
         selected_user = NULL;
     }
     // give focus
@@ -65,13 +67,19 @@ void load_users()
     char buf[512];
     while (fgets(buf, 512, info)) {
         GUM_cell *usr = gum_cell_copy(user) ;
-        usr->first->next->text = strdup(strtok(buf, ";\n"));
-        usr->first->img_src = strdup(strtok(NULL, ";\n"));
+        gum_get_by_id(usr, "usr")->text = strdup(strtok(buf, ";\n"));
+        gum_get_by_id(usr, "img")->img_src = strdup(strtok(NULL, ";\n"));
         gum_event_bind(evm, usr, GUM_EV_CLICK, on_select);
         gum_cell_pushback(users, usr) ;
     }
     gum_refresh(evm);
 }
+
+
+void on_lang(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+	printf("Language menu\n") ;
+} 
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -102,6 +110,7 @@ int main(int argc, char **argv, char **env)
 
     evm = gum_event_manager(root, win);
     // gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-lang"), GUM_EV_CLICK, on_lang);
     load_users() ;
 
     gum_event_loop(evm);

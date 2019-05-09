@@ -108,7 +108,7 @@ GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
             continue;
         }
 
-        while (!cell->next)
+        while (cell && !cell->next)
             cell = cell->parent;
         if (cell)
             cell = cell->next;
@@ -132,19 +132,41 @@ void gum_cell_detach(GUM_cell *cell)
     cell->parent = NULL;
 }
 
-void gum_cell_destroy(GUM_cell *cell)
+void gum_cell_destroy(GUM_event_manager *evm, GUM_cell *cell)
 {
-
+    gum_cell_destroy_children(evm, cell);
+    if (evm)
+        gum_dereference_cell(evm, cell);
+    if (cell->skin)
+        gum_skin_close(cell->skin);
+    if (cell->skin_down)
+        gum_skin_close(cell->skin_down);
+    if (cell->skin_over)
+        gum_skin_close(cell->skin_over);
+    // Skins
+    // Cache skin / image / font
+    // Animation
+    if (cell->id) free(cell->id);
+    if (cell->name) free(cell->name);
+    if (cell->text) free(cell->text);
+    if (cell->img_src) free(cell->img_src);
+    free(cell);
 }
 
-void gum_cell_destroy_children(GUM_cell *cell)
+void gum_cell_destroy_children(GUM_event_manager *evm, GUM_cell *cell)
 {
     while (cell->first) {
         GUM_cell *child = cell->first;
         cell->first = child->next;
-        gum_cell_destroy(child);
+        gum_cell_destroy(evm, child);
     }
     cell->last = NULL;
+}
+
+void gum_destroy_cells(GUM_event_manager *evm, GUM_cell *cell)
+{
+    gum_cell_destroy_children(evm, cell);
+    gum_cell_destroy(evm, cell);
 }
 
 void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
@@ -163,12 +185,12 @@ void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
     gum_invalid_all(cell);
 }
 
-
 static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
 {
     GUM_cell *cpy = (GUM_cell *)calloc(sizeof(GUM_cell), 1);
     memcpy(cpy, cell, sizeof(GUM_cell));
     cpy->id = cell->id ? strdup(cell->id) : NULL;
+    cpy->name = cell->name ? strdup(cell->name) : NULL;
     cpy->text = cell->text ? strdup(cell->text) : NULL;
     cpy->img_src = cell->img_src ? strdup(cell->img_src) : NULL;
     // TODO -- COPY IMAGE !?
@@ -235,3 +257,12 @@ GUM_event_manager *gum_fetch_manager(GUM_cell *cell)
         cell = cell->parent;
     return cell->manager;
 }
+
+void gum_cell_set_text(GUM_cell *cell, const char *text)
+{
+    if (cell->text)
+        free(cell->text);
+    cell->text = text ? strdup(text) : NULL;
+    gum_invalid_measure(cell);
+}
+

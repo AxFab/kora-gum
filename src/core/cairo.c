@@ -76,6 +76,7 @@ enum {
 };
 
 GUM_window *__lastWin = NULL;
+void timer_setup();
 
 GUM_window *gum_create_surface(int width, int height)
 {
@@ -368,7 +369,7 @@ void timer_handler (int signum)
 {
     XEvent e;
     memset(&e, 0, sizeof(e));
-    XExposeEvent *ee = &e;
+    XExposeEvent *ee = (XExposeEvent *)&e;
     ee->type = Expose;
     ee->x = 0;
     ee->y = 0;
@@ -571,3 +572,9 @@ void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
 {
     gum_paint(win, cell);
 }
+
+void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1)
+{
+
+}
+

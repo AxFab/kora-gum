@@ -161,3 +161,15 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
     cell->cachedSkin = NULL;
     gum_invalid_visual(cell);
 }
+
+void gum_skin_close(GUM_skin *skin)
+{
+    // TODO -- LRU or is registerd
+}
+
+void gum_destroy_skins(GUM_skins *skins)
+{
+    // TODO -- Remove alls
+    hmp_destroy(&skins->map, 0);
+}
+

@@ -26,4 +26,27 @@
             <button right="0" width="50%" height="wrap" text="Manage users" solid="true" />
         </panel>
     </group>
+
+
+    <menu id="ctx-lang" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px">
+        <menuVRuler left="25px" top="0" bottom="0" width="1px" />
+        <group width="wrap" height="wrap" layout="VGroupExtend" >
+
+            <menuItem height="20px" padding="2px" solid="true">
+                <menuIco left="3px" width="16px" height="wrap" />
+                <menuLabel left="28px" right="0" height="wrap" text="English"/>
+            </menuItem>
+
+            <menuItem height="20px" padding="2px" solid="true">
+                <menuIco left="3px" width="16px" height="wrap" />
+                <menuLabel left="28px" right="0" height="wrap" text="Francais"/>
+            </menuItem>
+
+            <menuItem height="20px" padding="2px" solid="true">
+                <menuIco left="3px" width="16px" height="wrap" />
+                <menuLabel left="28px" right="0" height="wrap" text="Espanol"/>
+            </menuItem>
+        </group>
+    </menu>
+
 </panel>

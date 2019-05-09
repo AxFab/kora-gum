@@ -104,7 +104,7 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
         printf("Can't open directory '%s'\n", current_path);
         return;
     }
-    gum_cell_destroy_children(view);
+    gum_cell_destroy_children(evm, view);
     for (;;) {
         struct dirent *en = readdir(dir);
         if (en == NULL)

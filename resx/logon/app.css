@@ -93,3 +93,30 @@
 	font-family: Font_Awesome;
 }
 
+
+
+.menu {
+  background: #a6a6a6;
+  border-color: #454545;
+  inner-color: #c2c2c2;
+}
+.menuVRuler {
+  background: #42a5f5;
+  width: 1px;
+}
+.menuDivider {
+  background: #545454;
+}
+.menuItem {
+}
+.menuItem:over {
+  background: #c2c2c2;
+}
+.menuLabel {
+  text-align: left;
+  color: #323232;
+}
+.menuLabel2 {
+  text-align: right;
+  color: #323232;
+}

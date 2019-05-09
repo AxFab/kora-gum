@@ -203,7 +203,6 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
 GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 
 
-
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask);
 void gum_paint(GUM_window *win, GUM_cell *cell);
@@ -219,10 +218,11 @@ GUM_skin *gum_skin(GUM_cell *cell);
 void gum_invalid_cell(GUM_cell *cell, GUM_window *win);
 LIBAPI GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
 LIBAPI void gum_cell_detach(GUM_cell *cell);
-LIBAPI void gum_cell_destroy_children(GUM_cell *cell);
+LIBAPI void gum_cell_destroy_children(GUM_event_manager *evm, GUM_cell *cell);
 
 LIBAPI void gum_cell_pushback(GUM_cell *cell, GUM_cell *child);
 LIBAPI GUM_cell *gum_cell_copy(GUM_cell *cell);
+LIBAPI void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell);
 
 LIBAPI void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *skinname);
 
@@ -232,5 +232,11 @@ LIBAPI void gum_invalid_layout(GUM_cell *cell);
 LIBAPI void gum_invalid_visual(GUM_cell *cell);
 GUM_gctx *gum_graphic_context(GUM_cell *cell) ;
 void gum_invalid_all(GUM_cell *cell);
+void gum_skin_close(GUM_skin *skin);
+
+LIBAPI void gum_destroy_cells(GUM_event_manager *evm, GUM_cell *cell);
+LIBAPI void gum_destroy_skins(GUM_skins *skins);
+
+LIBAPI void gum_cell_set_text(GUM_cell *cell, const char *text);
 
 #endif  /* _KORA_GUM_RENDERING_H */

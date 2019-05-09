@@ -304,7 +304,7 @@ bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx)
 {
     int min_w = cell->box.minw;
     int min_h = cell->box.minh;
-    bool layout_changed = true;
+    bool layout_changed = false;
 
     /* Get padding size */
     int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, ctx->dpi_x, ctx->dsp_x, cell->box.w);
@@ -324,6 +324,7 @@ bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx)
         (cell->layout ? cell->layout : gum_layout_absolute)(cell, &layout);
 
         /* Check children */
+        cell->box.mincw = cell->box.minch = 0;
         for (child = cell->first; child; child = child->next) {
             if (child->state & GUM_CELL_HIDDEN)
                 continue;
@@ -346,7 +347,6 @@ bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx)
         short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, ctx->dpi_y, ctx->dsp_y, 0);
         cell->box.minw = MAX(cell->box.minw, MAX(min_width, sz_width));
         cell->box.minh = MAX(cell->box.minh, MAX(min_height, sz_height));
-        cell->box.mincw = cell->box.minch = 0;
 
         /* Compute content string size */
         int w = 0, h = 0;
@@ -383,8 +383,8 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx)
 
     int cx = cell->box.x + pad_left;
     int cy = cell->box.y + pad_top;
-    int cw = cell->box.w - pad_right - pad_left;
-    int ch = cell->box.h - pad_bottom - pad_top;
+    int cw = cell->box.w - pad_left - pad_right;
+    int ch = cell->box.h - pad_top - pad_bottom;
 
     /* If client size change, invalid visual */
     if (cell->box.cx != cx || cell->box.cy != cy || cell->box.cw != cw || cell->box.ch != ch) {
@@ -397,15 +397,18 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx)
 
     (cell->layout ? cell->layout : gum_layout_absolute)(cell, &layout);
 
+    cell->box.ch_w = 0;
+    cell->box.ch_h = 0;
     for (child = cell->first; child; child = child->next) {
         if (child->state & GUM_CELL_HIDDEN)
             continue;
 
         /* Invalid cache */
+        child->cachedSkin = NULL;
         /* Re compute position and size */
         layout.resize(child, &layout);
         /* Do layout on children */
-        gum_do_layout(child, ctx) ;
+        gum_do_layout(child, ctx);
 
         /* Comupte actual client size */
         if (child->box.x + child->box.w > cell->box.ch_w)
@@ -438,5 +441,5 @@ void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit)
 
 void gum_resize_px(GUM_cell *cell, int width, int height)
 {
-    gum_resize(cell, width, height, CSS_SIZE_PX, CSS_SIZE_PX) ;
+    gum_resize(cell, width, height, CSS_SIZE_PX, CSS_SIZE_PX);
 }

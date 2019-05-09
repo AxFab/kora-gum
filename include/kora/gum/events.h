@@ -27,15 +27,20 @@
 LIBAPI GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win);
 LIBAPI void gum_event_loop(GUM_event_manager *evm);
 
+void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1);
 
 typedef void(*GUM_EventHandler)(GUM_event_manager *evm, GUM_cell *cell, int event);
 
 LIBAPI void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell);
 LIBAPI void gum_refresh(GUM_event_manager *evm);
 LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler);
+LIBAPI void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager *, void *), void (*callback)(GUM_event_manager *, void *), void *arg);
 
 LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);
 void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval) ;
+
+LIBAPI void gum_close_mananger(GUM_event_manager *evm);
+LIBAPI void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell);
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -75,6 +80,7 @@ enum {
     GUM_EV_RESIZE,
 
     GUM_EV_TICK,
+    GUM_EV_ASYNC,
 };
 
 

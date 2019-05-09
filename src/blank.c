@@ -38,7 +38,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell)
 {
 }
 
-void gum_text_size(const char *text, int *w, int *h)
+void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 {
 }
 

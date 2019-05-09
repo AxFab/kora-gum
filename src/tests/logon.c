@@ -59,6 +59,17 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
     gum_refresh(evm);
 }
 
+void on_login(GUM_event_manager *evm, GUM_cell *cell, int event)
+{
+    GUM_cell *usr = gum_get_by_id(selected_user, "usr");
+    GUM_cell *pwd = gum_get_by_id(selected_user, "pwd");
+    printf("Login for user '%s' and password '%s' \n",
+        usr->text,
+        pwd->text);
+    // gum_set_text(pwd, "");
+
+}
+
 void load_users()
 {
     gum_cell_destroy_children(users);
@@ -71,6 +82,7 @@ void load_users()
         gum_get_by_id(usr, "usr")->text = strdup(strtok(buf, ";\n"));
         gum_get_by_id(usr, "img")->img_src = strdup(strtok(NULL, ";\n"));
         gum_event_bind(evm, usr, GUM_EV_CLICK, on_select);
+        gum_event_bind(evm, gum_get_by_id(usr, "go"), GUM_EV_CLICK, on_login);
         gum_cell_pushback(users, usr) ;
     }
     gum_refresh(evm);
@@ -87,7 +99,7 @@ void on_lang(GUM_event_manager *evm, GUM_cell *cell, int event)
 /* Graphical User-interface Module */
 int main(int argc, char **argv, char **env)
 {
-    int width = 680;
+    int width = 680 * 2;
     int height = width * 10 / 16; // 425
 
     // Load models

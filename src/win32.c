@@ -266,7 +266,7 @@ void gum_resize_win(GUM_window *win, int width, int height)
 {
 }
 
-void gum_text_size(const char *text, int *w, int *h)
+void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 {
     *h = 10;
     *w = strlen(text) * 8;

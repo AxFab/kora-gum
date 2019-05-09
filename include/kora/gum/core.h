@@ -51,7 +51,7 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell);
 int gum_event_poll(GUM_window *win, GUM_event *event, int timeout);
 void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h);
 
-void gum_text_size(const char *text, int *w, int *h);
+void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin);
 void *gum_image(const char *name);
 void *gum_load_image(const char *name);
 LIBAPI unsigned gum_mix(unsigned src, unsigned dest, float mx);
@@ -61,6 +61,7 @@ void gum_end_paint(GUM_window *win);
 void gum_push_clip(GUM_window *win, GUM_box *box);
 void gum_pop_clip(GUM_window *win, GUM_box *box);
 void gum_resize_win(GUM_window *win, int width, int height);
+void gum_fill_context(GUM_window *win, GUM_gctx *ctx);
 
 #define ALIGN_UP(v,a) (((v)+((a)-1)) & ~((a)-1))
 #define MIN(a,b) ((a)<(b)?(a):(b))

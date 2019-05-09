@@ -186,6 +186,7 @@ void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell)
     }
     if (cell && cell->state & GUM_CELL_EDITABLE) {
         printf("Enter edit test mode: %s\n", cell->text);
+        evm->edit = cell;
         evm->edit->text_pen = 0;
         if (cell->text == NULL)
             cell->text = strdup("") ;
@@ -212,9 +213,9 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
         gum_cell_chstatus(evm, evm->over, GUM_CELL_OVER, 0, GUM_EV_OUT);
         gum_cell_chstatus(evm, target, GUM_CELL_OVER, 1, GUM_EV_OVER);
         // if (evm->over)
-        //     fprintf(stderr, "Out %s\n", evm->over->id);
+            // fprintf(stderr, "Out %s\n", evm->over->id);
         // if (target)
-        //     fprintf(stderr, "Over %s\n", target->id);
+            // fprintf(stderr, "Over %s\n", target->id);
         evm->over = target;
         /* If we live a down cell, it's like a release */
         if (target == evm->down) {
@@ -371,13 +372,7 @@ void gum_refresh(GUM_event_manager *evm)
 GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
 {
     GUM_event_manager *evm = (GUM_event_manager *)calloc(1, sizeof(GUM_event_manager));
-    // TODO window drivers job
-    evm->ctx.dpi_x = 96;
-    evm->ctx.dpi_y = 96;
-    evm->ctx.dsp_x = 0.75;
-    evm->ctx.dsp_y = 0.75;
-    evm->ctx.width = 680;
-    evm->ctx.height = 425;
+    gum_fill_context(win, &evm->ctx);
     evm->root = root;
     evm->win = win;
     evm->measure = true;
@@ -450,6 +445,7 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
         }
         if (evm->inval.left != evm->inval.right || evm->inval.top != evm->inval.bottom) {
             gum_do_visual(evm->root, evm->win, &evm->inval) ;
+            // fprintf(stderr, "Visual\n", event->type);
             memset(& evm->inval, 0, sizeof(evm->inval));
         }
         break;

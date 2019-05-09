@@ -83,7 +83,7 @@ void css_read_file(FILE *stream, void *arg, css_setter setter)
             size = css_read_token(buffer, len, value, ';', '{', &state);
             if (state == ':') {
                 setter(arg, rule, property, value);
-                // fprintf(stderr, "CSS set '%s'='%s'\n", property, value);
+                fprintf(stderr, "CSS set '%s'='%s'\n", property, value);
             }
         }
 

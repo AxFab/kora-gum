@@ -29,6 +29,8 @@
 #include <cairo/cairo.h>
 #include <cairo/cairo-xlib.h>
 #include <time.h>
+#include <signal.h>
+#include <sys/time.h>
 #define _PwNano_ 1000000000
 
 typedef struct xinfo {
@@ -73,6 +75,7 @@ enum {
     MWH_FUNC_CLOSE = (1L << 5),
 };
 
+GUM_window *__lastWin = NULL;
 
 GUM_window *gum_create_surface(int width, int height)
 {
@@ -111,9 +114,12 @@ GUM_window *gum_create_surface(int width, int height)
     sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), width, height);
     cairo_xlib_surface_set_size(sfc, width, height);
 
+    timer_setup();
+
     GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
     win->srf = sfc;
     win->ctx = cairo_create(sfc);
+    __lastWin = win;
     return win;
 }
 
@@ -255,8 +261,9 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 
         cairo_text_extents_t extents;
 
-        cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, 0);
-        cairo_set_font_size(ctx, 10.0);
+        const char *ffamily = skin->font_family ? skin->font_family : "Sans";
+        cairo_select_font_face(ctx, ffamily, CAIRO_FONT_SLANT_NORMAL, 0);
+        cairo_set_font_size(ctx, (float)skin->font_size);
         cairo_text_extents(ctx, cell->text, &extents);
         int tx = cell->box.x;
         int ty = cell->box.y;
@@ -280,14 +287,16 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 cairo_surface_t *srf = NULL;
 cairo_t *ctx;
 
-void gum_text_size(const char *text, int *w, int *h)
+void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 {
     if (srf == NULL) {
         srf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 10, 10);
         ctx = cairo_create(srf);
     }
-    cairo_select_font_face(ctx, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(ctx, 10.0);
+    const char *ffamily = skin->font_family ? skin->font_family : "Sans";
+    fprintf(stderr, "Select Font %s %d\n", ffamily, skin->font_size);
+    cairo_select_font_face(ctx, ffamily, CAIRO_FONT_SLANT_NORMAL, 0);
+    cairo_set_font_size(ctx, (float)skin->font_size);
 
     cairo_text_extents_t extents;
     cairo_text_extents(ctx, text, &extents);
@@ -352,6 +361,55 @@ int key_unicode(int kcode, int state)
     if (state & 8)
         r += 2;
     return keyboard_layout_US[kcode][r];
+}
+
+
+void timer_handler (int signum)
+{
+    XEvent e;
+    memset(&e, 0, sizeof(e));
+    XExposeEvent *ee = &e;
+    ee->type = Expose;
+    ee->x = 0;
+    ee->y = 0;
+    ee->width = cairo_xlib_surface_get_width(__lastWin->srf);
+    ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
+
+    Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    XSendEvent(dsp, w, False, ExposureMask, &e);
+}
+
+struct sigaction sa;
+struct itimerval timer;
+
+void timer_setup()
+{
+
+    /* Install timer_handler as the signal handler for SIGVTALRM. */
+    memset (&sa, 0, sizeof (sa));
+    sa.sa_handler = &timer_handler;
+    sigaction (SIGALRM, &sa, NULL);
+
+    /* Configure the timer to expire after 250 msec... */
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = 20000;
+    /* ... and every 250 msec after that. */
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 20000;
+    /* Start a virtual timer. It counts down whenever this process is
+    executing. */
+    setitimer (ITIMER_REAL, &timer, NULL);
+}
+
+void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
+{
+    ctx->dpi_x = 96;
+    ctx->dpi_y = 96;
+    ctx->dsp_x = 2; //0.75;
+    ctx->dsp_y = 2; //0.75;
+    ctx->width = cairo_xlib_surface_get_width(win->srf);
+    ctx->height = cairo_xlib_surface_get_height(win->srf);
 }
 
 

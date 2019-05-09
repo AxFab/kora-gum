@@ -6,7 +6,7 @@
         <labeli id="btn-net" text=" : " solid="true" padding="5dp"/>
         <labeli id="btn-vol" text=" x " solid="true" padding="5dp"/>
         <label id="btn-clock" text="13:38" solid="true" padding="5dp"/>
-        <labeli id="btn-acc" text=" I " solid="true" padding="5dp"/>
+        <labeli id="btn-acc" text="&xf368;" solid="true" padding="5dp"/>
         <labeli id="btn-pwr" text=" m " solid="true" padding="5dp"/>
     </group>
 

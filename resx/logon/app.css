@@ -13,68 +13,83 @@
 .panel-name {
     background: #f2f2f2;
     color:black;
-    font-size:13;
+    font-size:15;
+    font-family: Tahoma;
 }
 
 .panel-name:over {
     background: #10a6a6;
-    font-size:13;
+    font-size:15;
+    font-family: Tahoma;
 }
 
 .panel-psword {
     background: #f2f2f2;
+    font-size:15;
+    font-family: Tahoma;
 }
 
 .panel-psword:over {
     background: #10a6a6;
+    font-size:15;
+    font-family: Tahoma;
 }
 
 .psword {
 	text-align: left;
 	color: black;
-	font-family: Verdana;
-	font-size: 15;
-} 
+    font-size:15;
+    font-family: Tahoma;
+}
 
 .button {
     background: #f2f2f2;
+    font-size:15;
+    font-family: Tahoma;
     color:black;
 }
 
 .button:over {
     background: #10a6a6;
+    font-size:15;
+    font-family: Tahoma;
 }
 
 .submit {
 	background: #1010a6;
-} 
+    font-size: 18;
+    font-family: Font_Awesome;
+}
 
 .submit:over {
 	background: #10a6a6;
-} 
+    font-size: 18;
+    font-family: Font_Awesome;
+}
 
 .label {
 	color: white;
-	font-size: 13;
+    font-size:18;
+    font-family: Tahoma;
 }
 
 .label:over {
 	background : white;
-	color: black;
-	font-size: 13;
+    font-size:18;
+    font-family: Tahoma;
 }
 
 
 .labeli {
 	color: white;
-	font-size: 13;
-	font-family: Wingdings;
+	font-size: 18;
+	font-family: Font_Awesome;
 }
 
 .labeli:over {
 	background : white;
 	color: black;
-	font-size: 13;
-	font-family: Wingdings;
+	font-size: 18;
+	font-family: Font_Awesome;
 }
 

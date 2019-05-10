@@ -34,7 +34,7 @@ void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
 {
 }
 
-void gum_draw_cell(GUM_window *win, GUM_cell *cell)
+void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 {
 }
 

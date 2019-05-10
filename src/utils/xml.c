@@ -25,7 +25,7 @@ const char *XML_NODE_NAMES[] = {
     NULL, "#document-fragment", NULL
 };
 
-const char *memrchr(const void *ptr, int byte, size_t length);
+void *memrchr(const void *ptr, int byte, size_t length);
 
 int memcnt(const void *ptr, int byte, size_t length)
 {

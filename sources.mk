@@ -16,6 +16,7 @@
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 NAME = Gum
 VERSION := $(GIT_DESC)
+DISTO ?= cairo
 
 # F L A G S -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -fPIC -Wno-multichar
@@ -23,7 +24,9 @@ CFLAGS += -I$(topdir)/include
 # CFLAGS += -D__GUM_X11
 
 # LFLAGS += -L/usr/X11R6/lib -lX11
+ifeq ($(DISTO),cairo)
 LFLAGS += -L/usr/X11R6/lib -L/usr/include/cairo -lX11 -lcairo -lrt
+endif
 
 
 # C O M P I L E   M O D E -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -34,6 +37,7 @@ $(eval $(call ccpl,std))
 # D E L I V E R I E S -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 gum_src-y += $(wildcard $(srcdir)/utils/*.c)
 gum_src-y += $(wildcard $(srcdir)/core/*.c)
+gum_src-y += $(srcdir)/$(DISTO).c
 gum_LFLAGS := $(LFLAGS)
 $(eval $(call llib,gum,std))
 DV_LIBS += $(libdir)/libgum.so

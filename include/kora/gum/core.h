@@ -56,7 +56,7 @@ void *gum_image(const char *name);
 void *gum_load_image(const char *name);
 LIBAPI unsigned gum_mix(unsigned src, unsigned dest, float mx);
 
-void gum_start_paint(GUM_window *win, int x, int y);
+void gum_start_paint(GUM_window *win);
 void gum_end_paint(GUM_window *win);
 void gum_push_clip(GUM_window *win, GUM_box *box);
 void gum_pop_clip(GUM_window *win, GUM_box *box);

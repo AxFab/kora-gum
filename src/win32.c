@@ -67,7 +67,7 @@ bool win32_init = false;
 
 void gum_win32_setup()
 {
-    HINSTANCE HINSTANCE = GetModuleHandle(NULL);
+    HINSTANCE hInstance = GetModuleHandle(NULL);
     appInstance = hInstance;
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -92,29 +92,29 @@ void gum_win32_setup()
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 HFONT  hFont;
 
-bool font_init = false;
-HMP_map font_map;
+bool fonts_init = false;
+HMP_map fonts_map;
 
 void *gum_load_font(GUM_window *win, GUM_skin *skin)
 {
     wchar_t name[52];
     mbstowcs(name, skin->font_family ? skin->font_family : "Arial", 50);
     int sz = MulDiv(skin->font_size, GetDeviceCaps(win->hdc, LOGPIXELSY), 72);
-    return (void*)CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET);
+    return (void*)CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, name);
 }
 
-void gum_fetch_font(GUM_window *win, GUM_skin *skin)
+void *gum_fetch_font(GUM_window *win, GUM_skin *skin)
 {
     if (!fonts_init) {
         hmp_init(&fonts_map, 16);
-        font_init = true;
+        fonts_init = true;
     }
     char buf[120];
-    int lg = snprintf(buf, 120, "%s.%d", skin->font_family ? skin->font_family : "Arial", skin->font_size);
-    void *font = hmp_get(&font_map, buf, lg);
+    int lg = snprintf(buf, 120, "%s.%d.%d00.%c", skin->font_family ? skin->font_family : "Arial", skin->font_size, 3, 'N');
+    void *font = hmp_get(&fonts_map, buf, lg);
     if (font == NULL) {
         font = gum_load_font(win, skin);
-        hmp_put(&font_map, buf, lg, font);
+        hmp_put(&fonts_map, buf, lg, font);
     }
     return font;
 }
@@ -164,6 +164,15 @@ GUM_window *gum_surface(GUM_window *parent, int width, int height)
     return win;
 }
 
+void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
+{
+    ctx->width = 680;
+    ctx->height = 425;
+    ctx->dpi_x = ctx->dpi_y = 96;
+    ctx->dsp_x = ctx->dsp_y = 0.75;
+}
+
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 void gum_invalid_surface_push(GUM_window *win);
@@ -174,6 +183,9 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     if (!GetMessage(&msg, win->hwnd, 0, 0)) {
         event->type = GUM_EV_DESTROY;
         return -1;
+    }
+
+    if (msg.message > WM_USER && msg.message < WM_USER + 4096) {
     }
 
     event->param0 = 0;

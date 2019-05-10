@@ -47,8 +47,8 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
     GUM_cell *usr = users->first;
     while (usr) {
         gum_get_by_id(usr, "hid")->state |= GUM_CELL_HIDDEN;
-        gum_invalid_measure(gum_get_by_id(usr, "usr"));
-        gum_invalid_measure(gum_get_by_id(usr, "pwd"));
+        gum_invalid_measure(gum_get_by_id(usr, "hid"));
+        gum_invalid_visual(usr);
         usr = usr->next;
     }
 
@@ -56,15 +56,16 @@ void on_select(GUM_event_manager *evm, GUM_cell *cell, int event)
         selected_user = cell;
         printf("Select user '%s' \n", gum_get_by_id(cell, "usr")->text);
         gum_get_by_id(cell, "hid")->state &= ~GUM_CELL_HIDDEN;
-        gum_invalid_measure(gum_get_by_id(cell, "usr"));
+        gum_invalid_measure(gum_get_by_id(cell, "hid"));
         gum_set_focus(evm, gum_get_by_id(cell, "pwd"));
     } else if (selected_user != NULL) {
         printf("Unselect user\n");
         gum_get_by_id(selected_user, "hid")->state |= GUM_CELL_HIDDEN;
-        gum_invalid_measure(gum_get_by_id(cell, "usr"));
+        gum_invalid_measure(gum_get_by_id(selected_user, "hid"));
         selected_user = NULL;
         gum_set_focus(evm, NULL);
     }
+
     // give focus
     gum_refresh(evm);
 }
@@ -76,9 +77,9 @@ void *start_auth(GUM_event_manager *evm, void *arg) // ASYNC_WORKER
     // GUM_cell *usr = gum_get_by_id(selected_user, "usr");
     // GUM_cell *pwd = gum_get_by_id(selected_user, "pwd");
 
-    // tine_t start = time(NULL);
+    // time_t start = time(NULL);
     void *desktop = calloc(48, 1);
-    //
+    // LOAD USER AUTH INFO
     // CHECK PASSWORD
     // WAIT until elapsed < MIN_DELAY
     free(selected_pwd);
@@ -92,16 +93,20 @@ void *start_auth(GUM_event_manager *evm, void *arg) // ASYNC_WORKER
 void on_auth_completed(GUM_event_manager *evm, void *arg) // ASYNC_CALLBACK
 {
     GUM_cell *usr = gum_get_by_id(selected_user, "usr");
+    GUM_cell *pwd = gum_get_by_id(selected_user, "pwd");
     if (arg == NULL) {
         printf("Login for '%s' wrong password\n", usr->text);
+        gum_set_focus(evm, pwd);
+        // TODO -- Buzz selected_user (animation)
         return;
     }
-    printf("Login for '%s' sucessfull\n", usr->text);
+
     // TRANSFERT DEVICES OWNERSHIP TO DESKTOP PROCESS
+    printf("Login for '%s' sucessfull\n", usr->text);
     gum_cell_destroy_children(evm, users);
 }
 
-void on_grab_ownership()
+void on_grab_ownership(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
     load_users();
 }
@@ -208,11 +213,12 @@ int main(int argc, char **argv, char **env)
     load_users();
 
     gum_event_loop(evm);
+
+    gum_close_manager(evm);
     gum_destroy_surface(win);
-    // TODO -- Free cells and skins
-    gum_destroy_cells(evm, root);
-    gum_destroy_cells(evm, user);
-    gum_destroy_cells(evm, ctx_lang);
+    gum_destroy_cells(NULL, root);
+    gum_destroy_cells(NULL, user);
+    gum_destroy_cells(NULL, ctx_lang);
     gum_destroy_skins(skins);
     return EXIT_SUCCESS;
 }

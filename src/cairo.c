@@ -523,7 +523,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 }
 
 
-void gum_start_paint(GUM_window *win, int x, int y)
+void gum_start_paint(GUM_window *win)
 {
     cairo_push_group(win->ctx);
     cairo_set_source_rgb(win->ctx, 1, 1, 1);

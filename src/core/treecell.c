@@ -48,7 +48,6 @@ GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
 void gum_paint(GUM_window *win, GUM_cell *root)
 {
     GUM_cell *cell = root;
-    gum_start_paint(win, - root->box.x, - root->box.y);
     char pad[50];
     for (;;) {
         memset(pad, ' ', cell->depth * 2);
@@ -68,10 +67,8 @@ void gum_paint(GUM_window *win, GUM_cell *root)
 
         while (!cell->next) {
 
-            if (cell == root || cell->parent == NULL) {
-                gum_end_paint(win);
+            if (cell == root || cell->parent == NULL)
                 return;
-            }
 
             cell = cell->parent;
             gum_pop_clip(win, &cell->box);
@@ -118,6 +115,8 @@ GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
 
 void gum_cell_detach(GUM_cell *cell)
 {
+    if (cell == NULL || cell->parent == NULL)
+        return;
     if (cell->previous)
         cell->previous->next = cell->next;
     else
@@ -264,5 +263,6 @@ void gum_cell_set_text(GUM_cell *cell, const char *text)
         free(cell->text);
     cell->text = text ? strdup(text) : NULL;
     gum_invalid_measure(cell);
+    gum_invalid_visual(cell);
 }
 

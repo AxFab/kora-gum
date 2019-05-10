@@ -26,10 +26,13 @@
 #include <string.h>
 #include <time.h>
 
+#define GUM_MAX_MCTX  8
+
 struct GUM_event_manager {
     int mouse_x, mouse_y;
     GUM_cell *root;
-    GUM_cell *menu;
+    GUM_cell *menus[GUM_MAX_MCTX];
+    int menu_sp;
     GUM_window *win;
 
     HMP_map actions;
@@ -207,9 +210,10 @@ void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell)
 
 static void gum_remove_context(GUM_event_manager *evm)
 {
-    gum_invalid_visual(evm->menu);
-    gum_cell_detach(evm->menu);
-    evm->menu = NULL;
+    int i;
+    for (i = 0; i < evm->menu_sp; ++i)
+        gum_invalid_visual(evm->menus[i]);
+    evm->menu_sp = 0;
 }
 
 static void gum_event_motion(GUM_event_manager *evm, int x, int y)
@@ -250,7 +254,7 @@ static void gum_event_left_press(GUM_event_manager *evm)
 static void gum_event_left_release(GUM_event_manager *evm)
 {
     GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
-    if (evm->menu != NULL)
+    if (evm->menu_sp > 0)
         gum_remove_context(evm);
     /* Translate into click */
     if (target && evm->down == target) {
@@ -283,7 +287,7 @@ static void gum_event_button_press(GUM_event_manager *evm, int btn)
 static void gum_event_button_release(GUM_event_manager *evm, int btn)
 {
     evm->click_cnt = 0;
-    if (evm->menu != NULL)
+    if (evm->menu_sp > 0)
         gum_remove_context(evm);
     if (evm->spec_btn == btn) {
         if (btn == 3) // Right button
@@ -404,6 +408,7 @@ void gum_close_manager(GUM_event_manager *evm)
 
 void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
 {
+    int i;
     GUM_async *async;
     // fprintf(stderr, "Event %d enter\n", event->type);
     switch (event->type) {
@@ -448,15 +453,27 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
         gum_event_key_release(evm, event->param0, event->param1);
         break;
     case GUM_EV_EXPOSE:
-        // gum_paint(evm->win, evm->root);
-        // break;
+        gum_start_paint(evm->win);
+        gum_paint(evm->win, evm->root);
+        for (i = 0; i < evm->menu_sp; ++i)
+            gum_paint(evm->win, evm->menus[i]);
+        gum_end_paint(evm->win);
+        break;
     case GUM_EV_TICK:
         gum_emit_event(evm, NULL, GUM_EV_TICK);
         // TODO properties
         if (evm->measure) {
-            evm->measure = true;
+            evm->measure = false;
             printf("do measure\n");
             gum_do_measure(evm->root, &evm->ctx);
+            for (i = 0; i < evm->menu_sp; ++i) {
+                gum_do_measure(evm->menus[i], &evm->ctx);
+                // TODO -- Each menu have an anchor point
+                evm->menus[i]->box.w = evm->menus[i]->box.minw;
+                evm->menus[i]->box.h = evm->menus[i]->box.minh;
+                gum_do_layout(evm->menus[i], &evm->ctx);
+                gum_invalid_visual(evm->menus[i]);
+            }
         }
         if (evm->layout) {
             printf("do layout\n");
@@ -508,8 +525,13 @@ void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
             menu->rulery.before = evm->ctx.height - menu->box.h;
     }
 
-    gum_cell_pushback(evm->root, menu);
-    evm->menu = menu;
+    if (evm->menu_sp > GUM_MAX_MCTX) {
+        gum_remove_context(evm);
+        return;
+    }
+
+    evm->menus[evm->menu_sp] = menu;
+    evm->menu_sp++;
     gum_refresh(evm);
 }
 
@@ -533,17 +555,18 @@ void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager 
 void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell)
 {
     if (evm->over == cell)
-        free(evm->over);
+        evm->over = NULL;
     if (evm->down == cell)
-        free(evm->down);
+        evm->down = NULL;
     if (evm->focus == cell)
-        free(evm->focus);
+        evm->focus = NULL;
     if (evm->click == cell)
-        free(evm->click);
+        evm->click = NULL;
     if (evm->edit == cell)
-        free(evm->edit);
+        evm->edit = NULL;
 
     if (evm->layout == cell)
         evm->layout = cell->parent;
-    gum_invalid_measure(cell->parent);
+    if (cell->parent)
+        gum_invalid_measure(cell->parent);
 }

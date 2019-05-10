@@ -39,7 +39,7 @@ LIBAPI void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_m
 LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);
 void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval) ;
 
-LIBAPI void gum_close_mananger(GUM_event_manager *evm);
+LIBAPI void gum_close_manager(GUM_event_manager *evm);
 LIBAPI void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell);
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

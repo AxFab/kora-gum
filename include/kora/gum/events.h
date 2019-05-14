@@ -46,8 +46,8 @@ LIBAPI void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell);
 
 struct GUM_event {
     int type;
-    int param0;
-    int param1;
+    size_t param0;
+    size_t param1;
 };
 
 enum {

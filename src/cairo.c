@@ -369,12 +369,12 @@ void timer_handler (int signum)
 {
     XEvent e;
     memset(&e, 0, sizeof(e));
-    XExposeEvent *ee = (XExposeEvent *)&e;
-    ee->type = Expose;
-    ee->x = 0;
-    ee->y = 0;
-    ee->width = cairo_xlib_surface_get_width(__lastWin->srf);
-    ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
+    XClientMessageEvent *em = (XClientMessageEvent *)&e;
+    em->type = ClientMessage;
+    em->format = 32;
+    em->data.l[0] = GUM_EV_TICK;
+    // ee->width = cairo_xlib_surface_get_width(__lastWin->srf);
+    // ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
 
     Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
     Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
@@ -422,6 +422,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     XButtonEvent *btn = (XButtonEvent *)&e;
     XKeyEvent *key = (XKeyEvent *)&e;
     XResizeRequestEvent *resz = (XResizeRequestEvent *)&e;
+    XClientMessageEvent *cm = (XClientMessageEvent *)&e;
 
     do {
         XNextEvent(cairo_xlib_surface_get_display(win->srf), &e);
@@ -490,6 +491,10 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
             // printf("LeaveNotify\n");
             event->type = -1;
             break;
+        case ClientMessage:
+            event->type = cm->data.l[0];
+            event->param0 = cm->data.l[1];
+            break;
         case FocusIn:
         case FocusOut:
         case KeymapNotify:
@@ -508,7 +513,6 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
         case UnmapNotify:
         case VisibilityNotify:
         case ColormapNotify:
-        case ClientMessage:
         case PropertyNotify:
         case SelectionClear:
         case SelectionNotify:
@@ -570,11 +574,35 @@ void *gum_load_image(const char *name)
 
 void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
 {
-    gum_paint(win, cell);
+    XEvent e;
+    memset(&e, 0, sizeof(e));
+    XExposeEvent *ee = (XExposeEvent *)&e;
+    ee->type = Expose;
+    ee->x = 0;
+    ee->y = 0;
+    ee->width = cairo_xlib_surface_get_width(__lastWin->srf);
+    ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
+
+    Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 
 void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1)
 {
+    XEvent e;
+    memset(&e, 0, sizeof(e));
+    XClientMessageEvent *em = (XClientMessageEvent *)&e;
+    em->type = ClientMessage;
+    em->format = 32;
+    em->data.l[0] = type;
+    em->data.l[1] = param0;
 
+    // ee->width = cairo_xlib_surface_get_width(__lastWin->srf);
+    // ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
+
+    Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 

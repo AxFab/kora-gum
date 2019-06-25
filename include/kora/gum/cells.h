@@ -33,12 +33,13 @@ struct GUM_sideruler {
 };
 
 struct GUM_box {
-    int x, y, w, h;
-    int minw, minh;
-    int cx, cy, cw, ch;
-    int mincw, minch;
-    int sx, sy;
-    int ch_w, ch_h;
+    int x, y, w, h; // Current area
+    int minw, minh; // Min size
+    int cx, cy, cw, ch; // Client area
+    int mincw, minch; // Min client area
+    int sx, sy; // Scrolling
+    int dx, dy; // Dragged
+    int ch_w, ch_h; // Children real size
 };
 
 struct GUM_gctx {
@@ -101,6 +102,7 @@ enum {
     GUM_CELL_HIDDEN = (1 << 8),
     GUM_CELL_BUFFERED = (1 << 9),
 
+    GUM_CELL_DRAGABLE = (1 << 10),
 
     GUM_CELL_MEASURE = (1 << 16),
 };
@@ -200,7 +202,7 @@ LIBAPI GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins);
 
 LIBAPI GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename);
 GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value);
-GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
+LIBAPI GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 
 
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
@@ -215,7 +217,6 @@ GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2);
 GUM_event_manager *gum_fetch_manager(GUM_cell *cell);
 
 GUM_skin *gum_skin(GUM_cell *cell);
-void gum_invalid_cell(GUM_cell *cell, GUM_window *win);
 LIBAPI GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);
 LIBAPI void gum_cell_detach(GUM_cell *cell);
 LIBAPI void gum_cell_destroy_children(GUM_event_manager *evm, GUM_cell *cell);

@@ -71,7 +71,7 @@ void gum_paint(GUM_window *win, GUM_cell *root)
                 return;
 
             cell = cell->parent;
-            gum_pop_clip(win, &cell->box);
+            gum_pop_clip(win, &cell->box, cell->parent ? &cell->parent->box : NULL);
             if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y) && !(cell->state & GUM_CELL_HIDDEN))  // TODO
                 gum_draw_scrolls(win, cell);
         }

@@ -164,6 +164,11 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
             cell->state |= GUM_CELL_SUBSTYLE;
         else if (!strcmp("false", value))
             cell->state &= ~GUM_CELL_SUBSTYLE;
+    } else if (!strcmp("dragable", key)) {
+        if (!strcmp("true", value))
+            cell->state |= GUM_CELL_DRAGABLE;
+        else if (!strcmp("false", value))
+            cell->state &= ~GUM_CELL_DRAGABLE;
     }
 
     else {

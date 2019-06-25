@@ -90,7 +90,6 @@ void gum_win32_setup()
 
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-HFONT  hFont;
 
 bool fonts_init = false;
 HMP_map fonts_map;
@@ -186,6 +185,12 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     }
 
     if (msg.message > WM_USER && msg.message < WM_USER + 4096) {
+        event->type = msg.message - WM_USER;
+	event->param0 = msg.lParam;
+	event->param1 = msg.wParam;
+	TranslateMessage(&msg);
+	DispatchMessage(&msg);
+	return 0;
     }
 
     event->param0 = 0;
@@ -328,10 +333,10 @@ void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 #define MIN_ALPHA 0x1000000
 #define M_PI 3.141592653589793
 #define COLOR_REF(n) ( (((n) & 0xFF0000) >> 16) | ((n) & 0xFF00) | (((n) & 0xFF) << 16) )
-void gum_start_paint(GUM_window *win, int x, int y)
+void gum_start_paint(GUM_window *win)
 {
-    win->x = x;
-    win->y = y;
+    win->x = 0;
+    win->y = 0;
     if (win->hbmp != NULL)
         win->old = SelectObject(win->hdc, win->hbmp);
     else
@@ -350,15 +355,19 @@ void gum_push_clip(GUM_window *win, GUM_box *box)
 {
     win->x += box->cx - box->sx;
     win->y += box->cy - box->sy;
-    HRGN clip = CreateRectReg(win->x, win->y, win->x + box->cw, win->y + box->ch);
-    SelectClipRgn(win->hdc, clip);
+    HRGN region = CreateRectReg(win->x, win->y, win->x + box->cw, win->y + box->ch);
+    SelectClipRgn(win->hdc, region);
 }
 
-void gum_pop_clip(GUM_window *win, GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
 {
     win->x -= box->cx - box->sx;
     win->y -= box->cy - box->sy;
-    SelectClipRgn(win->hdc, NULL);
+    if (prev != NULL) {
+        HRGN region = CreateRectReg(win->x, win->y, win->x + prev->cw, win->y + prev->ch);
+        SelectClipRgn(win->hdc, region);
+    } else
+        SelectClipRgn(win->hdc, NULL);
 }
 
 void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim)
@@ -394,8 +403,10 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     if (! top && cell->state & GUM_CELL_BUFFERED) {
         if (cell->surface == NULL)
             cell->surface = gum_surface(win, cell->box.w, cell->box. h);
-        gum_paint(cell->surface, cell);
-        gum_draw_pic(win, cell->surface, &cell->box, &cell->anim);
+	if (cell->surface != NULL) {
+            gum_paint(cell->surface, cell);
+            gum_draw_pic(win, cell->surface, &cell->box, &cell->anim);
+	}
         return;
     }
 
@@ -453,10 +464,10 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
         else
             alg |= DT_TOP;
 
-        if (skin->font == NULL) {
+        if (skin->font == NULL)
             skin->font = gum_fetch_font(win, skin);
-        } else {
-            SelectObject(win->hdc, hFont);
+        if (skin->font != NULL) {
+            SelectObject(win->hdc, (HFONT)skin->font);
             SetTextColor(win->hdc, COLOR_REF(skin->txcolor));
             DrawText(win->hdc, szBuf, wcslen(szBuf), &r, alg | DT_SINGLELINE);
         }

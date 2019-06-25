@@ -52,6 +52,9 @@ struct GUM_event_manager {
     GUM_cell *layout;
     GUM_gctx ctx;
     GUM_sideruler inval;
+
+    GUM_cell *grab;
+    int grab_x, grab_y;
 };
 
 typedef struct GUM_async {
@@ -238,6 +241,25 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
             evm->down = NULL;
         }
     }
+    if (evm->grab != NULL) {
+        // drop request !?
+	gum_invalid_visual(evm->grab);
+	evm->grab->box.x -= evm->grab->box.dx;
+	evm->grab->box.y -= evm->grab->box.dy;
+	evm->grab->box.dx = evm->mouse_x - evm->grab_x;
+	evm->grab->box.dy = evm->mouse_y - evm->grab_y;
+
+	/* BEGIN: drag limit */
+	if (evm->drag->box.dx < 0)
+	    evm->drag->box.dx = 0;
+	else if (evm->drag->box.dx > evm->grab->parent->box.cw - evm->drag->box.w)
+	    evm->drag->box.dx = evm->grab->parent->box.cw - evm->drag->box.w;
+	evm->drag->box.dy = 0;
+	/* END */
+
+	evm->grab->box.x += evm->grab->box.dx;
+	evm->grab->box.y += evm->grab->box.dy;
+    }
 }
 
 static void gum_event_left_press(GUM_event_manager *evm)
@@ -249,6 +271,11 @@ static void gum_event_left_press(GUM_event_manager *evm)
     /* Cell is down */
     gum_cell_chstatus(evm, target, GUM_CELL_DOWN, 1, GUM_EV_DOWN);
     evm->down = target;
+    if (target && target->state & GUM_CELL_DRAGABLE) {
+	evm->drag = target;
+	evm->drag_x = evm->mouse_x - evm->drag->box.dx;
+	evm->drag_y = evm->mouse_y - evm->drag->box.dy;
+    }
 }
 
 static void gum_event_left_release(GUM_event_manager *evm)
@@ -256,6 +283,9 @@ static void gum_event_left_release(GUM_event_manager *evm)
     GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
     if (evm->menu_sp > 0)
         gum_remove_context(evm);
+    /* if cell grabbed, drop-it */
+    if (evm->grab)
+	evm->grab = NULL;
     /* Translate into click */
     if (target && evm->down == target) {
         long long now = gum_system_time();

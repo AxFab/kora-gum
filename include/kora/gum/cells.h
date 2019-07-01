@@ -119,6 +119,8 @@ struct GUM_anim {
     int ew, eh;
 };
 
+typedef void(*GUM_layout_algo)(GUM_cell *, GUM_layout *);
+
 struct GUM_cell {
     struct GUM_absolruler rulerx;
     struct GUM_absolruler rulery;
@@ -159,7 +161,7 @@ struct GUM_cell {
     int state;
     int text_pen;
 
-    void (*layout)(GUM_cell *cell, GUM_layout *layout);
+    GUM_layout_algo layout;
 
     GUM_anim anim;
     GUM_event_manager *manager;
@@ -195,6 +197,8 @@ void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout);
 
+LIBAPI GUM_layout_algo gum_fetch_layout(const char *);
+
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 
@@ -214,7 +218,7 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx);
 bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx);
 
 GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2);
-GUM_event_manager *gum_fetch_manager(GUM_cell *cell);
+LIBAPI GUM_event_manager *gum_fetch_manager(GUM_cell *cell);
 
 GUM_skin *gum_skin(GUM_cell *cell);
 LIBAPI GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id);

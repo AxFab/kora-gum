@@ -126,8 +126,8 @@ void on_refresh(GUM_event_manager *evm, GUM_cell *cell, int event)
         // fprintf(stderr, "Dirent %s\n", en->d_name);
         GUM_cell *cpy = gum_cell_copy(icon);
         gum_cell_pushback(view, cpy);
-        gum_event_bind(evm, cpy, GUM_EV_CLICK, on_icon_click);
-        gum_event_bind(evm, cpy, GUM_EV_RIGHTCLICK, on_file_menu);
+        gum_event_bind(evm, cpy, GUM_EV_CLICK, on_icon_click, NULL);
+        gum_event_bind(evm, cpy, GUM_EV_RIGHTCLICK, on_file_menu, NULL);
     }
     closedir(dir);
     gum_refresh(evm);
@@ -170,19 +170,19 @@ int main(int argc, char **argv, char **env)
     gum_cell_detach(icon);
 
     evm = gum_event_manager(root, win);
-    gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent);
-    gum_event_bind(evm, NULL, GUM_EV_NEXT, on_next);
-    gum_event_bind(evm, gum_get_by_id(root, "btn-prev"), GUM_EV_CLICK, on_previous);
-    gum_event_bind(evm, gum_get_by_id(root, "btn-next"), GUM_EV_CLICK, on_next);
-    gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent);
-    gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh);
-    gum_event_bind(evm, view, GUM_EV_RIGHTCLICK, on_view_menu);
+    gum_event_bind(evm, NULL, GUM_EV_PREVIOUS, on_parent, NULL);
+    gum_event_bind(evm, NULL, GUM_EV_NEXT, on_next, NULL);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-prev"), GUM_EV_CLICK, on_previous, NULL);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-next"), GUM_EV_CLICK, on_next, NULL);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-top"), GUM_EV_CLICK, on_parent, NULL);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-refr"), GUM_EV_CLICK, on_refresh, NULL);
+    gum_event_bind(evm, view, GUM_EV_RIGHTCLICK, on_view_menu, NULL);
 
     // Handle navigation tabs
     nav = gum_get_by_id(root, "nav-tabs");
     GUM_cell *tab;
     for (tab = nav->first; tab; tab = tab->next)
-        gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click);
+        gum_event_bind(evm, tab, GUM_EV_CLICK, on_tab_click, NULL);
 
     getcwd(current_path, 8192);
     on_refresh(evm, NULL, 0);

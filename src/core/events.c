@@ -146,14 +146,14 @@ static void gum_emit_event(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
-    GUM_EventHandler action = (GUM_EventHandler)hmp_get(&evm->actions, key, lg);
+    GUM_handler_record *action = (void*)hmp_get(&evm->actions, key, lg);
     if (action != NULL)
-        action(evm, cell, event);
+        action->handler(evm, cell, event, action->data);
 
     lg = snprintf(key, 32, "%p]%4x", NULL, event);
-    action = (GUM_EventHandler)hmp_get(&evm->actions, key, lg);
+    action = (void *)hmp_get(&evm->actions, key, lg);
     if (action != NULL)
-        action(evm, cell, event);
+        action->handler(evm, cell, event, action->data);
 }
 
 static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags, int set, int event)
@@ -182,11 +182,14 @@ static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags,
 }
 
 
-void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler)
+void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler, void *data)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
-    hmp_put(&evm->actions, key, lg, handler);
+    GUM_handler_record *record = malloc(sizeof(GUM_handler_recort));
+    record->handler = handler;
+    record->data = data;
+    hmp_put(&evm->actions, key, lg, record);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
@@ -249,12 +252,12 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
 	evm->grab->box.dx = evm->mouse_x - evm->grab_x;
 	evm->grab->box.dy = evm->mouse_y - evm->grab_y;
 
-	/* BEGIN: drag limit */
-	if (evm->drag->box.dx < 0)
-	    evm->drag->box.dx = 0;
-	else if (evm->drag->box.dx > evm->grab->parent->box.cw - evm->drag->box.w)
-	    evm->drag->box.dx = evm->grab->parent->box.cw - evm->drag->box.w;
-	evm->drag->box.dy = 0;
+	/* BEGIN: grab limit */
+	if (evm->grab->box.dx < 0)
+	    evm->grab->box.dx = 0;
+	else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->drag->box.w)
+	    evm->grab->box.dx = evm->grab->parent->box.cw - evm->drag->box.w;
+	evm->grab->box.dy = 0;
 	/* END */
 
 	evm->grab->box.x += evm->grab->box.dx;
@@ -272,9 +275,9 @@ static void gum_event_left_press(GUM_event_manager *evm)
     gum_cell_chstatus(evm, target, GUM_CELL_DOWN, 1, GUM_EV_DOWN);
     evm->down = target;
     if (target && target->state & GUM_CELL_DRAGABLE) {
-	evm->drag = target;
-	evm->drag_x = evm->mouse_x - evm->drag->box.dx;
-	evm->drag_y = evm->mouse_y - evm->drag->box.dy;
+	evm->grab = target;
+	evm->grab_x = evm->mouse_x - evm->drag->box.dx;
+	evm->grab_y = evm->mouse_y - evm->drag->box.dy;
     }
 }
 

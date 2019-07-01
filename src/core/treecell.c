@@ -24,6 +24,8 @@
 
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
 {
+    if (cell->state & GUM_CELL_HIDDEN)
+        return NULL;
     if (x < cell->box.x || y < cell->box.y ||
         x >= cell->box.x + cell->box.w || y >= cell->box.y + cell->box.h)
         return NULL;

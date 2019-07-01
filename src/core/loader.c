@@ -27,6 +27,35 @@ struct GUM_cellbuilder {
     GUM_skins *skins;
 };
 
+GUM_layout_algo gum_fetch_layout(const char *value)
+{
+    if (!strcmp("Absolute", value))
+        return gum_layout_absolute;
+    else if (!strcmp("Wrap", value))
+        return gum_layout_wrap;
+    else if (!strcmp("VGroupExtend", value))
+        return gum_layout_vgroup_extend;
+    else if (!strcmp("HGroupExtend", value))
+        return gum_layout_hgroup_extend;
+    else if (!strcmp("VGroupLeft", value))
+        return gum_layout_vgroup_left;
+    else if (!strcmp("HGroupTop", value))
+        return gum_layout_hgroup_top;
+    else if (!strcmp("VGroupCenter", value))
+        return gum_layout_vgroup_center;
+    else if (!strcmp("HGroupMiddle", value))
+        return gum_layout_hgroup_middle;
+    else if (!strcmp("VGroupRight", value))
+        return gum_layout_vgroup_right;
+    else if (!strcmp("HGroupBottom", value))
+        return gum_layout_hgroup_bottom;
+    else if (!strcmp("ColumnGrid", value))
+        return gum_layout_column_grid;
+    else if (!strcmp("RowGrid", value))
+        return gum_layout_row_grid;
+    return NULL;
+}
+
 static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *value)
 {
     if (!strcmp("id", key))
@@ -102,33 +131,8 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
         cell->text = strdup(value);
     else if (!strcmp("img", key))
         cell->img_src = strdup(value);
-    else if (!strcmp("layout", key)) {
-        if (!strcmp("Absolute", value))
-            cell->layout = gum_layout_absolute;
-        else if (!strcmp("Wrap", value))
-            cell->layout = gum_layout_wrap;
-        else if (!strcmp("VGroupExtend", value))
-            cell->layout = gum_layout_vgroup_extend;
-        else if (!strcmp("HGroupExtend", value))
-            cell->layout = gum_layout_hgroup_extend;
-        else if (!strcmp("VGroupLeft", value))
-            cell->layout = gum_layout_vgroup_left;
-        else if (!strcmp("HGroupTop", value))
-            cell->layout = gum_layout_hgroup_top;
-        else if (!strcmp("VGroupCenter", value))
-            cell->layout = gum_layout_vgroup_center;
-        else if (!strcmp("HGroupMiddle", value))
-            cell->layout = gum_layout_hgroup_middle;
-        else if (!strcmp("VGroupRight", value))
-            cell->layout = gum_layout_vgroup_right;
-        else if (!strcmp("HGroupBottom", value))
-            cell->layout = gum_layout_hgroup_bottom;
-        else if (!strcmp("ColumnGrid", value))
-            cell->layout = gum_layout_column_grid;
-        else if (!strcmp("RowGrid", value))
-            cell->layout = gum_layout_row_grid;
-    }
-
+    else if (!strcmp("layout", key))
+        cell->layout = gum_fetch_layout(value);
     else if (!strcmp("editable", key)) {
         if (!strcmp("true", value))
             cell->state |= GUM_CELL_EDITABLE;

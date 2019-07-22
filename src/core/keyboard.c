@@ -17,7 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include "gfx.h"
+// #include "gfx.h"
+#include <kora/keys.h>
 #include <stdio.h>
 #include <string.h>
 

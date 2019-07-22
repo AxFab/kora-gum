@@ -182,11 +182,11 @@ static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags,
 }
 
 
-void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler, void *data)
+void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_event_handler handler, void *data)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
-    GUM_handler_record *record = malloc(sizeof(GUM_handler_recort));
+    GUM_handler_record *record = malloc(sizeof(GUM_handler_record));
     record->handler = handler;
     record->data = data;
     hmp_put(&evm->actions, key, lg, record);
@@ -255,13 +255,14 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
 	/* BEGIN: grab limit */
 	if (evm->grab->box.dx < 0)
 	    evm->grab->box.dx = 0;
-	else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->drag->box.w)
-	    evm->grab->box.dx = evm->grab->parent->box.cw - evm->drag->box.w;
+	else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->grab->box.w)
+	    evm->grab->box.dx = evm->grab->parent->box.cw - evm->grab->box.w;
 	evm->grab->box.dy = 0;
 	/* END */
 
 	evm->grab->box.x += evm->grab->box.dx;
 	evm->grab->box.y += evm->grab->box.dy;
+	gum_invalid_visual(evm->grab);
     }
 }
 
@@ -276,8 +277,8 @@ static void gum_event_left_press(GUM_event_manager *evm)
     evm->down = target;
     if (target && target->state & GUM_CELL_DRAGABLE) {
 	evm->grab = target;
-	evm->grab_x = evm->mouse_x - evm->drag->box.dx;
-	evm->grab_y = evm->mouse_y - evm->drag->box.dy;
+	evm->grab_x = evm->mouse_x - evm->grab->box.dx;
+	evm->grab_y = evm->mouse_y - evm->grab->box.dy;
     }
 }
 
@@ -571,7 +572,7 @@ void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
 static void gum_async_job(GUM_async *async)
 {
     async->res = async->worker(async->evm, async->arg);
-    gum_push_event(async->evm->win, GUM_EV_ASYNC, (size_t)async, 0);
+    gum_push_event(async->evm->win, GUM_EV_ASYNC, (size_t)async, 0, NULL);
 }
 
 void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager *, void *), void (*callback)(GUM_event_manager *, void *), void *arg)

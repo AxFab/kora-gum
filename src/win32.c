@@ -174,8 +174,8 @@ void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_invalid_surface_push(GUM_window *win);
 
+int kdb_state = 0, kdb_sec = 0;
 int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 {
     MSG msg;
@@ -249,16 +249,13 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
     }
     case WM_KEYDOWN:
         event->type = GUM_EV_KEY_PRESS;
-        event->param0 = msg.wParam;
-        switch (event->param0) {
-            case 8: event->param0 = K_BACKSPACE; break;
-            case 16: event->param0 = K_SHIFT_L; break;
-        }
-        // TODO - Special characters
+        event->param0 = keyboard_down((msg.lParam >> 16) & 0x7f, &kdb_state, &kdb_sec);
+        event->param1 = kdb_state;
         break;
     case WM_KEYUP:
         event->type = GUM_EV_KEY_RELEASE;
-        event->param0 = msg.wParam;
+        event->param0 = keyboard_up((msg.lParam >> 16) & 0x7f, &kdb_state);
+        event->param1 = kdb_state;
         break;
     case WM_TIMER:
         event->type = GUM_EV_TICK;
@@ -289,33 +286,15 @@ void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_invalid_surface_push(GUM_window *win)
+void gum_do_visual(GUM_cell *cell, GUM_window *win, struct GUM_sideruler *inval)
 {
-    RECT r = win->inval;
-    win->inval.left = 0;
-    win->inval.right = 0;
-    win->inval.top = 0;
-    win->inval.bottom = 0;
+    RECT r;
+    r.left = inval->left;
+    r.right = inval->right;
+    r.top = inval->top;
+    r.bottom = inval->bottom;
     if (r.left != r.right && r.top != r.bottom)
         InvalidateRect(win->hwnd, &r, FALSE);
-}
-void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h)
-{
-    if (win->inval.right == 0) {
-        win->inval.left = x;
-        win->inval.right = x + w;
-    } else {
-        win->inval.left = MAX(x, win->inval.left);
-        win->inval.right = MIN(x + w, win->inval.right);
-    }
-
-    if (win->inval.bottom == 0) {
-        win->inval.top = y;
-        win->inval.bottom = y + h;
-    } else {
-        win->inval.top = MAX(y, win->inval.top);
-        win->inval.bottom = MIN(y + h, win->inval.bottom);
-    }
 }
 
 void gum_resize_win(GUM_window *win, int width, int height)
@@ -355,7 +334,7 @@ void gum_push_clip(GUM_window *win, GUM_box *box)
 {
     win->x += box->cx - box->sx;
     win->y += box->cy - box->sy;
-    HRGN region = CreateRectReg(win->x, win->y, win->x + box->cw, win->y + box->ch);
+    HRGN region = CreateRectRgn(win->x, win->y, win->x + box->cw, win->y + box->ch);
     SelectClipRgn(win->hdc, region);
 }
 
@@ -364,7 +343,7 @@ void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
     win->x -= box->cx - box->sx;
     win->y -= box->cy - box->sy;
     if (prev != NULL) {
-        HRGN region = CreateRectReg(win->x, win->y, win->x + prev->cw, win->y + prev->ch);
+        HRGN region = CreateRectRgn(win->x, win->y, win->x + prev->cw, win->y + prev->ch);
         SelectClipRgn(win->hdc, region);
     } else
         SelectClipRgn(win->hdc, NULL);
@@ -372,18 +351,37 @@ void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
 
 void gum_draw_pic(GUM_window *win, GUM_window *sub, GUM_box *box, GUM_anim *anim)
 {
-    GUM_box bx = box;
+    // TODO -- animation
+    BITMAP bm;
+    HBITMAP hbmOld = SelectObject(sub->hdc, sub->hbmp);
+    GetObject(sub->hbmp, sizeof(bm), &bm);
 
+    double prg = 1.0;
+    anim->duration = 300;
+    int dy = 0;
+    if (anim->delay < anim->duration) {
+        long long now = gum_system_time();
+        anim->delay += (int)((now - anim->last) / 1000LL);
+        anim->last = now;
+        prg = MIN(1.0, anim->delay * 1.0 / anim->duration);
+        // invalid frame
+        dy = (int)((box->h - anim->ow) / 2.0 * (1.0 - prg));
+    }
+
+    StretchBlt(win->hdc, box->x + win->x, box->y + win->y - dy, box->w, box->h - 2 * dy, sub->hdc, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
+    SelectObject(win->hdc, hbmOld);
+    // DeleteDC(hdcMem);
 }
 
 void gum_draw_img(GUM_window *win, HBITMAP bmp, GUM_box *box)
 {
-    BITMAP bmp;
+    // TODO -- animation
+    BITMAP bm;
     HDC hdcMem = CreateCompatibleDC(win->hdc);
     HBITMAP hbmOld = SelectObject(hdcMem, bmp);
     GetObject(bmp, sizeof(bm), &bm);
     StretchBlt(win->hdc, box->x + win->x, box->y + win->y, box->w, box->h, hdcMem, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
-    // SelectObject(win->hdc, hbmOld);
+    SelectObject(win->hdc, hbmOld);
     DeleteDC(hdcMem);
 }
 

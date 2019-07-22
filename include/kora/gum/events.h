@@ -29,11 +29,11 @@ LIBAPI void gum_event_loop(GUM_event_manager *evm);
 
 void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, void *data);
 
-typedef void(*GUM_event_handler)(GUM_event_manager *evm, GUM_cell *cell, int event);
+typedef void(*GUM_event_handler)(GUM_event_manager *evm, GUM_cell *cell, int event, void *data);
 
 LIBAPI void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell);
 LIBAPI void gum_refresh(GUM_event_manager *evm);
-LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_EventHandler handler, void *data);
+LIBAPI void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_event_handler handler, void *data);
 LIBAPI void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager *, void *), void (*callback)(GUM_event_manager *, void *), void *arg);
 
 LIBAPI void gum_show_context(GUM_event_manager *evm, GUM_cell *menu);

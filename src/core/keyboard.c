@@ -17,7 +17,6 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-// #include "gfx.h"
 #include <kora/keys.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +59,7 @@ int kdb_layout_US_international[128][4] = {
     { '[', '{', 0xAB, 0 }, // 1A
     { ']', '}', 0xBB, 0 }, // 1B
     { _K4('\n') }, // 1C
-    { _K4(KEY_CTRL_L) }, // 1D
+    { _K4(KEY_CODE_LCTRL) }, // 1D
     { 'a', 'A', 0xE1, 0xC1 }, // 1E - A
     { 's', 'S', 0xDF, 0xA7 }, // 1F
     { 'd', 'D', 0xF0, 0xD0 }, // 20
@@ -73,7 +72,7 @@ int kdb_layout_US_international[128][4] = {
     { ';', ':', 0xB6, 0xB0 }, // 27
     { -('\''), -('"'), 0xB4, 0xA8 }, // 28
     { -('`'), -('~'), _K2(0) }, // 29
-    { _K4(KEY_SHIFT_L) }, // 2A
+    { _K4(KEY_CODE_LSHIFT) }, // 2A
     K4(0), // 2B
     { 'z', 'Z', 0xE6, 0xC6 }, // 2C - Z
     { 'x', 'X', _K2(0) }, // 2D
@@ -85,41 +84,41 @@ int kdb_layout_US_international[128][4] = {
     { ',', '<', 0xE7, 0xC7 }, // 33
     { '.', '>', _K2(0) }, // 34
     { '/', '?', 0xBF, 0 }, // 35
-    { _K4(KEY_SHIFT_R) }, // 36
+    { _K4(KEY_CODE_RSHIFT) }, // 36
     K4('*'), // 37 -- Num pad
-    { _K4(KEY_ALT_L) }, // 38
+    { _K4(KEY_CODE_LALT) }, // 38
     K4(' '), // 39
-    { _K4(KEY_CAPS_LOCK) }, // 3A
-    { _K4(KEY_F1) }, // 3B
-    { _K4(KEY_F2) }, // 3C
-    { _K4(KEY_F3) }, // 3D
-    { _K4(KEY_F4) }, // 3E
-    { _K4(KEY_F5) }, // 3F
-    { _K4(KEY_F6) }, // 40
-    { _K4(KEY_F7) }, // 41
-    { _K4(KEY_F8) }, // 42
-    { _K4(KEY_F9) }, // 43
-    { _K4(KEY_F10) }, // 44
-    { _K4(KEY_NUM_LOCK) }, // 45
+    { _K4(KEY_CODE_CAPSLOCK) }, // 3A
+    { _K4(KEY_CODE_F1) }, // 3B
+    { _K4(KEY_CODE_F2) }, // 3C
+    { _K4(KEY_CODE_F3) }, // 3D
+    { _K4(KEY_CODE_F4) }, // 3E
+    { _K4(KEY_CODE_F5) }, // 3F
+    { _K4(KEY_CODE_F6) }, // 40
+    { _K4(KEY_CODE_F7) }, // 41
+    { _K4(KEY_CODE_F8) }, // 42
+    { _K4(KEY_CODE_F9) }, // 43
+    { _K4(KEY_CODE_F10) }, // 44
+    { _K4(KEY_CODE_NUMLOCK) }, // 45
     K4(0), // 46 -- FN+PgDn on my keyboard!
-    { '7', KEY_HOME, _K2(0) }, // 47
-    { '8', KEY_UP, _K2(0) }, // 48
-    { '9', KEY_PAGE_UP, _K2(0) }, // 49
+    { '7', KEY_CODE_HOME, _K2(0) }, // 47
+    { '8', KEY_CODE_UP, _K2(0) }, // 48
+    { '9', KEY_CODE_PAGEUP, _K2(0) }, // 49
     { _K2('-'), _K2(0) }, // 4A -- Num pad
-    { '4', KEY_LEFT, _K2(0) }, // 4B
+    { '4', KEY_CODE_LEFT, _K2(0) }, // 4B
     { '7', 0, _K2(0) }, // 4C
-    { '6', KEY_RIGHT, _K2(0) }, // 4D
+    { '6', KEY_CODE_RIGHT, _K2(0) }, // 4D
     { _K2('+'), _K2(0) }, // 4E -- Num pad
-    { '1', KEY_END, _K2(0) }, // 4F
-    { '2', KEY_DOWN, _K2(0) }, // 50
-    { '3', KEY_PAGE_DOWN, _K2(0) }, // 51
-    { '0', KEY_INSERT, _K2(0) }, // 52
-    { '.', KEY_DELETE, _K2(0) }, // 53
+    { '1', KEY_CODE_END, _K2(0) }, // 4F
+    { '2', KEY_CODE_DOWN, _K2(0) }, // 50
+    { '3', KEY_CODE_PAGEDOWN, _K2(0) }, // 51
+    { '0', KEY_CODE_INSERT, _K2(0) }, // 52
+    { '.', KEY_CODE_DELETE, _K2(0) }, // 53
     K4(0), // 54
     K4(0), // 55
     { '\\', '|', _K2(0) }, // 56
-    { _K4(KEY_F11) }, // 57
-    { _K4(KEY_F12) }, // 58
+    { _K4(KEY_CODE_F11) }, // 57
+    { _K4(KEY_CODE_F12) }, // 58
     K4(0), // 59
     K4(0), // 5A
     K4(0), // 5B
@@ -131,18 +130,18 @@ int kdb_layout_US_international[128][4] = {
     K4(0), // 61
     K4('/'), // 62 -- Num pad
     K4(0), // 63
-    { _K4(KEY_ALT_R) }, // 64
+    { _K4(KEY_CODE_RALT) }, // 64
     K4(0), // 65
-    { _K4(KEY_HOME) }, // 66
-    { _K4(KEY_UP) }, // 67
-    { _K4(KEY_PAGE_UP) }, // 68
-    { _K4(KEY_LEFT) }, // 69
-    { _K4(KEY_RIGHT) }, // 6A
-    { _K4(KEY_END) }, // 6B
-    { _K4(KEY_DOWN) }, // 6C
-    { _K4(KEY_PAGE_DOWN) }, // 6D
-    { _K4(KEY_INSERT) }, // 6E
-    { _K4(KEY_DELETE) }, // 6F
+    { _K4(KEY_CODE_HOME) }, // 66
+    { _K4(KEY_CODE_UP) }, // 67
+    { _K4(KEY_CODE_PAGEUP) }, // 68
+    { _K4(KEY_CODE_LEFT) }, // 69
+    { _K4(KEY_CODE_RIGHT) }, // 6A
+    { _K4(KEY_CODE_END) }, // 6B
+    { _K4(KEY_CODE_DOWN) }, // 6C
+    { _K4(KEY_CODE_PAGEDOWN) }, // 6D
+    { _K4(KEY_CODE_INSERT) }, // 6E
+    { _K4(KEY_CODE_DELETE) }, // 6F
     K4(0), // 70
     K4(0), // 71
     K4(0), // 72
@@ -150,7 +149,7 @@ int kdb_layout_US_international[128][4] = {
     K4(0), // 74
     K4(0), // 75
     K4(0), // 76
-    { _K4(KEY_BREAK) }, // 77
+    { _K4(KEY_CODE_BREAK) }, // 77
     K4(0), // 78
     K4(0), // 79
     K4(0), // 7A
@@ -187,15 +186,15 @@ int keyboard_down(int key, int *status, int *key2)
 {
     *key2 = 0;
     if (key >= 128) {
-        printf("KEY %d\n", key);
+        // printf("KEY %d\n", key);
         return 0;
     }
 
-    int s = (*status) & KDB_SHIFT ? 1 : 0;
-    if ((*status) & KDB_CAPSLOCK)
+    int s = (*status) & (KEY_STATUS_LSHIFT | KEY_STATUS_RSHIFT) ? 1 : 0;
+    if ((*status) & KEY_STATUS_CAPSLOCK)
         s = 1 - s;
 
-    if (*(status) & KDB_ALT) {
+    if (*(status) & (KEY_STATUS_LALT | KEY_STATUS_RALT)) {
         peek_key = 0;
         s += 2;
     } else if (peek_key != 0) { // Alternative keys
@@ -224,30 +223,38 @@ int keyboard_down(int key, int *status, int *key2)
                 peek_key = 0;
                 return latin_alternate[i][j][s];
             }
-        } while(0);
+        } while (0);
 
         *key2 = peek_key;
         peek_key = 0;
         return ch;
     }
 
-    printf("Key %02x.%d => %04x\n", key, s, kdb_layout_US_international[key][s]);
+    // printf("Key %02x.%d => %04x\n", key, s, kdb_layout_US_international[key][s]);
     key = kdb_layout_US_international[key][s];
     if (key < 0) {
         peek_key = -key;
         return 0;
     }
 
-    if (key < 0x20) {
-        if (key == KEY_SHIFT_L || key == KEY_SHIFT_R)
-            *status |= KDB_SHIFT;
-        else if (key == KEY_ALT_L || key == KEY_ALT_R)
-            *status |= KDB_ALT;
-        else if (key == KEY_CTRL_L || key == KEY_CTRL_R)
-            *status |= KDB_CTRL;
-        else if (key == KEY_CAPS_LOCK)
-            *status ^= KDB_CAPSLOCK;
-    }
+    if (key == KEY_CODE_LSHIFT)
+        *status |= KEY_STATUS_LSHIFT;
+    else if (key == KEY_CODE_RSHIFT)
+        *status |= KEY_STATUS_RSHIFT;
+    else if (key == KEY_CODE_LCTRL)
+        *status |= KEY_STATUS_LCTRL;
+    else if (key == KEY_CODE_RCTRL)
+        *status |= KEY_STATUS_RCTRL;
+    else if (key == KEY_CODE_LALT)
+        *status |= KEY_STATUS_LALT;
+    else if (key == KEY_CODE_RALT)
+        *status |= KEY_STATUS_RALT;
+    else if (key == KEY_CODE_LGUI)
+        *status |= KEY_STATUS_LGUI;
+    else if (key == KEY_CODE_RGUI)
+        *status |= KEY_STATUS_RGUI;
+    else if (key == KEY_CODE_CAPSLOCK)
+        *status ^= KEY_STATUS_CAPSLOCK;
     return key;
 }
 
@@ -255,20 +262,30 @@ int keyboard_up(int key, int *status)
 {
     if (key >= 128)
         return 0;
-    int s = (*status) & KDB_SHIFT ? 1 : 0;
-    if ((*status) & KDB_CAPSLOCK)
+    int s = (*status) & (KEY_STATUS_LSHIFT | KEY_STATUS_RSHIFT) ? 1 : 0;
+    if ((*status) & KEY_STATUS_CAPSLOCK)
         s = 1 - s;
     key = kdb_layout_US_international[key][s];
     if (key <= 0)
         return 0;
-    if (key < 0x20) {
-        if (key == KEY_SHIFT_L || key == KEY_SHIFT_R)
-            *status &= ~KDB_SHIFT;
-        else if (key == KEY_ALT_L || key == KEY_ALT_R)
-            *status &= ~KDB_ALT;
-        else if (key == KEY_CTRL_L || key == KEY_CTRL_R)
-            *status &= ~KDB_CTRL;
-    }
+    if (key == KEY_CODE_LSHIFT)
+        *status &= ~KEY_STATUS_LSHIFT;
+    else if (key == KEY_CODE_RSHIFT)
+        *status &= ~KEY_STATUS_RSHIFT;
+    else if (key == KEY_CODE_LCTRL)
+        *status &= ~KEY_STATUS_LCTRL;
+    else if (key == KEY_CODE_RCTRL)
+        *status &= ~KEY_STATUS_RCTRL;
+    else if (key == KEY_CODE_LALT)
+        *status &= ~KEY_STATUS_LALT;
+    else if (key == KEY_CODE_RALT)
+        *status &= ~KEY_STATUS_RALT;
+    else if (key == KEY_CODE_LGUI)
+        *status &= ~KEY_STATUS_LGUI;
+    else if (key == KEY_CODE_RGUI)
+        *status &= ~KEY_STATUS_RGUI;
+    else if (key == KEY_CODE_CAPSLOCK)
+        *status ^= KEY_STATUS_CAPSLOCK;
     return key;
 }
 

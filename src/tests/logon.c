@@ -17,9 +17,9 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/core.h>
-#include <kora/gum/cells.h>
-#include <kora/gum/events.h>
+#include <gum/core.h>
+#include <gum/cells.h>
+#include <gum/events.h>
 #include <kora/xml.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,8 +137,8 @@ void load_users()
         GUM_cell *usr = gum_cell_copy(user);
         gum_get_by_id(usr, "usr")->text = strdup(strtok(buf, ";\n"));
         gum_get_by_id(usr, "img")->img_src = strdup(strtok(NULL, ";\n"));
-        gum_event_bind(evm, usr, GUM_EV_CLICK, on_select, NULL);
-        gum_event_bind(evm, gum_get_by_id(usr, "go"), GUM_EV_CLICK, on_login, NULL);
+        gum_event_bind(evm, usr, GUM_EV_CLICK, (void *)on_select, NULL);
+        gum_event_bind(evm, gum_get_by_id(usr, "go"), GUM_EV_CLICK, (void *)on_login, NULL);
         gum_cell_pushback(users, usr);
     }
     gum_refresh(evm);
@@ -208,8 +208,8 @@ int main(int argc, char **argv, char **env)
     lbl_clock = gum_get_by_id(root, "btn-clock");
 
     evm = gum_event_manager(root, win);
-    gum_event_bind(evm, gum_get_by_id(root, "btn-lang"), GUM_EV_CLICK, on_lang, NULL);
-    gum_event_bind(evm, NULL, GUM_EV_TICK, on_tick, NULL);
+    gum_event_bind(evm, gum_get_by_id(root, "btn-lang"), GUM_EV_CLICK, (void *)on_lang, NULL);
+    gum_event_bind(evm, NULL, GUM_EV_TICK, (void *)on_tick, NULL);
     load_users();
 
     gum_event_loop(evm);

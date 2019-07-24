@@ -17,4 +17,4 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/widgets.h
+#include <gum/widgets.h>

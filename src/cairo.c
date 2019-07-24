@@ -20,8 +20,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <kora/gum/events.h>
-#include <kora/gum/cells.h>
+#include <gum/events.h>
+#include <gum/cells.h>
 #include <kora/css.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -354,16 +354,6 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 
 #include <kora/keys.h>
 
-int key_unicode(int kcode, int state)
-{
-    int r = 0;
-    if ((state & 3) == 0 || ((state & 3) == 3))
-        r += 1;
-    if (state & 8)
-        r += 2;
-    return keyboard_layout_US[kcode][r];
-}
-
 
 void timer_handler (int signum)
 {
@@ -416,7 +406,7 @@ void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
 
 int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 {
-    int unicode;
+    int key2, unicode;
     XEvent e;
     XMotionEvent *motion = (XMotionEvent *)&e;
     XButtonEvent *btn = (XButtonEvent *)&e;
@@ -434,14 +424,14 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
         case KeyPress:
             event->type = GUM_EV_KEY_PRESS;
-            unicode = key_unicode(key->keycode, key->state);
+            unicode = keyboard_down(key->keycode, &key->state, &key2);
             // printf("Event KeyPress <%x.%x-%x>\n", key->state, key->keycode, unicode);
             event->param0 = unicode;
             event->param1 = (key->state << 16) | key->keycode;
             break;
         case KeyRelease:
             event->type = GUM_EV_KEY_RELEASE;
-            unicode = key_unicode(key->keycode, key->state);
+            unicode = keyboard_up(key->keycode, &key->state);
             // printf("Event KeyRelease <%x.%x-%x>\n", key->state, key->keycode, unicode);
             event->param0 = unicode;
             event->param1 = (key->state << 16) | key->keycode;
@@ -552,7 +542,7 @@ void gum_push_clip(GUM_window *win, GUM_box *box)
     cairo_translate(win->ctx, box->cx - box->sx, box->cy - box->sy);
 }
 
-void gum_pop_clip(GUM_window *win, GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
 {
     cairo_translate(win->ctx, box->sx - box->cx, box->sy - box->cy);
     cairo_restore(win->ctx);
@@ -588,7 +578,7 @@ void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
     XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 
-void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1)
+void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, void *data)
 {
     XEvent e;
     memset(&e, 0, sizeof(e));

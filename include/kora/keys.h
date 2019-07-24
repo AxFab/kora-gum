@@ -18,60 +18,130 @@
  *   - - - - - - - - - - - - - - -
  */
 
-#define K_ESC -0x06
-#define K_BACKSPACE -0x07
-#define K_TABS -0x08
-#define K_ENTER -0x09
-#define K_CAPSLOCK -0x0A
-#define K_SYSTEM -0x0B
+/* Control characters */
+#define KEY_NUL  0
+#define KEY_SOH  1
+#define KEY_STX  2
+#define KEY_ETX  3
+#define KEY_EOT  4
+#define KEY_ENQ  5
+#define KEY_ACK  6
+#define KEY_BEL  7
+#define KEY_BS  8
+#define KEY_TAB  9
+#define KEY_LF  10
+#define KEY_VT  11
+#define KEY_FF  12
+#define KEY_CR  13
+#define KEY_SO  14
+#define KEY_SI  15
 
-#define K_SHIFT_L -0x10
-#define K_SHIFT_R -0x11
-#define K_CTRL_L -0x12
-#define K_CTRL_R -0x13
-#define K_ALT -0x14
-#define K_ALT_GR -0x15
+#define KEY_DLE  16
+#define KEY_DC1  17
+#define KEY_DC2  18
+#define KEY_DC3  19
+#define KEY_DC4  20
+#define KEY_NAK  21
+#define KEY_SYN  22
+#define KEY_ETB  23
+#define KEY_CAN  24
+#define KEY_EM  25
+#define KEY_SUB  26
+#define KEY_ESC  27
+#define KEY_FS  28
+#define KEY_GS  29
+#define KEY_RS  30
+#define KEY_US  31
 
-#define K_INSERT -0x20
-#define K_DELETE -0x21
-#define K_HOME -0x22
-#define K_END -0x23
-#define K_PAGE_UP -0x24
-#define K_PAGE_DOWN -0x25
-#define K_ARROW_LEFT -0x26
-#define K_ARROW_RIGHT -0x27
-#define K_ARROW_UP -0x28
-#define K_ARROW_DOWN -0x29
 
-#define K_NUM_0 -0x30
-#define K_NUM_1 -0x31
-#define K_NUM_2 -0x32
-#define K_NUM_3 -0x33
-#define K_NUM_4 -0x34
-#define K_NUM_5 -0x35
-#define K_NUM_6 -0x36
-#define K_NUM_7 -0x37
-#define K_NUM_8 -0x38
-#define K_NUM_9 -0x39
-#define K_NUM_DOT -0x3A
-#define K_NUM_ADD -0x3B
-#define K_NUM_SUB -0x3C
-#define K_NUM_MUL -0x3D
-#define K_NUM_DIV -0x3E
-#define K_NUM_ENTER -0x3F
-#define K_NUM_LOCK -0x40
+/*  */
+#define _KeyCode(n)  (n|0x100000)
 
-#define K_F1 -0x41
-#define K_F2 -0x42
-#define K_F3 -0x43
-#define K_F4 -0x44
-#define K_F5 -0x45
-#define K_F6 -0x46
-#define K_F7 -0x47
-#define K_F8 -0x48
-#define K_F9 -0x49
-#define K_F10 -0x4A
-#define K_F11 -0x4B
-#define K_F12 -0x4C
+#define KEY_CODE_RETURN  KEY_LF
+#define KEY_CODE_ESCAPE  KEY_ESC
+#define KEY_CODE_BACKSPACE  KEY_BS
+#define KEY_CODE_TAB  KEY_TAB
+#define KEY_CODE_SPACE  32
+
+#define KEY_CODE_CAPSLOCK  _KeyCode(57)
+
+#define KEY_CODE_F1  _KeyCode(58)
+#define KEY_CODE_F2  _KeyCode(59)
+#define KEY_CODE_F3  _KeyCode(60)
+#define KEY_CODE_F4  _KeyCode(61)
+#define KEY_CODE_F5  _KeyCode(62)
+#define KEY_CODE_F6  _KeyCode(63)
+#define KEY_CODE_F7  _KeyCode(64)
+#define KEY_CODE_F8  _KeyCode(65)
+#define KEY_CODE_F9  _KeyCode(66)
+#define KEY_CODE_F10  _KeyCode(67)
+#define KEY_CODE_F11  _KeyCode(68)
+#define KEY_CODE_F12  _KeyCode(69)
+
+#define KEY_CODE_PRINTSCREEN  _KeyCode(70)
+#define KEY_CODE_SCROLLLOCK  _KeyCode(71)
+#define KEY_CODE_PAUSE  _KeyCode(72)
+#define KEY_CODE_INSERT  _KeyCode(73)
+
+#define KEY_CODE_HOME  _KeyCode(74)
+#define KEY_CODE_PAGEUP  _KeyCode(75)
+#define KEY_CODE_DELETE  _KeyCode(76)
+#define KEY_CODE_END  _KeyCode(77)
+#define KEY_CODE_PAGEDOWN  _KeyCode(78)
+#define KEY_CODE_RIGHT  _KeyCode(79)
+#define KEY_CODE_LEFT  _KeyCode(80)
+#define KEY_CODE_DOWN  _KeyCode(81)
+#define KEY_CODE_UP  _KeyCode(82)
+
+#define KEY_CODE_NUMLOCK  _KeyCode(83)
+
+#define KEY_CODE_KP_DIVIDE  _KeyCode(84)
+#define KEY_CODE_KP_MULTIPLY  _KeyCode(85)
+#define KEY_CODE_KP_MINUS  _KeyCode(86)
+#define KEY_CODE_KP_PLUS  _KeyCode(87)
+#define KEY_CODE_KP_ENTER  _KeyCode(88)
+#define KEY_CODE_KP_1  _KeyCode(89)
+#define KEY_CODE_KP_2  _KeyCode(90)
+#define KEY_CODE_KP_3  _KeyCode(91)
+#define KEY_CODE_KP_4  _KeyCode(92)
+#define KEY_CODE_KP_5  _KeyCode(93)
+#define KEY_CODE_KP_6  _KeyCode(94)
+#define KEY_CODE_KP_7  _KeyCode(95)
+#define KEY_CODE_KP_8  _KeyCode(96)
+#define KEY_CODE_KP_9  _KeyCode(97)
+#define KEY_CODE_KP_0  _KeyCode(98)
+#define KEY_CODE_KP_PERIOD  _KeyCode(99)
+
+
+#define KEY_CODE_LCTRL  _KeyCode(224)
+#define KEY_CODE_LSHIFT  _KeyCode(225)
+#define KEY_CODE_LALT  _KeyCode(226)
+#define KEY_CODE_LGUI  _KeyCode(227)
+#define KEY_CODE_RCTRL  _KeyCode(228)
+#define KEY_CODE_RSHIFT  _KeyCode(229)
+#define KEY_CODE_RALT  _KeyCode(230)
+#define KEY_CODE_RGUI  _KeyCode(231)
+
+#define KEY_CODE_BREAK  _KeyCode(232)
+
+
+
+/* - */
+#define KEY_STATUS_LSHIFT  1
+#define KEY_STATUS_RSHIFT  2
+#define KEY_STATUS_LCTRL  4
+#define KEY_STATUS_RCTRL  8
+#define KEY_STATUS_LALT  16
+#define KEY_STATUS_RALT  32
+#define KEY_STATUS_LGUI  64
+#define KEY_STATUS_RGUI  128
+#define KEY_STATUS_CAPSLOCK  256
+
+#define KEY_STATUS_SHIFT  (KEY_STATUS_LSHIFT | KEY_STATUS_RSHIFT)
+#define KEY_STATUS_CTRL  (KEY_STATUS_LCTRL | KEY_STATUS_RCTRL)
+#define KEY_STATUS_CALT  (KEY_STATUS_LALT | KEY_STATUS_RALT)
+#define KEY_STATUS_GUI  (KEY_STATUS_LGUI | KEY_STATUS_RGUI)
+
 
 extern int keyboard_layout_US[0x90][4];
+

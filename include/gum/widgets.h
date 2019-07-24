@@ -20,19 +20,22 @@
 #ifndef _KORA_GUM_WIDGETS_H
 #define _KORA_GUM_WIDGETS_H 1
 
-#include <kora/gum/core.h>
-#include <kora/gum/cells.h>
+#include <gum/core.h>
+#include <gum/cells.h>
 
 typedef union GUM_variant {
     double d;
     long long l;
-    char *;
+    char *s;
 } GUM_variant;
 
 typedef struct GUM_widget {
+    GUM_cell box;
 } GUM_widget;
 
-typedef GUM_container {
+typedef struct GUM_container {
+    GUM_cell box;
+    GUM_cell *group;
 } GUM_container;
 
 LIBAPI void gum_initialize();

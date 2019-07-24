@@ -20,7 +20,7 @@
 #ifndef _KORA_GUM_RENDERING_H
 #define _KORA_GUM_RENDERING_H 1
 
-#include <kora/gum/core.h>
+#include <gum/core.h>
 
 struct GUM_absolruler {
     int before, after, center, size, min;

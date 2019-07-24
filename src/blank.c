@@ -17,8 +17,8 @@
 *
 *   - - - - - - - - - - - - - - -
 */
-#include <kora/gum/core.h>
-#include <kora/gum/cells.h>
+#include <gum/core.h>
+#include <gum/cells.h>
 
 
 GUM_window *gum_create_surface(int width, int height)

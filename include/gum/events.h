@@ -20,7 +20,7 @@
 #ifndef _KORA_GUM_EVENTS_H
 #define _KORA_GUM_EVENTS_H 1
 
-#include <kora/gum/core.h>
+#include <gum/core.h>
 
 #define CLICK_TIMEOUT  (200000LL) /* 200 ms, in us */
 

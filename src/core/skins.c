@@ -17,7 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/cells.h>
+#include <gum/cells.h>
 #include <kora/hmap.h>
 #include <kora/css.h>
 #include <stdlib.h>

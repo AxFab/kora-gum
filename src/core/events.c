@@ -17,8 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/events.h>
-#include <kora/gum/cells.h>
+#include <gum/events.h>
+#include <gum/cells.h>
 #include <kora/hmap.h>
 #include <kora/keys.h>
 #include <stdlib.h>
@@ -390,7 +390,7 @@ static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
             evm->edit->text_pen++;
         }
         memcpy(&buf[evm->edit->text_pen], &evm->edit->text[evm->edit->text_pen], lg - evm->edit->text_pen + 1);
-    } else if (unicode == K_BACKSPACE) {
+    } else if (unicode == KEY_CODE_BACKSPACE) {
         if (evm->edit->text_pen == 0)
             return;
 

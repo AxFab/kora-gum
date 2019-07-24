@@ -17,9 +17,9 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/core.h>
-#include <kora/gum/cells.h>
-#include <kora/gum/events.h>
+#include <gum/core.h>
+#include <gum/cells.h>
+#include <gum/events.h>
 #include <kora/xml.h>
 #include <stdio.h>
 #include <stdlib.h>

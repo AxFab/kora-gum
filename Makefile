@@ -21,17 +21,16 @@ include $(topdir)/make/global.mk
 srcdir = $(topdir)/src
 
 all: libgum
-install: $(prefix)/lib/libgum.so 
+install: $(prefix)/lib/libgum.so
 
-libgum: $(libdir)/libgum.so
 
-DISTO ?= kora
+DISTO ?= cairo
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-CFLAGS ?= -Wall -Wextra -Wno-unused-parameter
+CFLAGS ?= -Wall -Wextra -Wno-unused-parameter  -ggdb
 CFLAGS += -I$(topdir)/include
-CFLAGS += -ggdb
+CFLAGS += -fPIC
 
 include $(topdir)/make/build.mk
 
@@ -40,12 +39,18 @@ include $(topdir)/make/build.mk
 SRCS-y += $(wildcard $(srcdir)/core/*.c)
 SRCS-y += $(wildcard $(srcdir)/utils/*.c)
 SRCS-y += $(wildcard $(srcdir)/widgets/*.c)
+SRCS-y += $(srcdir)/$(DISTO).c
 
 ifeq ($(DISTO),kora)
 endif
 
 
 $(eval $(call link_shared,gum,SRCS,LFLAGS))
+
+logon_SRCS-y += $(srcdir)/tests/logon.c
+logon_LFLGS += -L $(libdir) -lgum -lcairo
+$(eval $(call link_bin,logon,logon_SRCS,logon_LFLGS))
+
 
 ifeq ($(NODEPS),)
 # -include $(call fn_deps,SRCS-y)

@@ -17,7 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/gum/cells.h>
+#include <gum/cells.h>
 #include <kora/css.h>
 
 /* Condensed algorithm: absolute position */

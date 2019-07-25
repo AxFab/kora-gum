@@ -62,10 +62,10 @@ static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
 {
     int rPos, rSz;
     short min = MAX(minimum, CSS_GET_UNIT(pos->min, pos->munit, dpi, dsp, 0));
-    short size = CSS_GET_UNIT(pos->size, pos->sunit, dpi, dsp, min);
-    short before = CSS_GET_UNIT(pos->before, pos->bunit, dpi, dsp, min);
-    short after = CSS_GET_UNIT(pos->after, pos->aunit, dpi, dsp, min);
-    short center = CSS_GET_UNIT(pos->center, pos->cunit, dpi, dsp, min);
+    short size = CSS_GET_UNIT_R(pos->size, pos->sunit, dpi, dsp, min);
+    short before = CSS_GET_UNIT_R(pos->before, pos->bunit, dpi, dsp, min);
+    short after = CSS_GET_UNIT_R(pos->after, pos->aunit, dpi, dsp, min);
+    short center = CSS_GET_UNIT_R(pos->center, pos->cunit, dpi, dsp, min);
 
     if (pos->bunit && pos->aunit) {
         return before + after + MAX(min, - before - after);

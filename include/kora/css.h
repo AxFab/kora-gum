@@ -20,8 +20,8 @@
 #ifndef _KORA_CSS_H
 #define _KORA_CSS_H 1
 
-#include <stdio.h>
 #include <kora/mcrs.h>
+#include <stdio.h>
 
 typedef void(*css_setter)(void *, const char *, const char *, const char *);
 
@@ -32,7 +32,7 @@ unsigned int css_parse_color(const char *value);
 int css_parse_usize(const char *value, int *pSz);
 int css_parse_size(const char *value, int *pSz);
 
-// Transform a size into pixels giveun unit-type dpi, dsp and container-size
+// Transform a size into pixels given unit-type dpi, dsp and container-size
 #define CSS_GET_UNIT(v, u, dpi, dsp, sz) ( \
     (u) == CSS_SIZE_PX ? (v) : ( \
     (u) == CSS_SIZE_PTS ? (v) * (dpi) / 100 : ( \

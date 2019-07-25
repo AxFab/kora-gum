@@ -31,7 +31,7 @@ void gum_initialize()
 }
 
 
-GUM_container *gum_container_create(GUM_container *parent, const char *layout, int padding)
+GUM_container *gum_container_create(GUM_container *parent, const char *layout, int pad)
 {
     GUM_container *container = calloc(1, sizeof(GUM_container));
     gum_cell_pushback(parent->group, &container->box);
@@ -70,7 +70,7 @@ GUM_container *gum_container_window(int flags)
     GUM_container *container = calloc(1, sizeof(GUM_container));
 
     container->box.manager = gum_event_manager(&container->box, win);
-    container->box.skin = gum_skin_find(global_skins, "panel");
+    container->box.skin = gum_style_find(global_skins, "panel");
     container->group = &container->box;
 
     container->box.layout = gum_fetch_layout("Wrap");

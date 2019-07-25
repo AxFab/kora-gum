@@ -19,14 +19,14 @@
  */
 #include <gum/widgets.h>
 #include <gum/events.h>
-#include <korq/css.h>
+#include <kora/css.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern GUM_skins *global_skins;
 
 
-static void gum_widget_on_box(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
+static void gum_widget_on_box_click(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
 {
     int btn = (widget->mode & ~7) >> 3;
     int txt = widget->mode & 3;
@@ -40,7 +40,7 @@ static void gum_widget_on_box(GUM_event_manager *evm, GUM_cell *cell, int event,
 }
 
 
-static void gum_widget_on_txt(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
+static void gum_widget_on_txt_click(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
 {
     int txt = widget->mode & 3;
     if (txt != 2)
@@ -49,7 +49,7 @@ static void gum_widget_on_txt(GUM_event_manager *evm, GUM_cell *cell, int event,
     gum_set_focus(evm, &widget->txt);
 }
 
-static void gum_widget_on_btn(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
+static void gum_widget_on_btn_click(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
 {
     int btn = (widget->mode & ~7) >> 3;
     if (btn < 2)
@@ -58,7 +58,7 @@ static void gum_widget_on_btn(GUM_event_manager *evm, GUM_cell *cell, int event,
         printf("Increment");
 }
 
-static void gum_widget_on_btn2(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
+static void gum_widget_on_btn2_click(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
 {
     int btn = (widget->mode & ~7) >> 3;
     if (btn < 2)
@@ -80,7 +80,7 @@ GUM_widget *gum_widget_allocate(GUM_cell *parent, GUM_skins *skins)
     gum_cell_pushback(&widget->box, &widget->ico);
 
     widget->box.skin = gum_style_find(skins, "Button");
-    wibox.skin = gum_style_find(skins, "Button");
+    widget->box.skin_over = gum_style_find(skins, "Button:over");
     widget->trk.skin = gum_style_find(skins, "Button-tray");
     widget->tra.skin = gum_style_find(skins, "Button-tray-green");
 
@@ -102,9 +102,9 @@ GUM_widget *gum_widget_allocate(GUM_cell *parent, GUM_skins *skins)
     return widget;
 }
 
-void gum_widget_reskin(GUM_widget *widget, int mode)
+void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
 {
-    // Sertings
+    // Settings
     int icoSize = 16;
     int btnSize = 10;
     int btnPad = 2;
@@ -130,7 +130,7 @@ void gum_widget_reskin(GUM_widget *widget, int mode)
     widget->mode = mode;
 }
 
-void gum_widget_set_text(GUM_widget *widget, const char *text)
+void gum_widget_set_text(GUM_widget *widget, const char *value)
 {
     if (widget->txt.text)
         free(widget->txt.text);

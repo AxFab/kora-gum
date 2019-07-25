@@ -52,7 +52,7 @@ typedef struct GUM_container {
 
 LIBAPI void gum_initialize();
 
-LIBAPI GUM_widget *gum_widget_factory(GUM_container *parent, const char *type, const char *text /*, menu, action*/);
+LIBAPI GUM_widget *gum_create_widget(GUM_container *parent, const char *type, const char *text /*, menu, action*/);
 LIBAPI void gum_widget_set_text(GUM_widget *widget, const char *text);
 
 LIBAPI GUM_container *gum_container_create(GUM_container *parent, const char *layout, int padding);

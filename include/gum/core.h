@@ -17,11 +17,12 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_GUM_CORE_H
-#define _KORA_GUM_CORE_H 1
+#ifndef _GUM_CORE_H
+#define _GUM_CORE_H 1
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <kora/mcrs.h>
 
 #if defined(WIN32) || defined(_WIN32)
 # define LIBAPI __declspec(dllexport)
@@ -63,9 +64,6 @@ void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev);
 void gum_resize_win(GUM_window *win, int width, int height);
 void gum_fill_context(GUM_window *win, GUM_gctx *ctx);
 
-#define ALIGN_UP(v,a) (((v)+((a)-1)) & ~((a)-1))
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define MAX(a,b) ((a)>(b)?(a):(b))
 
 
-#endif  /* _KORA_GUM_CORE_H */
+#endif  /* _GUM_CORE_H */

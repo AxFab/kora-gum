@@ -17,8 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_GUM_RENDERING_H
-#define _KORA_GUM_RENDERING_H 1
+#ifndef _GUM_CELLS_H
+#define _GUM_CELLS_H  1
 
 #include <gum/core.h>
 
@@ -196,6 +196,7 @@ void gum_layout_vgroup_right(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_column_grid(GUM_cell *cell, GUM_layout *layout);
 void gum_layout_row_grid(GUM_cell *cell, GUM_layout *layout);
+void gum_layout_fixgrid(GUM_cell *cell, GUM_layout *layout);
 
 LIBAPI GUM_layout_algo gum_fetch_layout(const char *);
 
@@ -244,4 +245,4 @@ LIBAPI void gum_destroy_skins(GUM_skins *skins);
 
 LIBAPI void gum_cell_set_text(GUM_cell *cell, const char *text);
 
-#endif  /* _KORA_GUM_RENDERING_H */
+#endif  /* _GUM_CELLS_H */

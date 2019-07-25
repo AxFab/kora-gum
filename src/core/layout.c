@@ -19,6 +19,8 @@
  */
 #include <gum/cells.h>
 #include <kora/css.h>
+#include <stdlib.h>
+
 
 /* Condensed algorithm: absolute position */
 static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
@@ -54,14 +56,53 @@ static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
     }
 }
 
+/* Condensed algorithm: absolute position */
+static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
+                                     short dpi, float dsp)
+{
+    int rPos, rSz;
+    short min = MAX(minimum, CSS_GET_UNIT(pos->min, pos->munit, dpi, dsp, 0));
+    short size = CSS_GET_UNIT(pos->size, pos->sunit, dpi, dsp, min);
+    short before = CSS_GET_UNIT(pos->before, pos->bunit, dpi, dsp, min);
+    short after = CSS_GET_UNIT(pos->after, pos->aunit, dpi, dsp, min);
+    short center = CSS_GET_UNIT(pos->center, pos->cunit, dpi, dsp, min);
+
+    if (pos->bunit && pos->aunit) {
+        return before + after + MAX(min, - before - after);
+    } else if (pos->bunit) {
+        rPos = before;
+        if (pos->cunit)
+            rSz = MAX(min, size);
+        else
+            rSz = MAX(min, size);
+    } else if (pos->aunit) {
+        rPos = min - MAX(min, size) - after;
+        if (pos->cunit)
+            rSz = MAX(min, size);
+        else
+            rSz = MAX(min, size);
+    } else if (pos->cunit) {
+        rPos = (min - MAX(min, size)) / 2 + center;
+        rSz = MAX(min, size);
+        return rSz + abs(rPos);
+    } else {
+        return MAX(min, size);
+    }
+    return rSz;
+}
+
+
 static void gum_layout_absolute_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout *layout)
 {
+    int cw = gum_layout_absolute_min(&child->rulerx, child->box.minw, layout->dpi_x, layout->dsp_x);
+    int ch = gum_layout_absolute_min(&child->rulery, child->box.minh, layout->dpi_y, layout->dsp_y);
+
     short left = CSS_GET_UNIT(child->rulerx.before, child->rulerx.bunit, layout->dpi_x, layout->dsp_x, 0);
     short right = CSS_GET_UNIT(child->rulerx.after, child->rulerx.aunit, layout->dpi_x, layout->dsp_x, 0);
-    short width = left + right + child->box.minw;
+    short width = MAX(cw, left + right + child->box.minw);
     short top = CSS_GET_UNIT(child->rulery.before, child->rulery.bunit, layout->dpi_y, layout->dsp_y, 0);
     short bottom = CSS_GET_UNIT(child->rulery.after, child->rulery.aunit, layout->dpi_y, layout->dsp_y, 0);
-    short height = top + bottom + child->box.minh;
+    short height = MAX(ch, top + bottom + child->box.minh);
     if (width > cell->box.mincw)
         cell->box.mincw = width;
     if (height > cell->box.minch)
@@ -232,6 +273,14 @@ void gum_layout_vgroup_right(GUM_cell *cell, GUM_layout *layout)
 void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout)
 {
     gum_layout_group(cell, layout, 0 | GUM_GRP_BOTTOM);
+}
+
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+void gum_layout_fixgrid(GUM_cell *cell, GUM_layout *layout)
+{
 }
 
 

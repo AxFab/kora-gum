@@ -252,7 +252,7 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
 	evm->grab->box.dx = evm->mouse_x - evm->grab_x;
 	evm->grab->box.dy = evm->mouse_y - evm->grab_y;
 
-	/* BEGIN: grab limit */
+	/* BEGIN: drag limit */
 	if (evm->grab->box.dx < 0)
 	    evm->grab->box.dx = 0;
 	else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->grab->box.w)

@@ -17,8 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_GUM_EVENTS_H
-#define _KORA_GUM_EVENTS_H 1
+#ifndef _GUM_EVENTS_H
+#define _GUM_EVENTS_H 1
 
 #include <gum/core.h>
 
@@ -91,4 +91,4 @@ enum {
 };
 
 
-#endif  /* _KORA_GUM_EVENTS_H */
+#endif  /* _GUM_EVENTS_H */

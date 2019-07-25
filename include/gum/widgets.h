@@ -17,8 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_GUM_WIDGETS_H
-#define _KORA_GUM_WIDGETS_H 1
+#ifndef _GUM_WIDGETS_H
+#define _GUM_WIDGETS_H 1
 
 #include <gum/core.h>
 #include <gum/cells.h>
@@ -31,6 +31,18 @@ typedef union GUM_variant {
 
 typedef struct GUM_widget {
     GUM_cell box;
+    GUM_cell ico;
+    GUM_cell txt;
+    GUM_cell bup;
+    GUM_cell bdw;
+    GUM_cell trk;
+    GUM_cell tra;
+
+    GUM_skins *skins;
+    GUM_variant value;
+
+    int mode;
+    char *text;
 } GUM_widget;
 
 typedef struct GUM_container {
@@ -43,6 +55,8 @@ LIBAPI void gum_initialize();
 LIBAPI GUM_widget *gum_widget_factory(GUM_container *parent, const char *type, const char *text /*, menu, action*/);
 LIBAPI void gum_widget_set_text(GUM_widget *widget, const char *text);
 
+LIBAPI GUM_container *gum_container_create(GUM_container *parent, const char *layout, int padding);
+LIBAPI GUM_container *gum_container_window(int flags);
 
-#endif  /* _KORA_GUM_WIDGETS_H */
+#endif  /* _GUM_WIDGETS_H */
 

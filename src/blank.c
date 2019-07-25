@@ -59,7 +59,7 @@ void gum_push_clip(GUM_window *win, GUM_box *box)
 {
 }
 
-void gum_pop_clip(GUM_window *win, GUM_box *box)
+void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
 {
 }
 

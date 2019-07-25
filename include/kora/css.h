@@ -21,6 +21,7 @@
 #define _KORA_CSS_H 1
 
 #include <stdio.h>
+#include <kora/mcrs.h>
 
 typedef void(*css_setter)(void *, const char *, const char *, const char *);
 
@@ -39,8 +40,13 @@ int css_parse_size(const char *value, int *pSz);
     (u) == CSS_SIZE_PERC ? (v) * (sz) / 1000 : ( \
       0 )))))
 
-#define MAX(a,b) ((a)>(b)?(a):(b))
-#define MIN(a,b) ((a)<(b)?(a):(b))
+#define CSS_GET_UNIT_R(v, u, dpi, dsp, sz) ( \
+    (u) == CSS_SIZE_PX ? (v) : ( \
+    (u) == CSS_SIZE_PTS ? (v) * (dpi) / 100 : ( \
+    (u) == CSS_SIZE_DP ? (int)((v) * (dsp)) : ( \
+    (u) == CSS_SIZE_PERC ? ((v) ? 1000 * (sz) / (v) : 0) : ( \
+      0 )))))
+
 
 enum {
     CSS_SIZE_UNDEF = 0,

@@ -22,6 +22,7 @@
 #include <gum/events.h>
 #include <kora/hmap.h>
 #include <windows.h>
+#include <stdio.h>
 #include <windowsx.h>
 #include <tchar.h>
 #include <kora/keys.h>
@@ -279,7 +280,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 }
 
 
-void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1)
+void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, void *data)
 {
     PostMessage(win->hwnd, WM_USER + type, param1, param0);
 }
@@ -402,6 +403,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
         if (cell->surface == NULL)
             cell->surface = gum_surface(win, cell->box.w, cell->box. h);
 	if (cell->surface != NULL) {
+            // TODO -- sub-surface
             gum_paint(cell->surface, cell);
             gum_draw_pic(win, cell->surface, &cell->box, &cell->anim);
 	}
@@ -418,7 +420,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     r.bottom = cell->box.y + cell->box.h + win->y;
     SetBkMode(win->hdc, TRANSPARENT);
     if (cell->image != NULL)
-        gum_draw_img(win, cell->image, &cell->box);
+        gum_draw_img(win, (HBITMAP)cell->image, &cell->box);
 
     else if (skin->bgcolor >= MIN_ALPHA && skin->grcolor >= MIN_ALPHA) {
         for (int i = 0; i < cell->box.h; ++i) {

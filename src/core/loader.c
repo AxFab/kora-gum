@@ -53,6 +53,8 @@ GUM_layout_algo gum_fetch_layout(const char *value)
         return gum_layout_column_grid;
     else if (!strcmp("RowGrid", value))
         return gum_layout_row_grid;
+    else if (!strcmp("Grid", value))
+        return gum_layout_fixgrid;
     return NULL;
 }
 

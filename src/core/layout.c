@@ -184,7 +184,7 @@ static void gum_layout_group_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout
     }
 }
 
-void gum_layout_group_resize(GUM_cell *cell, GUM_layout *layout)
+static void gum_layout_group_resize(GUM_cell *cell, GUM_layout *layout)
 {
     short min_width = CSS_GET_UNIT(cell->rulerx.min, cell->rulerx.munit, layout->dpi_x, layout->dsp_x, layout->width);
     short min_height = CSS_GET_UNIT(cell->rulery.min, cell->rulery.munit, layout->dpi_y, layout->dsp_y, layout->height);
@@ -279,9 +279,52 @@ void gum_layout_hgroup_bottom(GUM_cell *cell, GUM_layout *layout)
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
 
+static void gum_layout_fixgrid_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout *layout)
+{
+    int cw = child->box.minw;
+    int ch = child->box.minh;
+    cw = cw * layout->cursor2 + layout->gap_x * (layout->cursor2 - 1);
+    ch = ch * layout->cursor3 + layout->gap_y * (layout->cursor3 - 1);
+    if (cw > cell->box.mincw)
+        cell->box.mincw = cw;
+    if (ch > cell->box.minch)
+        cell->box.minch = ch;
+    // TODO -- spancols spanrows
+}
+
+static void gum_layout_fixgrid_resize(GUM_cell *cell, GUM_layout *layout)
+{
+    int cw = (layout->width - layout->gap_x * (layout->cursor2 - 1)) /layout->cursor2;
+    int ch = (layout->height - layout->gap_y * (layout->cursor3 - 1)) /layout->cursor3;
+
+    cell->box.w = MAX(cell->box.minw, cw);
+    cell->box.h = MAX(cell->box.minh, ch);
+
+    int x = layout->cursor % layout->cursor2;
+    int y = layout->cursor / layout->cursor2;
+
+    cell->box.x = x * (cw + layout->gap_x);
+    cell->box.y = y * (ch + layout->gap_y);
+
+    layout->cursor++;
+}
+
+
 void gum_layout_fixgrid(GUM_cell *cell, GUM_layout *layout)
 {
+    layout->width = cell->box.cw;
+    layout->height = cell->box.ch;
+    layout->flags = 0;
+    layout->cursor = 0;
+    layout->cursor2 = 2;
+    layout->cursor3 = 2;
+
+    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi_x, layout->dsp_x, 0);
+    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi_y, layout->dsp_y, 0);
+    layout->resize = gum_layout_fixgrid_resize;
+    layout->minsize = gum_layout_fixgrid_minsize;
 }
+
 
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

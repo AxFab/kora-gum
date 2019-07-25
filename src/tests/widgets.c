@@ -18,6 +18,7 @@
  *   - - - - - - - - - - - - - - -
  */
 #include <gum/widgets.h>
+#include <gum/events.h>
 
 
 int main()

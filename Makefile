@@ -52,6 +52,11 @@ logon_LFLGS += -L $(libdir) -lgum -lcairo
 $(eval $(call link_bin,logon,logon_SRCS,logon_LFLGS))
 
 
+widgets_SRCS-y += $(srcdir)/tests/widgets.c
+widgets_LFLGS += -L $(libdir) -lgum -lcairo
+$(eval $(call link_bin,widgets,widgets_SRCS,widgets_LFLGS))
+
+
 ifeq ($(NODEPS),)
 # -include $(call fn_deps,SRCS-y)
 endif

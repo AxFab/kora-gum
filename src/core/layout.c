@@ -26,28 +26,28 @@
 static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
                                      int container, short dpi, float dsp, int *pPos, int *pSz)
 {
-    short min = MAX(minimum, CSS_GET_UNIT(pos->min, pos->munit, dpi, dsp, container));
-    short size = CSS_GET_UNIT(pos->size, pos->sunit, dpi, dsp, container);
-    short before = CSS_GET_UNIT(pos->before, pos->bunit, dpi, dsp, container);
-    short after = CSS_GET_UNIT(pos->after, pos->aunit, dpi, dsp, container);
-    short center = CSS_GET_UNIT(pos->center, pos->cunit, dpi, dsp, container);
+    short min = MAX(minimum, CSS_GET_SIZE(pos->min, dpi, dsp, container));
+    short size = CSS_GET_SIZE(pos->size, dpi, dsp, container);
+    short before = CSS_GET_SIZE(pos->before, dpi, dsp, container);
+    short after = CSS_GET_SIZE(pos->after, dpi, dsp, container);
+    short center = CSS_GET_SIZE(pos->center, dpi, dsp, container);
 
-    if (pos->bunit && pos->aunit) {
+    if (pos->before.unit && pos->after.unit) {
         *pPos = before;
         *pSz = MAX(min, container - before - after);
-    } else if (pos->bunit) {
+    } else if (pos->before.unit) {
         *pPos = before;
-        if (pos->cunit)
+        if (pos->center.unit)
             *pSz = MAX(min, size);
         else
             *pSz = MAX(min, size);
-    } else if (pos->aunit) {
+    } else if (pos->after.unit) {
         *pPos = container - MAX(min, size) - after;
-        if (pos->cunit)
+        if (pos->center.unit)
             *pSz = MAX(min, size);
         else
             *pSz = MAX(min, size);
-    } else if (pos->cunit) {
+    } else if (pos->center.unit) {
         *pPos = (container - MAX(min, size)) / 2 + center;
         *pSz = MAX(min, size);
     } else {
@@ -61,27 +61,27 @@ static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
                                      short dpi, float dsp)
 {
     int rPos, rSz;
-    short min = MAX(minimum, CSS_GET_UNIT(pos->min, pos->munit, dpi, dsp, 0));
-    short size = CSS_GET_UNIT_R(pos->size, pos->sunit, dpi, dsp, min);
-    short before = CSS_GET_UNIT_R(pos->before, pos->bunit, dpi, dsp, min);
-    short after = CSS_GET_UNIT_R(pos->after, pos->aunit, dpi, dsp, min);
-    short center = CSS_GET_UNIT_R(pos->center, pos->cunit, dpi, dsp, min);
+    short min = MAX(minimum, CSS_GET_SIZE(pos->min, dpi, dsp, 0));
+    short size = CSS_GET_SIZE_R(pos->size, dpi, dsp, min);
+    short before = CSS_GET_SIZE_R(pos->before, dpi, dsp, min);
+    short after = CSS_GET_SIZE_R(pos->after, dpi, dsp, min);
+    short center = CSS_GET_SIZE_R(pos->center, dpi, dsp, min);
 
-    if (pos->bunit && pos->aunit) {
+    if (pos->before.unit && pos->after.unit) {
         return before + after + MAX(min, - before - after);
-    } else if (pos->bunit) {
+    } else if (pos->before.unit) {
         rPos = before;
-        if (pos->cunit)
+        if (pos->center.unit)
             rSz = MAX(min, size);
         else
             rSz = MAX(min, size);
-    } else if (pos->aunit) {
+    } else if (pos->after.unit) {
         rPos = min - MAX(min, size) - after;
-        if (pos->cunit)
+        if (pos->center.unit)
             rSz = MAX(min, size);
         else
             rSz = MAX(min, size);
-    } else if (pos->cunit) {
+    } else if (pos->center.unit) {
         rPos = (min - MAX(min, size)) / 2 + center;
         rSz = MAX(min, size);
         return rSz + abs(rPos);
@@ -97,11 +97,11 @@ static void gum_layout_absolute_minsize(GUM_cell *cell, GUM_cell *child, GUM_lay
     int cw = gum_layout_absolute_min(&child->rulerx, child->box.minw, layout->dpi_x, layout->dsp_x);
     int ch = gum_layout_absolute_min(&child->rulery, child->box.minh, layout->dpi_y, layout->dsp_y);
 
-    short left = CSS_GET_UNIT(child->rulerx.before, child->rulerx.bunit, layout->dpi_x, layout->dsp_x, 0);
-    short right = CSS_GET_UNIT(child->rulerx.after, child->rulerx.aunit, layout->dpi_x, layout->dsp_x, 0);
+    short left = CSS_GET_SIZE(child->rulerx.before, layout->dpi_x, layout->dsp_x, 0);
+    short right = CSS_GET_SIZE(child->rulerx.after, layout->dpi_x, layout->dsp_x, 0);
     short width = MAX(cw, left + right + child->box.minw);
-    short top = CSS_GET_UNIT(child->rulery.before, child->rulery.bunit, layout->dpi_y, layout->dsp_y, 0);
-    short bottom = CSS_GET_UNIT(child->rulery.after, child->rulery.aunit, layout->dpi_y, layout->dsp_y, 0);
+    short top = CSS_GET_SIZE(child->rulery.before, layout->dpi_y, layout->dsp_y, 0);
+    short bottom = CSS_GET_SIZE(child->rulery.after, layout->dpi_y, layout->dsp_y, 0);
     short height = MAX(ch, top + bottom + child->box.minh);
     if (width > cell->box.mincw)
         cell->box.mincw = width;
@@ -119,19 +119,19 @@ static void gum_layout_absolute_resize(GUM_cell *cell, GUM_layout *layout)
 
     if (cell->rell != NULL) {
         rel = gum_get_by_id(cell->parent, cell->rell);
-        cell->rulerx.before = rel != NULL ? rel->box.x : 0;
+        cell->rulerx.before.len = rel != NULL ? rel->box.x : 0;
     }
     if (cell->relr != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relr);
-        cell->rulerx.after = layout->width - (rel != NULL ? rel->box.x + rel->box.w : 0);
+        cell->rulerx.after.len = layout->width - (rel != NULL ? rel->box.x + rel->box.w : 0);
     }
     if (cell->relt != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relt);
-        cell->rulery.before = rel != NULL ? rel->box.y : 0;
+        cell->rulery.before.len = rel != NULL ? rel->box.y : 0;
     }
     if (cell->relb != NULL) {
         rel = gum_get_by_id(cell->parent, cell->relb);
-        cell->rulery.after = layout->height - (rel != NULL ? rel->box.y + rel->box.h : 0);
+        cell->rulery.after.len = layout->height - (rel != NULL ? rel->box.y + rel->box.h : 0);
     }
 
     gum_layout_absolute_part(&cell->rulerx, cell->box.minw, layout->width, layout->dpi_x, layout->dsp_x, &cell->box.x, &cell->box.w);
@@ -186,10 +186,10 @@ static void gum_layout_group_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout
 
 static void gum_layout_group_resize(GUM_cell *cell, GUM_layout *layout)
 {
-    short min_width = CSS_GET_UNIT(cell->rulerx.min, cell->rulerx.munit, layout->dpi_x, layout->dsp_x, layout->width);
-    short min_height = CSS_GET_UNIT(cell->rulery.min, cell->rulery.munit, layout->dpi_y, layout->dsp_y, layout->height);
-    short sz_width = CSS_GET_UNIT(cell->rulerx.size, cell->rulerx.sunit, layout->dpi_x, layout->dsp_x, layout->width);
-    short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, layout->dpi_y, layout->dsp_y, layout->height);
+    short min_width = CSS_GET_SIZE(cell->rulerx.min, layout->dpi_x, layout->dsp_x, layout->width);
+    short min_height = CSS_GET_SIZE(cell->rulery.min, layout->dpi_y, layout->dsp_y, layout->height);
+    short sz_width = CSS_GET_SIZE(cell->rulerx.size, layout->dpi_x, layout->dsp_x, layout->width);
+    short sz_height = CSS_GET_SIZE(cell->rulery.size, layout->dpi_y, layout->dsp_y, layout->height);
 
     cell->box.w = MAX(cell->box.minw, MAX(min_width, sz_width));
     cell->box.h = MAX(cell->box.minh, MAX(min_height, sz_height));
@@ -229,8 +229,8 @@ static void gum_layout_group(GUM_cell *cell, GUM_layout *layout, int flags)
     layout->height = cell->box.ch;
     layout->flags = flags;
     layout->cursor = 0;
-    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi_x, layout->dsp_x, 0);
-    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi_y, layout->dsp_y, 0);
+    layout->gap_x = CSS_GET_SIZE(cell->gap_x, layout->dpi_x, layout->dsp_x, 0);
+    layout->gap_y = CSS_GET_SIZE(cell->gap_y, layout->dpi_y, layout->dsp_y, 0);
     layout->resize = gum_layout_group_resize;
     layout->minsize = gum_layout_group_minsize;
 }
@@ -319,8 +319,8 @@ void gum_layout_fixgrid(GUM_cell *cell, GUM_layout *layout)
     layout->cursor2 = 2;
     layout->cursor3 = 2;
 
-    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi_x, layout->dsp_x, 0);
-    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi_y, layout->dsp_y, 0);
+    layout->gap_x = CSS_GET_SIZE(cell->gap_x, layout->dpi_x, layout->dsp_x, 0);
+    layout->gap_y = CSS_GET_SIZE(cell->gap_y, layout->dpi_y, layout->dsp_y, 0);
     layout->resize = gum_layout_fixgrid_resize;
     layout->minsize = gum_layout_fixgrid_minsize;
 }
@@ -337,10 +337,10 @@ static void gum_layout_grid_minsize(GUM_cell *cell, GUM_cell *child, GUM_layout 
 
 static void gum_layout_grid_resize(GUM_cell *cell, GUM_layout *layout)
 {
-    short min_width = CSS_GET_UNIT(cell->rulerx.min, cell->rulerx.munit, layout->dpi_x, layout->dsp_x, layout->width);
-    short min_height = CSS_GET_UNIT(cell->rulery.min, cell->rulery.munit, layout->dpi_y, layout->dsp_y, layout->height);
-    short sz_width = CSS_GET_UNIT(cell->rulerx.size, cell->rulerx.sunit, layout->dpi_x, layout->dsp_x, layout->width);
-    short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, layout->dpi_y, layout->dsp_y, layout->height);
+    short min_width = CSS_GET_SIZE(cell->rulerx.min, layout->dpi_x, layout->dsp_x, layout->width);
+    short min_height = CSS_GET_SIZE(cell->rulery.min, layout->dpi_y, layout->dsp_y, layout->height);
+    short sz_width = CSS_GET_SIZE(cell->rulerx.size, layout->dpi_x, layout->dsp_x, layout->width);
+    short sz_height = CSS_GET_SIZE(cell->rulery.size, layout->dpi_y, layout->dsp_y, layout->height);
 
     cell->box.w = MAX(cell->box.minw, MAX(min_width, sz_width));
     cell->box.h = MAX(cell->box.minh, MAX(min_height, sz_height));
@@ -372,8 +372,8 @@ static void gum_layout_grid(GUM_cell *cell, GUM_layout *layout, int flags)
     layout->cursor = 0;
     layout->cursor2 = 0;
     layout->cursor3 = 0;
-    layout->gap_x = CSS_GET_UNIT(cell->gap_x, cell->gxunit, layout->dpi_x, layout->dsp_x, 0);
-    layout->gap_y = CSS_GET_UNIT(cell->gap_y, cell->gyunit, layout->dpi_y, layout->dsp_y, 0);
+    layout->gap_x = CSS_GET_SIZE(cell->gap_x, layout->dpi_x, layout->dsp_x, 0);
+    layout->gap_y = CSS_GET_SIZE(cell->gap_y, layout->dpi_y, layout->dsp_y, 0);
     layout->resize = gum_layout_grid_resize;
     layout->minsize = gum_layout_grid_minsize;
 }
@@ -399,10 +399,10 @@ bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx)
     bool layout_changed = false;
 
     /* Get padding size */
-    int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, ctx->dpi_x, ctx->dsp_x, cell->box.w);
-    int pad_right = CSS_GET_UNIT(cell->padding.right, cell->padding.runit, ctx->dpi_x, ctx->dsp_x, cell->box.w);
-    int pad_top = CSS_GET_UNIT(cell->padding.top, cell->padding.tunit, ctx->dpi_y, ctx->dsp_y, cell->box.h);
-    int pad_bottom = CSS_GET_UNIT(cell->padding.bottom, cell->padding.bunit, ctx->dpi_y, ctx->dsp_y, cell->box.h);
+    int pad_left = CSS_GET_SIZE(cell->padding.left, ctx->dpi_x, ctx->dsp_x, cell->box.w);
+    int pad_right = CSS_GET_SIZE(cell->padding.right, ctx->dpi_x, ctx->dsp_x, cell->box.w);
+    int pad_top = CSS_GET_SIZE(cell->padding.top, ctx->dpi_y, ctx->dsp_y, cell->box.h);
+    int pad_bottom = CSS_GET_SIZE(cell->padding.bottom, ctx->dpi_y, ctx->dsp_y, cell->box.h);
 
     /* Compute children minimum size */
     if (cell->first) {
@@ -433,10 +433,10 @@ bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx)
 
     if (cell->state & GUM_CELL_MEASURE) {
         /* Compute minimum requested size */
-        short min_width = CSS_GET_UNIT(cell->rulerx.min, cell->rulerx.munit, ctx->dpi_x, ctx->dsp_x, 0);
-        short min_height = CSS_GET_UNIT(cell->rulery.min, cell->rulery.munit, ctx->dpi_y, ctx->dsp_y, 0);
-        short sz_width = CSS_GET_UNIT(cell->rulerx.size, cell->rulerx.sunit, ctx->dpi_x, ctx->dsp_x, 0);
-        short sz_height = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, ctx->dpi_y, ctx->dsp_y, 0);
+        short min_width = CSS_GET_SIZE(cell->rulerx.min, ctx->dpi_x, ctx->dsp_x, 0);
+        short min_height = CSS_GET_SIZE(cell->rulery.min, ctx->dpi_y, ctx->dsp_y, 0);
+        short sz_width = CSS_GET_SIZE(cell->rulerx.size, ctx->dpi_x, ctx->dsp_x, 0);
+        short sz_height = CSS_GET_SIZE(cell->rulery.size, ctx->dpi_y, ctx->dsp_y, 0);
         cell->box.minw = MAX(cell->box.minw, MAX(min_width, sz_width));
         cell->box.minh = MAX(cell->box.minh, MAX(min_height, sz_height));
 
@@ -468,10 +468,10 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx)
     layout.dsp_y = ctx->dsp_y;
 
     /* Remove padding */
-    int pad_left = CSS_GET_UNIT(cell->padding.left, cell->padding.lunit, ctx->dpi_x, ctx->dsp_x, cell->box.w);
-    int pad_right = CSS_GET_UNIT(cell->padding.right, cell->padding.runit, ctx->dpi_x, ctx->dsp_x, cell->box.w);
-    int pad_top = CSS_GET_UNIT(cell->padding.top, cell->padding.tunit, ctx->dpi_y, ctx->dsp_y, cell->box.h);
-    int pad_bottom = CSS_GET_UNIT(cell->padding.bottom, cell->padding.bunit, ctx->dpi_y, ctx->dsp_y, cell->box.h);
+    int pad_left = CSS_GET_SIZE(cell->padding.left, ctx->dpi_x, ctx->dsp_x, cell->box.w);
+    int pad_right = CSS_GET_SIZE(cell->padding.right, ctx->dpi_x, ctx->dsp_x, cell->box.w);
+    int pad_top = CSS_GET_SIZE(cell->padding.top, ctx->dpi_y, ctx->dsp_y, cell->box.h);
+    int pad_bottom = CSS_GET_SIZE(cell->padding.bottom, ctx->dpi_y, ctx->dsp_y, cell->box.h);
 
     int cx = cell->box.x + pad_left;
     int cy = cell->box.y + pad_top;
@@ -511,18 +511,16 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx)
 }
 
 
-void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit)
+void gum_resize(GUM_cell *cell, css_size_t width, css_size_t height)
 {
-    cell->rulerx.sunit = xunit;
-    cell->rulery.sunit = yunit;
     cell->rulerx.size = width;
     cell->rulery.size = height;
     if (cell->parent) // TODO, min too
         gum_invalid_layout(cell->parent);
     else {
         GUM_gctx *ctx = gum_graphic_context(cell);
-        int sizex = CSS_GET_UNIT(cell->rulerx.size, cell->rulerx.sunit, ctx->dpi_x, ctx->dsp_x, ctx->width);
-        int sizey = CSS_GET_UNIT(cell->rulery.size, cell->rulery.sunit, ctx->dpi_y, ctx->dsp_y, ctx->height);
+        int sizex = CSS_GET_SIZE(cell->rulerx.size, ctx->dpi_x, ctx->dsp_x, ctx->width);
+        int sizey = CSS_GET_SIZE(cell->rulery.size, ctx->dpi_y, ctx->dsp_y, ctx->height);
         cell->box.x = 0;
         cell->box.y = 0;
         cell->box.w = MAX(sizex, cell->box.minw);
@@ -533,5 +531,7 @@ void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit)
 
 void gum_resize_px(GUM_cell *cell, int width, int height)
 {
-    gum_resize(cell, width, height, CSS_SIZE_PX, CSS_SIZE_PX);
+    css_size_t w = { width, CSS_SIZE_PX };
+    css_size_t h = { height, CSS_SIZE_PX };
+    gum_resize(cell, w, h);
 }

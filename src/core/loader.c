@@ -65,68 +65,66 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
 
     else if (!strcmp("left", key)) {
         if (value[0] == '{') {
-            cell->rulerx.bunit = CSS_SIZE_PX;
+            cell->rulerx.before.unit = CSS_SIZE_PX;
             cell->rell = strdup(&value[1]);
             strchr(cell->rell, '}') [0] = '\0';
         } else
-            cell->rulerx.bunit = css_parse_size(value, &cell->rulerx.before);
+            cell->rulerx.before = css_parse_size(value);
     } else if (!strcmp("right", key)) {
         if (value[0] == '{') {
-            cell->rulerx.aunit = CSS_SIZE_PX;
+            cell->rulerx.after.unit = CSS_SIZE_PX;
             cell->relr = strdup(&value[1]);
             strchr(cell->relr, '}') [0] = '\0';
         } else
-            cell->rulerx.aunit = css_parse_size(value, &cell->rulerx.after);
+            cell->rulerx.after = css_parse_size(value);
     } else if (!strcmp("horizontal-center", key))
-        cell->rulerx.cunit = css_parse_size(value, &cell->rulerx.center);
+        cell->rulerx.center = css_parse_size(value);
     else if (!strcmp("min-width", key))
-        cell->rulerx.munit = css_parse_usize(value, &cell->rulerx.min);
+        cell->rulerx.min = css_parse_usize(value);
     else if (!strcmp("width", key)) {
         if (!strcmp("wrap", value)) {
-            cell->rulerx.before = cell->rulerx.after = 0;
-            cell->rulerx.bunit = cell->rulerx.aunit = CSS_SIZE_PX;
+            CSS_SET_PX(cell->rulerx.before, 0);
+            cell->rulerx.after = cell->rulerx.before;
         } else
-            cell->rulerx.sunit = css_parse_usize(value, &cell->rulerx.size);
+            cell->rulerx.size = css_parse_usize(value);
     }
 
     else if (!strcmp("top", key))
-        cell->rulery.bunit = css_parse_size(value, &cell->rulery.before);
+        cell->rulery.before = css_parse_size(value);
     else if (!strcmp("bottom", key))
-        cell->rulery.aunit = css_parse_size(value, &cell->rulery.after);
+        cell->rulery.after = css_parse_size(value);
     else if (!strcmp("vertical-center", key))
-        cell->rulery.cunit = css_parse_size(value, &cell->rulery.center);
+        cell->rulery.center = css_parse_size(value);
     else if (!strcmp("min-height", key))
-        cell->rulery.munit = css_parse_usize(value, &cell->rulery.min);
+        cell->rulery.min = css_parse_usize(value);
     else if (!strcmp("height", key)) {
         if (!strcmp("wrap", value)) {
-            cell->rulery.before = cell->rulery.after = 0;
-            cell->rulery.bunit = cell->rulery.aunit = CSS_SIZE_PX;
+            CSS_SET_PX(cell->rulery.before, 0);
+            cell->rulery.after = cell->rulery.before;
         } else
-            cell->rulery.sunit = css_parse_usize(value, &cell->rulery.size);
+            cell->rulery.size = css_parse_usize(value);
     }
 
     else if (!strcmp("gap-x", key))
-        cell->gxunit = css_parse_usize(value, &cell->gap_x);
+        cell->gap_x = css_parse_usize(value);
     else if (!strcmp("gap-y", key))
-        cell->gyunit = css_parse_usize(value, &cell->gap_y);
+        cell->gap_y = css_parse_usize(value);
     else if (!strcmp("gap", key)) {
-        cell->gxunit = css_parse_usize(value, &cell->gap_x);
+        cell->gap_x = css_parse_usize(value);
         cell->gap_y = cell->gap_x;
-        cell->gyunit = cell->gxunit;
     }
 
     else if (!strcmp("padding-left", key))
-        cell->padding.lunit = css_parse_size(value, &cell->padding.left);
+        cell->padding.left = css_parse_size(value);
     else if (!strcmp("padding-right", key))
-        cell->padding.runit = css_parse_size(value, &cell->padding.right);
+        cell->padding.right = css_parse_size(value);
     else if (!strcmp("padding-top", key))
-        cell->padding.tunit = css_parse_size(value, &cell->padding.top);
+        cell->padding.top = css_parse_size(value);
     else if (!strcmp("padding-bottom", key))
-        cell->padding.bunit = css_parse_size(value, &cell->padding.bottom);
+        cell->padding.bottom = css_parse_size(value);
     else if (!strcmp("padding", key)) {
-        cell->padding.lunit = css_parse_size(value, &cell->padding.left);
+        cell->padding.left = css_parse_size(value);
         cell->padding.right = cell->padding.top = cell->padding.bottom = cell->padding.left;
-        cell->padding.runit = cell->padding.tunit = cell->padding.bunit = cell->padding.lunit;
     }
 
     else if (!strcmp("text", key))

@@ -31,12 +31,12 @@ static void gum_widget_on_box_click(GUM_event_manager *evm, GUM_cell *cell, int 
     int btn = (widget->mode & ~7) >> 3;
     int txt = widget->mode & 3;
     if (txt == 2) {
-        printf("Select text");
+        printf("Select text\n");
         gum_set_focus(evm, &widget->txt);
     } else if (btn == 0)
-        printf("DoAction");
+        printf("DoAction\n");
     else
-        printf("DoAction or Menu");
+        printf("DoAction or Menu\n");
 }
 
 
@@ -45,7 +45,7 @@ static void gum_widget_on_txt_click(GUM_event_manager *evm, GUM_cell *cell, int 
     int txt = widget->mode & 3;
     if (txt != 2)
         return;
-    printf("Select text");
+    printf("Select text\n");
     gum_set_focus(evm, &widget->txt);
 }
 
@@ -53,9 +53,9 @@ static void gum_widget_on_btn_click(GUM_event_manager *evm, GUM_cell *cell, int 
 {
     int btn = (widget->mode & ~7) >> 3;
     if (btn < 2)
-        printf("DoAction or Menu");
+        printf("DoAction or Menu\n");
     else
-        printf("Increment");
+        printf("Increment\n");
 }
 
 static void gum_widget_on_btn2_click(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_widget *widget)
@@ -63,7 +63,7 @@ static void gum_widget_on_btn2_click(GUM_event_manager *evm, GUM_cell *cell, int
     int btn = (widget->mode & ~7) >> 3;
     if (btn < 2)
         return;
-    printf("Decrement");
+    printf("Decrement\n");
 }
 
 GUM_widget *gum_widget_allocate(GUM_cell *parent, GUM_skins *skins)
@@ -81,16 +81,20 @@ GUM_widget *gum_widget_allocate(GUM_cell *parent, GUM_skins *skins)
 
     widget->box.skin = gum_style_find(skins, "Button");
     widget->box.skin_over = gum_style_find(skins, "Button:over");
+    widget->box.skin_down = gum_style_find(skins, "Button:down");
     widget->trk.skin = gum_style_find(skins, "Button-tray");
     widget->tra.skin = gum_style_find(skins, "Button-tray-green");
 
     widget->bup.skin = gum_style_find(skins, "Button-arrow");
     widget->bup.skin_over = gum_style_find(skins, "Button-arrow:over");
+    widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
     widget->bdw.skin = gum_style_find(skins, "Button-arrow");
     widget->bdw.skin_over = gum_style_find(skins, "Button-arrow:over");
+    widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
 
     widget->txt.skin = gum_style_find(skins, "Button-text");
     widget->txt.skin_over = gum_style_find(skins, "Button-text:over");
+    widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
     widget->ico.skin = gum_style_find(skins, "Button-img");
 
     GUM_event_manager *evm = gum_fetch_manager(parent);
@@ -157,7 +161,7 @@ GUM_widget *gum_create_widget(GUM_container *parent, const char *type, const cha
         gum_widget_reskin(widget, 34, true);
     else if (strcmp(type, "ProgressBar") == 0)
         gum_widget_reskin(widget, 17, false);
-    else if (strcmp(type, "SpinBox") == 0) {
+    else if (strcmp(type, "Slider") == 0) {
         gum_widget_reskin(widget, 20, false);
         text = NULL;
     }

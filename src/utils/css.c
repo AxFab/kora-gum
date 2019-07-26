@@ -145,43 +145,43 @@ unsigned int css_parse_color(const char *value)
     return 0;
 }
 
-int css_parse_size(const char *value, int *pSz)
+css_size_t css_parse_size(const char *value)
 {
+    css_size_t size = { 0, 0 };
     char *unit;
     float sz = strtof(value, &unit);
     if (*unit == '\0') {
-        *pSz = (short)sz;
-        return CSS_SIZE_PX;
+        size.len = (short)sz;
+        size.unit = CSS_SIZE_PX;
     } else if (!strcmp(unit, "px")) {
-        *pSz = (short)sz;
-        return CSS_SIZE_PX;
+        size.len = (short)sz;
+        size.unit = CSS_SIZE_PX;
     } else if (!strcmp(unit, "pt")) {
-        *pSz = (short)(sz * 100 / 72);
-        return CSS_SIZE_PTS;
+        size.len = (short)(sz * 100 / 72);
+        size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "mm")) {
-        *pSz = (short)(sz * 100 / 25.4f);
-        return CSS_SIZE_PTS;
+        size.len = (short)(sz * 100 / 25.4f);
+        size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "in")) {
-        *pSz = (short)(sz * 100);
-        return CSS_SIZE_PTS;
+        size.len = (short)(sz * 100);
+        size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "dp")) {
-        *pSz = (short)sz;
-        return CSS_SIZE_DP;
+        size.len = (short)sz;
+        size.unit = CSS_SIZE_DP;
     } else if (!strcmp(unit, "%")) {
-        *pSz = (short)(sz * 10);
-        return CSS_SIZE_PERC;
+        size.len = (short)(sz * 10);
+        size.unit = CSS_SIZE_PERC;
     } else {
-        *pSz = (short)sz;
-        return CSS_SIZE_PX;
+        size.len = (short)sz;
+        size.unit = CSS_SIZE_PX;
     }
-    *pSz = 0;
-    return 0;
+    return size;
 }
 
-int css_parse_usize(const char *value, int *pSz)
+css_size_t css_parse_usize(const char *value)
 {
-    int sz;
-    int unit = css_parse_size(value, &sz);
-    *pSz = sz > 0 ? sz : 0;
-    return unit;
+    css_size_t sz = css_parse_size(value);
+    if (sz.len < 0)
+        sz.len = 0;
+    return sz;
 }

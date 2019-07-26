@@ -58,6 +58,6 @@ $(eval $(call link_bin,widgets,widgets_SRCS,widgets_LFLGS))
 
 
 ifeq ($(NODEPS),)
-# -include $(call fn_deps,SRCS-y)
+-include $(call fn_deps,SRCS-y)
 endif
 

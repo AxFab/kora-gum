@@ -27,7 +27,7 @@ GUM_skins *global_skins;
 void gum_initialize()
 {
     // Load models
-    global_skins = gum_skins_loadcss(NULL, "./resx/app.css");
+    global_skins = gum_skins_loadcss(NULL, "./resx/theme.css");
 }
 
 
@@ -42,20 +42,12 @@ GUM_container *gum_container_create(GUM_container *parent, const char *layout, i
         container->group = calloc(1, sizeof(GUM_cell));
         gum_cell_pushback(&container->box, container->group);
 
-        container->box.padding.left = pad;
-        container->box.padding.right = pad;
-        container->box.padding.top = pad;
-        container->box.padding.bottom = pad;
-
-        container->box.padding.lunit = CSS_SIZE_PX;
-        container->box.padding.runit = CSS_SIZE_PX;
-        container->box.padding.tunit = CSS_SIZE_PX;
-        container->box.padding.bunit = CSS_SIZE_PX;
-
-        container->group->gap_x = pad / 2;
-        container->group->gap_y = pad / 2;
-        container->group->gxunit = CSS_SIZE_PX;
-        container->group->gyunit = CSS_SIZE_PX;
+        CSS_SET_PX(container->box.padding.left, pad);
+        CSS_SET_PX(container->box.padding.right, pad);
+        CSS_SET_PX(container->box.padding.top, pad);
+        CSS_SET_PX(container->box.padding.bottom, pad);
+        CSS_SET_PX(container->group->gap_x, pad / 2);
+        CSS_SET_PX(container->group->gap_y, pad / 2);
     }
     container->group->layout = gum_fetch_layout(layout);
     return container;

@@ -51,19 +51,22 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
         skin->grad_angle = strtol(value, NULL, 10);
 
     else if (!strcmp("border-top-left-radius", property))
-        skin->u_top_left = css_parse_usize(value, &skin->r_top_left);
+        skin->r_top_left = css_parse_usize(value);
     else if (!strcmp("border-top-right-radius", property))
-        skin->u_top_right = css_parse_usize(value, &skin->r_top_right);
+        skin->r_top_right = css_parse_usize(value);
+    else if (!strcmp("border-bottom-left-radius", property))
+        skin->r_bottom_left = css_parse_usize(value);
+    else if (!strcmp("border-bottom-right-radius", property))
+        skin->r_bottom_right = css_parse_usize(value);
     else if (!strcmp("border-radius", property)) {
-        skin->u_top_left = css_parse_usize(value, &skin->r_top_left);
+        skin->r_top_left = css_parse_usize(value);
         skin->r_top_right = skin->r_bottom_right = skin->r_bottom_left = skin->r_top_left;
-        skin->u_top_right = skin->u_bottom_right = skin->u_bottom_left = skin->u_top_left;
     }
 
     else if (!strcmp("width", property))
-        skin->wunit |= css_parse_usize(value, &skin->width);
+        skin->width = css_parse_usize(value);
     else if (!strcmp("height", property))
-        skin->hunit |= css_parse_usize(value, &skin->height);
+        skin->height = css_parse_usize(value);
 
     else if (!strcmp("font-family", property))
         skin->font_family = strdup(value);
@@ -164,7 +167,7 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
 
 void gum_skin_close(GUM_skin *skin)
 {
-    // TODO -- LRU or is registerd
+    // TODO -- LRU or is registered
 }
 
 void gum_destroy_skins(GUM_skins *skins)

@@ -51,7 +51,7 @@ struct GUM_event_manager {
     bool measure;
     GUM_cell *layout;
     GUM_gctx ctx;
-    GUM_sideruler inval;
+    GUM_rect inval;
 
     GUM_cell *grab;
     int grab_x, grab_y;
@@ -548,15 +548,15 @@ void gum_event_loop(GUM_event_manager *evm)
 void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
 {
     gum_resize_px(menu, 0, 0);
-    menu->rulerx.before = evm->mouse_x;
-    menu->rulery.before = evm->mouse_y;
-    if (menu->rulerx.before + menu->box.w > evm->ctx.width && menu->rulerx.before >= menu->box.w)
-        menu->rulerx.before -= menu->box.w;
-    if (menu->rulery.before + menu->box.h > evm->ctx.height) {
-        if (menu->rulery.before >= menu->box.h)
-            menu->rulery.before -= menu->box.h;
+    menu->rulerx.before.len = evm->mouse_x;
+    menu->rulery.before.len = evm->mouse_y;
+    if (menu->rulerx.before.len + menu->box.w > evm->ctx.width && menu->rulerx.before.len >= menu->box.w)
+        menu->rulerx.before.len -= menu->box.w;
+    if (menu->rulery.before.len + menu->box.h > evm->ctx.height) {
+        if (menu->rulery.before.len >= menu->box.h)
+            menu->rulery.before.len -= menu->box.h;
         else
-            menu->rulery.before = evm->ctx.height - menu->box.h;
+            menu->rulery.before.len = evm->ctx.height - menu->box.h;
     }
 
     if (evm->menu_sp > GUM_MAX_MCTX) {

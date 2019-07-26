@@ -21,15 +21,18 @@
 #define _GUM_CELLS_H  1
 
 #include <gum/core.h>
+#include <kora/css.h>
 
 struct GUM_absolruler {
-    int before, after, center, size, min;
-    char bunit, aunit, cunit, sunit, munit;
+    css_size_t before, after, center, size, min;
 };
 
 struct GUM_sideruler {
+    css_size_t left, right, top, bottom;
+};
+
+struct GUM_rect {
     int left, right, top, bottom;
-    char lunit, runit, tunit, bunit;
 };
 
 struct GUM_box {
@@ -59,8 +62,8 @@ struct GUM_skin {
     unsigned int brcolor;
     unsigned int shcolor;
     unsigned int grcolor;
-    int width, wunit;
-    int height, hunit;
+    css_size_t width;
+    css_size_t height;
     char read_only;
     char align, valign;
     int grad_angle;
@@ -69,15 +72,10 @@ struct GUM_skin {
     // Font properties (family, size, style-weight-variant, stretch, size-adjust)
     // Text properties (outline, direction, decoration, align, shadow, line-height)
     // Visual formating (display, position, float, clear, z-index, overflow, cursor, shadow)
-    int r_top_left;
-    int r_top_right;
-    int r_bottom_right;
-    int r_bottom_left;
-
-    char u_top_left;
-    char u_top_right;
-    char u_bottom_right;
-    char u_bottom_left;
+    css_size_t r_top_left;
+    css_size_t r_top_right;
+    css_size_t r_bottom_right;
+    css_size_t r_bottom_left;
 
     char *font_family;
     int font_size;
@@ -125,8 +123,7 @@ struct GUM_cell {
     struct GUM_absolruler rulerx;
     struct GUM_absolruler rulery;
     GUM_sideruler padding;
-    int gap_x, gap_y;
-    char gxunit, gyunit;
+    css_size_t gap_x, gap_y;
     // GUM_sideruler margin;
 
     char *id; // Identifier of the cell
@@ -213,7 +210,7 @@ LIBAPI GUM_skin *gum_style_find(GUM_skins *skins, const char *name);
 GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y);
 GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask);
 void gum_paint(GUM_window *win, GUM_cell *cell);
-void gum_resize(GUM_cell *cell, int width, int height, char xunit, char yunit);
+void gum_resize(GUM_cell *cell, css_size_t width, css_size_t height);
 void gum_resize_px(GUM_cell *cell, int width, int height);
 void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx);
 bool gum_do_measure(GUM_cell *cell, GUM_gctx *ctx);

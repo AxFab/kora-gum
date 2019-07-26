@@ -502,7 +502,7 @@ void gum_do_layout(GUM_cell *cell, GUM_gctx *ctx)
         /* Do layout on children */
         gum_do_layout(child, ctx);
 
-        /* Comupte actual client size */
+        /* Compute actual client size */
         if (child->box.x + child->box.w > cell->box.ch_w)
             cell->box.ch_w = child->box.x + child->box.w;
         if (child->box.y + child->box.h > cell->box.ch_h)

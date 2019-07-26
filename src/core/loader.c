@@ -65,14 +65,14 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
 
     else if (!strcmp("left", key)) {
         if (value[0] == '{') {
-            cell->rulerx.before.unit = CSS_SIZE_PX;
+            CSS_SET_PX(cell->rulerx.before.unit, 0);
             cell->rell = strdup(&value[1]);
             strchr(cell->rell, '}') [0] = '\0';
         } else
             cell->rulerx.before = css_parse_size(value);
     } else if (!strcmp("right", key)) {
         if (value[0] == '{') {
-            cell->rulerx.after.unit = CSS_SIZE_PX;
+            CSS_SET_PX(cell->rulerx.after.unit, 0);
             cell->relr = strdup(&value[1]);
             strchr(cell->relr, '}') [0] = '\0';
         } else

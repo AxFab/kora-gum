@@ -132,6 +132,99 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
         return;
 
     widget->mode = mode;
+    GUM_widget *widget_track = &widget->trk;
+    GUM_widget *widget_tray = &widget->tra;
+    GUM_widget *widget_txt = &widget->txt;
+    GUM_widget *widget_ico = &widget->ico;
+    GUM_widget *widget_btnup = &widget->bup;
+    GUM_widget *widget_btndw = &widget->bdw;
+
+    /* Setup widget box size */
+    widget->box.state |= GUM_CELL_SOLID;
+
+    CSS_SET_PX(widget->box.rulery.size, btnHeight);
+    CSS_SET_PX(widget->box.padding.left, btnPad);
+    CSS_SET_PX(widget->box.padding.right, btnPad);
+
+    /* The track and tray - used only for progress bar and slider */
+    if (mode == 17 || mode == 20) {
+    } else {
+        widget_track->state |= GUM_CELL_HIDDEN;
+        widget_tray->state |= GUM_CELL_HIDDEN;
+    }
+
+    /* The icon */
+    if (ico) {
+        txtBefore = icoSize + 1;
+        CSS_SET_PX(widget_ico->rulery.size, icoSize);
+        CSS_SET_PX(widget_ico->rulery.center, 0);
+        CSS_SET_PX(widget_ico->rulerx.size, icoSize);
+        CSS_SET_PX(widget_ico->rulerx.before, 0);
+        widget_ico->state &= ~GUM_CELL_HIDDEN;
+    } else
+        widget_ico->state |= GUM_CELL_HIDDEN;
+
+    /* Button(s) */
+    if (btn == 0) {
+        widget_btnup->state |= GUM_CELL_HIDDEN;
+        widget_btndw->state |= GUM_CELL_HIDDEN;
+    } else if (btn == 1) {
+        /* Button dropdown */
+        widget_btnup->state &= ~GUM_CELL_HIDDEN;
+        widget_btndw->state |= GUM_CELL_HIDDEN;
+        widget_btnup->state |= GUM_CELL_SOLID;
+        CSS_SET_PX(widget_btnup->rulery.before, 0);
+        CSS_SET_PX(widget_btnup->rulery.after, 0);
+        CSS_SET_PX(widget_btnup->rulerx.size, btnSize);
+        CSS_SET_PX(widget_btnup->rulerx.after, 0);
+        widget_btnup->text = strdup("v");
+    } else if (btn == 2) {
+        widget_btnup->state &= ~GUM_CELL_HIDDEN;
+        widget_btndw->state |= GUM_CELL_HIDDEN;
+        widget_btnup->state |= GUM_CELL_SOLID;
+        CSS_SET_PX(widget_btnup->rulerx.after, 0);
+        CSS_SET_PX(widget_btnup->rulery.center, 0);
+    } else {
+        /* Button up and down for spin-box */
+        txtAfter = btnSize * 2 + 1;
+    }
+
+    /* The text widget might be read-only or editable */
+    CSS_SET_PX(widget_txt->rulery.size, icoSize);
+    CSS_SET_PX(widget_txt->rulery.center, 0);
+    CSS_SET_PX(widget_txt->rulerx.before, txtBefore);
+    CSS_SET_PX(widget_txt->rulerx.after, txtAfter);
+
+    if (txt == 0) {
+        widget_txt->state |= GUM_CELL_HIDDEN;
+
+        /* Special case if button */
+        if (btn != 2) {
+            CSS_SET_PX(widget_btnup->rulerx.before, icoSize + 2);
+            widget_btnup->rulerx.after.unit = 0;
+        }
+    } else if (txt == 1) {
+        widget_txt->state &= ~GUM_CELL_HIDDEN;
+        widget_txt->state &= ~GUM_CELL_SOLID;
+        widget_txt->state |= GUM_CELL_SUBSTYLE;
+
+    } else if (txt == 2) {
+        widget_txt->state &= ~GUM_CELL_HIDDEN;
+        widget_txt->state |= GUM_CELL_SOLID;
+        widget_txt->state |= GUM_CELL_EDITABLE;
+        widget_txt->skin = gum_style_find(widget->skins, "Button-text-edit");
+        widget_txt->skin_over = NULL;
+    }
+
+    if (mode == 20) {
+        widget_txt->state &= ~GUM_CELL_HIDDEN;
+    }
+
+    if (!bg) {
+        widget->box.skin = NULL;
+        widget->box.skin_over  = NULL;
+        widget->txt.skin_over  = NULL;
+    }
 }
 
 void gum_widget_set_text(GUM_widget *widget, const char *value)

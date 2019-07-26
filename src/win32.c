@@ -287,7 +287,7 @@ void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, voi
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_do_visual(GUM_cell *cell, GUM_window *win, struct GUM_sideruler *inval)
+void gum_do_visual(GUM_cell *cell, GUM_window *win, struct GUM_rect *inval)
 {
     RECT r;
     r.left = inval->left;

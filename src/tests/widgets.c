@@ -21,6 +21,7 @@
 #include <gum/events.h>
 
 
+/* Graphical User-interface Module */
 int main()
 {
     gum_initialize();
@@ -38,7 +39,7 @@ int main()
     gum_create_widget(grp1, "Label", "Style: ");
     gum_create_widget(grp1, "ComboBox", "Fusion");
     gum_create_widget(grp1, "CheckBox", "Use style standard palette");
-    gum_create_widget(grp1, "CheckBox", "Disable widget");
+    gum_create_widget(grp1, "CheckBox", "Disable widgets");
     gum_create_widget(grp21, "RadioButton", "Radio button 1");
     gum_create_widget(grp21, "RadioButton", "Radio button 2");
     gum_create_widget(grp21, "RadioButton", "Radio button 3");
@@ -47,7 +48,7 @@ int main()
     gum_create_widget(grp22, "PushButton", "Toggle push button");
     gum_create_widget(grp22, "PushButton", "Flat push button");
     // Add stack view
-    gum_create_widget(grp24, "TextEdit", "Text edit");
+    gum_create_widget(grp24, "TextEdit", "Text edition");
     gum_create_widget(grp24, "SpinBox", "50");
     gum_create_widget(grp24, "SpinBox", "2019-08-12 20:54");
     gum_create_widget(grp24, "Slider", NULL);
@@ -56,6 +57,7 @@ int main()
     gum_event_loop(window->box.manager);
     gum_close_manager(window->box.manager);
     // Destroy widgets
+    // Destroy skins
     return 0;
 }
 

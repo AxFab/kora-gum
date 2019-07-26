@@ -513,11 +513,17 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
             printf("do layout\n");
             GUM_cell *cell_layout = evm->layout;
             evm->layout = NULL;
+            if (cell_layout == evm->root) {
+                cell_layout->box.x = 0;
+                cell_layout->box.y = 0;
+                cell_layout->box.w = evm->ctx.width;
+                cell_layout->box.h = evm->ctx.height;
+            }
             gum_do_layout(cell_layout, &evm->ctx);
         }
         if (evm->inval.left != evm->inval.right || evm->inval.top != evm->inval.bottom) {
             gum_do_visual(evm->root, evm->win, &evm->inval);
-            // fprintf(stderr, "Visual\n", event->type);
+            fprintf(stderr, "do Visual\n");
             memset(&evm->inval, 0, sizeof(evm->inval));
         }
         break;

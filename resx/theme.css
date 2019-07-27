@@ -1,5 +1,67 @@
 
-.Button {
+.panel {
+    background: #dedede;
 }
 
+.Button {
+    border-radius: 2px;
+    background: #4db4b4;
+    background-gradient: #7dc9c900;
+    border-color: #46aaaa;
+}
+.Button:over {
+    border-radius: 2px;
+    background: #398a8a;
+    background-gradient: #51b7b7;
+    border-color: #46aaaa;
+}
+.Button:down {
+    border-radius: 2px;
+    background: #4db4b4;
+    background-gradient: #7dc9c900;
+    border-color: #46aaaa;
+}
+
+.Button-img {
+}
+
+.Button-text {
+    color: #000000;
+    text-align: left;
+}
+.Button-text:over {
+    color: #ffffff;
+    text-align: left;
+}
+.Button-text:down {
+    color: #000000;
+    text-align: left;
+}
+
+.Button-text-edit {
+    border-color: #000000;
+    background: #f2f2f2;
+    color: #000000;
+    text-align: left;
+}
+
+.Button-arrow {
+    color: #000000;
+    text-align: center;
+}
+.Button-arrow:over {
+    color: #ffffff;
+    text-align: center;
+}
+.Button-arrow:down {
+    color: #000000;
+    text-align: center;
+}
+
+.Button-tray {
+    background: #c2c2c2;
+}
+.Button-tray-green {
+    background: #10a610;
+}
 

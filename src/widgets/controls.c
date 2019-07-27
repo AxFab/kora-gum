@@ -90,11 +90,11 @@ GUM_widget *gum_widget_allocate(GUM_cell *parent, GUM_skins *skins)
     widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
     widget->bdw.skin = gum_style_find(skins, "Button-arrow");
     widget->bdw.skin_over = gum_style_find(skins, "Button-arrow:over");
-    widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
+    widget->bdw.skin_down = gum_style_find(skins, "Button-arrow:down");
 
     widget->txt.skin = gum_style_find(skins, "Button-text");
     widget->txt.skin_over = gum_style_find(skins, "Button-text:over");
-    widget->bup.skin_down = gum_style_find(skins, "Button-arrow:down");
+    widget->txt.skin_down = gum_style_find(skins, "Button-text:down");
     widget->ico.skin = gum_style_find(skins, "Button-img");
 
     GUM_event_manager *evm = gum_fetch_manager(parent);
@@ -132,12 +132,12 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
         return;
 
     widget->mode = mode;
-    GUM_widget *widget_track = &widget->trk;
-    GUM_widget *widget_tray = &widget->tra;
-    GUM_widget *widget_txt = &widget->txt;
-    GUM_widget *widget_ico = &widget->ico;
-    GUM_widget *widget_btnup = &widget->bup;
-    GUM_widget *widget_btndw = &widget->bdw;
+    GUM_cell *widget_track = &widget->trk;
+    GUM_cell *widget_tray = &widget->tra;
+    GUM_cell *widget_txt = &widget->txt;
+    GUM_cell *widget_ico = &widget->ico;
+    GUM_cell *widget_btnup = &widget->bup;
+    GUM_cell *widget_btndw = &widget->bdw;
 
     /* Setup widget box size */
     widget->box.state |= GUM_CELL_SOLID;
@@ -170,6 +170,7 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
         widget_btndw->state |= GUM_CELL_HIDDEN;
     } else if (btn == 1) {
         /* Button dropdown */
+        txtAfter = btnSize + 1;
         widget_btnup->state &= ~GUM_CELL_HIDDEN;
         widget_btndw->state |= GUM_CELL_HIDDEN;
         widget_btnup->state |= GUM_CELL_SOLID;
@@ -187,6 +188,24 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
     } else {
         /* Button up and down for spin-box */
         txtAfter = btnSize * 2 + 1;
+        widget_btnup->state &= ~GUM_CELL_HIDDEN;
+        widget_btndw->state &= ~GUM_CELL_HIDDEN;
+        widget_btnup->state |= GUM_CELL_SOLID;
+        widget_btndw->state |= GUM_CELL_SOLID;
+        widget_btnup->text = strdup("+");
+        widget_btndw->text = strdup("-");
+        if (btn == 3) {
+            CSS_SET_PX(widget_btndw->rulery.before, 0);
+            CSS_SET_PX(widget_btndw->rulery.after, 0);
+            CSS_SET_PX(widget_btndw->rulerx.size, btnSize);
+            CSS_SET_PX(widget_btndw->rulerx.after, btnSize);
+
+            CSS_SET_PX(widget_btnup->rulery.before, 0);
+            CSS_SET_PX(widget_btnup->rulery.after, 0);
+            CSS_SET_PX(widget_btnup->rulerx.size, btnSize);
+            CSS_SET_PX(widget_btnup->rulerx.after, 0);
+        } else {
+        }
     }
 
     /* The text widget might be read-only or editable */

@@ -100,7 +100,7 @@ void *gum_load_font(GUM_window *win, GUM_skin *skin)
     wchar_t name[52];
     mbstowcs(name, skin->font_family ? skin->font_family : "Arial", 50);
     int sz = MulDiv(skin->font_size, GetDeviceCaps(win->hdc, LOGPIXELSY), 72);
-    return (void*)CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, name);
+    return (void *)CreateFont(sz, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, name);
 }
 
 void *gum_fetch_font(GUM_window *win, GUM_skin *skin)
@@ -187,11 +187,11 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
     if (msg.message > WM_USER && msg.message < WM_USER + 4096) {
         event->type = msg.message - WM_USER;
-	event->param0 = msg.lParam;
-	event->param1 = msg.wParam;
-	TranslateMessage(&msg);
-	DispatchMessage(&msg);
-	return 0;
+        event->param0 = msg.lParam;
+        event->param1 = msg.wParam;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        return 0;
     }
 
     event->param0 = 0;
@@ -287,7 +287,7 @@ void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, voi
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_do_visual(GUM_cell *cell, GUM_window *win, struct GUM_rect *inval)
+void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_rect *inval)
 {
     RECT r;
     r.left = inval->left;
@@ -402,11 +402,11 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     if (! top && cell->state & GUM_CELL_BUFFERED) {
         if (cell->surface == NULL)
             cell->surface = gum_surface(win, cell->box.w, cell->box. h);
-	if (cell->surface != NULL) {
+        if (cell->surface != NULL) {
             // TODO -- sub-surface
             gum_paint(cell->surface, cell);
             gum_draw_pic(win, cell->surface, &cell->box, &cell->anim);
-	}
+        }
         return;
     }
 
@@ -496,7 +496,7 @@ void *memrchr(const void *buf, int byte, size_t len)
     const char *ptr = (const char *)buf + len;
     while (ptr-- > (const char *)buf)
         if (*ptr == byte)
-            return (void*)ptr;
+            return (void *)ptr;
     return NULL;
 }
 

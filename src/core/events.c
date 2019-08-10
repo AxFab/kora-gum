@@ -60,8 +60,8 @@ struct GUM_event_manager {
 typedef struct GUM_async {
     void *res;
     void *arg;
-    void *(*worker)(GUM_event_manager *, void*);
-    void (*callback)(GUM_event_manager *, void*);
+    void *(*worker)(GUM_event_manager *, void *);
+    void (*callback)(GUM_event_manager *, void *);
     GUM_event_manager *evm;
 } GUM_async;
 
@@ -146,7 +146,7 @@ static void gum_emit_event(GUM_event_manager *evm, GUM_cell *cell, int event)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
-    GUM_handler_record *action = (void*)hmp_get(&evm->actions, key, lg);
+    GUM_handler_record *action = (void *)hmp_get(&evm->actions, key, lg);
     if (action != NULL)
         action->handler(evm, cell, event, action->data);
 
@@ -234,9 +234,9 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
         gum_cell_chstatus(evm, evm->over, GUM_CELL_OVER, 0, GUM_EV_OUT);
         gum_cell_chstatus(evm, target, GUM_CELL_OVER, 1, GUM_EV_OVER);
         // if (evm->over)
-            // fprintf(stderr, "Out %s\n", evm->over->id);
+        // fprintf(stderr, "Out %s\n", evm->over->id);
         // if (target)
-            // fprintf(stderr, "Over %s\n", target->id);
+        // fprintf(stderr, "Over %s\n", target->id);
         evm->over = target;
         /* If we live a down cell, it's like a release */
         if (target == evm->down) {
@@ -246,23 +246,23 @@ static void gum_event_motion(GUM_event_manager *evm, int x, int y)
     }
     if (evm->grab != NULL) {
         // drop request !?
-	gum_invalid_visual(evm->grab);
-	evm->grab->box.x -= evm->grab->box.dx;
-	evm->grab->box.y -= evm->grab->box.dy;
-	evm->grab->box.dx = evm->mouse_x - evm->grab_x;
-	evm->grab->box.dy = evm->mouse_y - evm->grab_y;
+        gum_invalid_visual(evm->grab);
+        evm->grab->box.x -= evm->grab->box.dx;
+        evm->grab->box.y -= evm->grab->box.dy;
+        evm->grab->box.dx = evm->mouse_x - evm->grab_x;
+        evm->grab->box.dy = evm->mouse_y - evm->grab_y;
 
-	/* BEGIN: drag limit */
-	if (evm->grab->box.dx < 0)
-	    evm->grab->box.dx = 0;
-	else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->grab->box.w)
-	    evm->grab->box.dx = evm->grab->parent->box.cw - evm->grab->box.w;
-	evm->grab->box.dy = 0;
-	/* END */
+        /* BEGIN: drag limit */
+        if (evm->grab->box.dx < 0)
+            evm->grab->box.dx = 0;
+        else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->grab->box.w)
+            evm->grab->box.dx = evm->grab->parent->box.cw - evm->grab->box.w;
+        evm->grab->box.dy = 0;
+        /* END */
 
-	evm->grab->box.x += evm->grab->box.dx;
-	evm->grab->box.y += evm->grab->box.dy;
-	gum_invalid_visual(evm->grab);
+        evm->grab->box.x += evm->grab->box.dx;
+        evm->grab->box.y += evm->grab->box.dy;
+        gum_invalid_visual(evm->grab);
     }
 }
 
@@ -276,9 +276,9 @@ static void gum_event_left_press(GUM_event_manager *evm)
     gum_cell_chstatus(evm, target, GUM_CELL_DOWN, 1, GUM_EV_DOWN);
     evm->down = target;
     if (target && target->state & GUM_CELL_DRAGABLE) {
-	evm->grab = target;
-	evm->grab_x = evm->mouse_x - evm->grab->box.dx;
-	evm->grab_y = evm->mouse_y - evm->grab->box.dy;
+        evm->grab = target;
+        evm->grab_x = evm->mouse_x - evm->grab->box.dx;
+        evm->grab_y = evm->mouse_y - evm->grab->box.dy;
     }
 }
 
@@ -289,7 +289,7 @@ static void gum_event_left_release(GUM_event_manager *evm)
         gum_remove_context(evm);
     /* if cell grabbed, drop-it */
     if (evm->grab)
-	evm->grab = NULL;
+        evm->grab = NULL;
     /* Translate into click */
     if (target && evm->down == target) {
         long long now = gum_system_time();

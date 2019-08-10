@@ -6,7 +6,7 @@
 .Button {
     border-radius: 2px;
     background: #4db4b4;
-    background-gradient: #7dc9c900;
+    background-gradient: #7dc9c9;
     border-color: #46aaaa;
 }
 .Button:over {
@@ -18,7 +18,7 @@
 .Button:down {
     border-radius: 2px;
     background: #4db4b4;
-    background-gradient: #7dc9c900;
+    background-gradient: #7dc9c9;
     border-color: #46aaaa;
 }
 

@@ -355,7 +355,7 @@ void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
 #include <kora/keys.h>
 
 
-void timer_handler (int signum)
+void timer_handler(int signum)
 {
     XEvent e;
     memset(&e, 0, sizeof(e));
@@ -367,7 +367,7 @@ void timer_handler (int signum)
     // ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
 
     Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
-    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable(__lastWin->srf);
     XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 
@@ -378,9 +378,9 @@ void timer_setup()
 {
 
     /* Install timer_handler as the signal handler for SIGVTALRM. */
-    memset (&sa, 0, sizeof (sa));
+    memset(&sa, 0, sizeof(sa));
     sa.sa_handler = &timer_handler;
-    sigaction (SIGALRM, &sa, NULL);
+    sigaction(SIGALRM, &sa, NULL);
 
     /* Configure the timer to expire after 250 msec... */
     timer.it_value.tv_sec = 0;
@@ -390,7 +390,7 @@ void timer_setup()
     timer.it_interval.tv_usec = 20000;
     /* Start a virtual timer. It counts down whenever this process is
     executing. */
-    setitimer (ITIMER_REAL, &timer, NULL);
+    setitimer(ITIMER_REAL, &timer, NULL);
 }
 
 void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
@@ -574,7 +574,7 @@ void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
     ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
 
     Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
-    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable(__lastWin->srf);
     XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 
@@ -592,7 +592,7 @@ void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, voi
     // ee->height = cairo_xlib_surface_get_height(__lastWin->srf);
 
     Display *dsp = cairo_xlib_surface_get_display(__lastWin->srf);
-    Window w = (Window)cairo_xlib_surface_get_drawable (__lastWin->srf);
+    Window w = (Window)cairo_xlib_surface_get_drawable(__lastWin->srf);
     XSendEvent(dsp, w, False, ExposureMask, &e);
 }
 

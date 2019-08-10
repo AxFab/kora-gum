@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gum", "gum\gum.vcxproj", "{BD7A4598-94AE-4CAA-BF9B-D74B23898088}"
 EndProject
@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GumSharp", "GumSharp\GumSha
 	ProjectSection(ProjectDependencies) = postProject
 		{BD7A4598-94AE-4CAA-BF9B-D74B23898088} = {BD7A4598-94AE-4CAA-BF9B-D74B23898088}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logon", "logon\logon.vcxproj", "{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "widgets", "widgets\widgets.vcxproj", "{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,8 +58,31 @@ Global
 		{6EBBE47B-A4A7-4248-9AF7-7E84188162ED}.Release|x64.Build.0 = Release|Any CPU
 		{6EBBE47B-A4A7-4248-9AF7-7E84188162ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{6EBBE47B-A4A7-4248-9AF7-7E84188162ED}.Release|x86.Build.0 = Release|Any CPU
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Debug|x64.ActiveCfg = Debug|x64
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Debug|x64.Build.0 = Debug|x64
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Debug|x86.ActiveCfg = Debug|Win32
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Debug|x86.Build.0 = Debug|Win32
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Release|Any CPU.ActiveCfg = Release|Win32
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Release|x64.ActiveCfg = Release|x64
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Release|x64.Build.0 = Release|x64
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Release|x86.ActiveCfg = Release|Win32
+		{F10401B8-8C28-4F5D-8D26-B9D337FEC4EB}.Release|x86.Build.0 = Release|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Debug|x64.ActiveCfg = Debug|x64
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Debug|x64.Build.0 = Debug|x64
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Debug|x86.ActiveCfg = Debug|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Debug|x86.Build.0 = Debug|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Release|Any CPU.ActiveCfg = Release|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Release|x64.ActiveCfg = Release|x64
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Release|x64.Build.0 = Release|x64
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Release|x86.ActiveCfg = Release|Win32
+		{E915C814-FDD7-4BF9-AA44-CFD6AA700EF4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EDF8A7C1-A3DE-4B85-8E60-5424533C6443}
 	EndGlobalSection
 EndGlobal

@@ -38,7 +38,7 @@ GUM_cell *ctx_lang;
 GUM_cell *lbl_clock;
 
 GUM_cell *selected_user;
-char * selected_pwd;
+char *selected_pwd;
 
 void load_users();
 

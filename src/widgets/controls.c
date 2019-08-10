@@ -148,6 +148,21 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
 
     /* The track and tray - used only for progress bar and slider */
     if (mode == 17 || mode == 20) {
+        // Debug only
+        CSS_SET_PX(widget->box.rulerx.min, 80);
+
+        int mg = mode = 20 ? icoSize / 2 : 0;
+        CSS_SET_PX(widget_track->rulerx.before, mg);
+        CSS_SET_PX(widget_track->rulerx.after, mg);
+        CSS_SET_PX(widget_track->rulery.after, 0);
+        CSS_SET_PX(widget_track->rulery.size, trackHeight);
+
+        CSS_SET_PX(widget_tray->rulerx.before, 0);
+        CSS_SET_PX(widget_tray->rulerx.after, 0);
+        CSS_SET_PX(widget_tray->rulery.after, 0);
+        CSS_SET_PX(widget_tray->rulery.size, trackHeight);
+
+        bg = false;
     } else {
         widget_track->state |= GUM_CELL_HIDDEN;
         widget_tray->state |= GUM_CELL_HIDDEN;
@@ -205,6 +220,15 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
             CSS_SET_PX(widget_btnup->rulerx.size, btnSize);
             CSS_SET_PX(widget_btnup->rulerx.after, 0);
         } else {
+            CSS_SET_PX(widget_btndw->rulery.size, btnHeight / 2);
+            CSS_SET_PX(widget_btndw->rulery.after, 0);
+            CSS_SET_PX(widget_btndw->rulerx.size, btnSize * 2);
+            CSS_SET_PX(widget_btndw->rulerx.after, 0);
+
+            CSS_SET_PX(widget_btnup->rulery.before, 0);
+            CSS_SET_PX(widget_btnup->rulery.after, btnHeight / 2);
+            CSS_SET_PX(widget_btnup->rulerx.size, btnSize * 2);
+            CSS_SET_PX(widget_btnup->rulerx.after, 0);
         }
     }
 
@@ -237,6 +261,13 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
 
     if (mode == 20) {
         widget_txt->state &= ~GUM_CELL_HIDDEN;
+        CSS_SET_PX(widget_txt->rulerx.before, 0);
+        CSS_SET_PX(widget_btnup->rulerx.after, 0);
+        widget_txt->text = strdup("0%");
+        widget_btnup->text = strdup("100%");
+
+        widget_tray->state |= GUM_CELL_HIDDEN;
+        widget_ico->state |= GUM_CELL_DRAGABLE | GUM_CELL_SOLID;
     }
 
     if (!bg) {

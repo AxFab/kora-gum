@@ -147,10 +147,14 @@ void gum_cell_destroy(GUM_event_manager *evm, GUM_cell *cell)
     // Skins
     // Cache skin / image / font
     // Animation
-    if (cell->id) free(cell->id);
-    if (cell->name) free(cell->name);
-    if (cell->text) free(cell->text);
-    if (cell->img_src) free(cell->img_src);
+    if (cell->id)
+        free(cell->id);
+    if (cell->name)
+        free(cell->name);
+    if (cell->text)
+        free(cell->text);
+    if (cell->img_src)
+        free(cell->img_src);
     free(cell);
 }
 

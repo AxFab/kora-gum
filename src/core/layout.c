@@ -58,7 +58,7 @@ static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,
 
 /* Condensed algorithm: absolute position */
 static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
-                                     short dpi, float dsp)
+                                   short dpi, float dsp)
 {
     int rPos, rSz;
     short min = MAX(minimum, CSS_GET_SIZE(pos->min, dpi, dsp, 0));
@@ -67,9 +67,9 @@ static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
     short after = CSS_GET_SIZE_R(pos->after, dpi, dsp, min);
     short center = CSS_GET_SIZE_R(pos->center, dpi, dsp, min);
 
-    if (pos->before.unit && pos->after.unit) {
+    if (pos->before.unit && pos->after.unit)
         return before + after + MAX(min, - before - after);
-    } else if (pos->before.unit) {
+    else if (pos->before.unit) {
         rPos = before;
         if (pos->center.unit)
             rSz = MAX(min, size);
@@ -85,9 +85,8 @@ static int gum_layout_absolute_min(struct GUM_absolruler *pos, int minimum,
         rPos = (min - MAX(min, size)) / 2 + center;
         rSz = MAX(min, size);
         return rSz + abs(rPos);
-    } else {
+    } else
         return MAX(min, size);
-    }
     return rSz;
 }
 
@@ -294,8 +293,8 @@ static void gum_layout_fixgrid_minsize(GUM_cell *cell, GUM_cell *child, GUM_layo
 
 static void gum_layout_fixgrid_resize(GUM_cell *cell, GUM_layout *layout)
 {
-    int cw = (layout->width - layout->gap_x * (layout->cursor2 - 1)) /layout->cursor2;
-    int ch = (layout->height - layout->gap_y * (layout->cursor3 - 1)) /layout->cursor3;
+    int cw = (layout->width - layout->gap_x * (layout->cursor2 - 1)) / layout->cursor2;
+    int ch = (layout->height - layout->gap_y * (layout->cursor3 - 1)) / layout->cursor3;
 
     cell->box.w = MAX(cell->box.minw, cw);
     cell->box.h = MAX(cell->box.minh, ch);

@@ -1,84 +1,99 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Fichiers sources">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Fichiers d%27en-tête">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Fichiers de ressources">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Fichiers sources\utils">
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\utils">
       <UniqueIdentifier>{8f6e986f-a9d9-4832-8593-c93b967aff52}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers sources\core">
+    <Filter Include="src\core">
       <UniqueIdentifier>{ab3d9a22-7fa9-4936-bcd6-5589c8c2ae73}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers d%27en-tête\kora">
+    <Filter Include="include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="include\kora">
       <UniqueIdentifier>{b6660729-3aa6-4829-b449-1b3ade68d769}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers d%27en-tête\kora\gum">
+    <Filter Include="include\kora\gum">
       <UniqueIdentifier>{7df2c8bd-c561-4bbe-a338-f4f466643cb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\widgets">
+      <UniqueIdentifier>{d4b5f182-3328-4eca-80a7-c7b0733a5dc1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\utils\css.c">
-      <Filter>Fichiers sources\utils</Filter>
+      <Filter>src\utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\utils\hmap.c">
-      <Filter>Fichiers sources\utils</Filter>
+      <Filter>src\utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\utils\xml.c">
-      <Filter>Fichiers sources\utils</Filter>
+      <Filter>src\utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\events.c">
-      <Filter>Fichiers sources\core</Filter>
+      <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\layout.c">
-      <Filter>Fichiers sources\core</Filter>
+      <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\loader.c">
-      <Filter>Fichiers sources\core</Filter>
+      <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\skins.c">
-      <Filter>Fichiers sources\core</Filter>
+      <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\treecell.c">
-      <Filter>Fichiers sources\core</Filter>
+      <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\win32.c">
-      <Filter>Fichiers sources</Filter>
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\widgets\containers.c">
+      <Filter>src\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\widgets\controls.c">
+      <Filter>src\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\widgets\richtext.c">
+      <Filter>src\widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\keyboard.c">
+      <Filter>src\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\kora\css.h">
-      <Filter>Fichiers d%27en-tête\kora</Filter>
+      <Filter>include\kora</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\hmap.h">
-      <Filter>Fichiers d%27en-tête\kora</Filter>
+      <Filter>include\kora</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\keys.h">
-      <Filter>Fichiers d%27en-tête\kora</Filter>
+      <Filter>include\kora</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\xml.h">
-      <Filter>Fichiers d%27en-tête\kora</Filter>
+      <Filter>include\kora</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\gum\cells.h">
-      <Filter>Fichiers d%27en-tête\kora\gum</Filter>
+      <Filter>include\kora\gum</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\gum\core.h">
-      <Filter>Fichiers d%27en-tête\kora\gum</Filter>
+      <Filter>include\kora\gum</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\kora\gum\events.h">
-      <Filter>Fichiers d%27en-tête\kora\gum</Filter>
+      <Filter>include\kora\gum</Filter>
     </ClInclude>
     <ClInclude Include="..\include\dirent.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

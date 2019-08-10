@@ -17,7 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_KEYS_H 
+#ifndef _KORA_KEYS_H
 #define _KORA_KEYS_H  1
 
 /* Control characters */

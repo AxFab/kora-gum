@@ -166,8 +166,10 @@ GUM_window *gum_surface(GUM_window *parent, int width, int height)
 
 void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
 {
-    ctx->width = 680;
-    ctx->height = 425;
+    RECT rect;
+    GetWindowRect(win->hwnd, &rect);
+    ctx->width = rect.right - rect.left;
+    ctx->height = rect.bottom - rect.top;
     ctx->dpi_x = ctx->dpi_y = 96;
     ctx->dsp_x = ctx->dsp_y = 0.75;
 }
@@ -484,8 +486,11 @@ void *gum_load_image(const char *name)
     mbstowcs(szBuf, name, 64);
     for (int i = 0; i < 64; ++i)
         if (szBuf[i] == '/')
-            szBuf[i] = '\\';
+            ((char*)name)[i/2] = szBuf[i] = '\\';
     HBITMAP bmp = (HBITMAP)LoadImage(NULL, szBuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    if (bmp == NULL) {
+        bmp = (HBITMAP)LoadImage(NULL, name, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    }
     return bmp;
 }
 

@@ -151,16 +151,18 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
         // Debug only
         CSS_SET_PX(widget->box.rulerx.min, 80);
 
-        int mg = mode = 20 ? icoSize / 2 : 0;
+        int mg = mode == 20 ? icoSize / 2 : 0;
         CSS_SET_PX(widget_track->rulerx.before, mg);
         CSS_SET_PX(widget_track->rulerx.after, mg);
         CSS_SET_PX(widget_track->rulery.after, 0);
         CSS_SET_PX(widget_track->rulery.size, trackHeight);
 
         CSS_SET_PX(widget_tray->rulerx.before, 0);
-        CSS_SET_PX(widget_tray->rulerx.after, 0);
+        CSS_SET_PX(widget_tray->rulerx.size, 100);
         CSS_SET_PX(widget_tray->rulery.after, 0);
         CSS_SET_PX(widget_tray->rulery.size, trackHeight);
+        widget_track->state &= ~GUM_CELL_HIDDEN;
+        widget_tray->state &= ~GUM_CELL_HIDDEN;
 
         bg = false;
     } else {
@@ -197,7 +199,7 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
     } else if (btn == 2) {
         widget_btnup->state &= ~GUM_CELL_HIDDEN;
         widget_btndw->state |= GUM_CELL_HIDDEN;
-        widget_btnup->state |= GUM_CELL_SOLID;
+        // widget_btnup->state |= GUM_CELL_SOLID;
         CSS_SET_PX(widget_btnup->rulerx.after, 0);
         CSS_SET_PX(widget_btnup->rulery.center, 0);
     } else {
@@ -226,7 +228,7 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
             CSS_SET_PX(widget_btndw->rulerx.after, 0);
 
             CSS_SET_PX(widget_btnup->rulery.before, 0);
-            CSS_SET_PX(widget_btnup->rulery.after, btnHeight / 2);
+            CSS_SET_PX(widget_btnup->rulery.size, btnHeight / 2);
             CSS_SET_PX(widget_btnup->rulerx.size, btnSize * 2);
             CSS_SET_PX(widget_btnup->rulerx.after, 0);
         }
@@ -258,6 +260,8 @@ void gum_widget_reskin(GUM_widget *widget, int mode, bool bg)
         widget_txt->skin = gum_style_find(widget->skins, "Button-text-edit");
         widget_txt->skin_over = NULL;
     }
+
+    widget_txt->text = strdup("Widget");
 
     if (mode == 20) {
         widget_txt->state &= ~GUM_CELL_HIDDEN;

@@ -444,7 +444,7 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
 {
     int i;
     GUM_async *async;
-    // fprintf(stderr, "Event %d enter\n", event->type);
+    fprintf(stderr, "Event %d enter\n", event->type);
     switch (event->type) {
     case GUM_EV_RESIZE:
         // fprintf(stderr, "W %d - H %d\n", event->param0, event->param1);

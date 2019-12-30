@@ -67,6 +67,18 @@ static inline int POW2_UP(int val)
 #define VERS32_MN(v) (((v) >> 8) & 0x3FF)
 #define VERS32_PT(v) ((v) & 0xFF)
 
-#define _PRT(p)  p
+#if defined(WIN32) || defined(_WIN32)
+# define LIBAPI __declspec(dllexport)
+# define EXTAPI __declspec(dllimport)
+#else
+# define LIBAPI
+# define EXTAPI
+#endif
+
+#ifndef KORA_PRT
+#  define _PRT(p)  p
+#else
+#  define _PRT(p)  p ## _p
+#endif
 
 #endif  /* _KORA_MCRS_H */

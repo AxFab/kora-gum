@@ -530,7 +530,7 @@ void gum_resize(GUM_cell *cell, css_size_t width, css_size_t height)
 
 void gum_resize_px(GUM_cell *cell, int width, int height)
 {
-    css_size_t w = { width, CSS_SIZE_PX };
-    css_size_t h = { height, CSS_SIZE_PX };
+    css_size_t w = { CSS_SIZE_PX, width  };
+    css_size_t h = { CSS_SIZE_PX, height };
     gum_resize(cell, w, h);
 }

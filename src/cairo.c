@@ -22,7 +22,7 @@
 #include <X11/Xutil.h>
 #include <gum/events.h>
 #include <gum/cells.h>
-#include <kora/css.h>
+#include <gum/css.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

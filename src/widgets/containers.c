@@ -19,7 +19,7 @@
  */
 #include <gum/widgets.h>
 #include <gum/events.h>
-#include <kora/css.h>
+#include <gum/css.h>
 #include <stdlib.h>
 
 GUM_skins *global_skins;

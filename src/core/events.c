@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <threads.h>
 
 #define GUM_MAX_MCTX  8
 
@@ -378,30 +379,36 @@ static void gum_event_wheel_down(GUM_event_manager *evm)
 
 static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
 {
-    char buf[128] = { 0 };
     if (evm->edit == NULL)
         return;
-
-    int lg = strlen(evm->edit->text);
-    if (unicode > 0) {
-        memcpy(buf, evm->edit->text, evm->edit->text_pen);
-        if (unicode < 128) {
-            buf[evm->edit->text_pen] = unicode;
-            evm->edit->text_pen++;
-        }
-        memcpy(&buf[evm->edit->text_pen], &evm->edit->text[evm->edit->text_pen], lg - evm->edit->text_pen + 1);
-    } else if (unicode == KEY_CODE_BACKSPACE) {
-        if (evm->edit->text_pen == 0)
-            return;
-
-        memcpy(buf, evm->edit->text, evm->edit->text_pen - 1);
-        memcpy(&buf[evm->edit->text_pen - 1], &evm->edit->text[evm->edit->text_pen], lg - evm->edit->text_pen);
-        evm->edit->text_pen--;
-    } else
+    if (unicode <= 0)
         return;
 
-    free(evm->edit->text);
-    evm->edit->text = strdup(buf);
+    int len = strlen(evm->edit->text);
+    int cursor = evm->edit->text_pen;
+    if (unicode == KEY_CODE_BACKSPACE) {
+        if (evm->edit->text_pen == 0)
+            return;
+        
+        cursor--;
+        while ((evm->edit->text[cursor] & 0xc0) == 0x80)
+            cursor--;
+
+        memmove(&evm->edit->text[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
+        evm->edit->text_pen = cursor;
+    }
+    else {
+        char* buf = malloc(len + 8);
+        memcpy(buf, evm->edit->text, evm->edit->text_pen);
+        cursor += uctomb(&buf[evm->edit->text_pen], unicode);
+        memcpy(&buf[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
+        evm->edit->text_pen = cursor;
+        free(evm->edit->text);
+        evm->edit->text = strdup(buf);
+        free(buf);
+    }
+
+    gum_invalid_measure(evm->edit);
     gum_invalid_visual(evm->edit);
 }
 
@@ -409,6 +416,7 @@ static void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
 {
 
 }
+
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
@@ -480,11 +488,14 @@ void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
             gum_event_button_release(evm, event->param0);
         break;
 
-    case GUM_EV_KEY_PRESS:
+    case GUM_EV_KEY_ENTER:
         gum_event_key_press(evm, event->param0, event->param1);
         break;
+    case GUM_EV_KEY_PRESS:
+        // gum_event_key_press(evm, event->param0, event->param1);
+        break;
     case GUM_EV_KEY_RELEASE:
-        gum_event_key_release(evm, event->param0, event->param1);
+        // gum_event_key_release(evm, event->param0, event->param1);
         break;
     case GUM_EV_EXPOSE:
         gum_start_paint(evm->win);
@@ -588,8 +599,10 @@ void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager 
     async->callback = callback;
     async->arg = arg;
     async->evm = evm;
-    // thrd_create(gum_async_job, async);
-    gum_async_job(async);
+
+    thrd_t thrd;
+    thrd_create(&thrd, gum_async_job, async);
+    // gum_async_job(async);
 }
 
 void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell)
@@ -610,3 +623,12 @@ void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell)
     if (cell->parent)
         gum_invalid_measure(cell->parent);
 }
+
+#ifndef NDEBUG
+
+GUM_cell* gum_debug_root(GUM_event_manager* evm)
+{
+    return evm->root;
+}
+
+#endif

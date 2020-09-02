@@ -21,7 +21,7 @@
 #define _GUM_CELLS_H  1
 
 #include <gum/core.h>
-#include <kora/css.h>
+#include <gum/css.h>
 
 struct GUM_absolruler {
     css_size_t before, after, center, size, min;
@@ -147,6 +147,7 @@ struct GUM_cell {
     void *gradient;
     GUM_skin *cachedSkin;
     GUM_window *surface;
+    void* font;
 
     // Cell hierarchy into the rendering tree
     GUM_cell *parent;

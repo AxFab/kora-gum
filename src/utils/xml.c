@@ -17,7 +17,10 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/xml.h>
+#include <gum/xml.h>
+#include <kora/mcrs.h>
+#include <string.h>
+
 
 const char *XML_NODE_NAMES[] = {
     NULL, NULL, NULL, "#text", "#cdata-section",
@@ -275,6 +278,35 @@ void xml_remove_node(XML_node *node)
     node->next_sibling = NULL;
 }
 
+void xml_parse_text(char* buf, int len)
+{
+    int i, j;
+    char tmp[8];
+    for (i = 0, j = 0; ; ++i, ++j) {
+        if (buf[i] == 0 || i >= len) {
+            buf[j] = '\0';
+            break;
+        }
+        if (buf[i] != '&' && buf[i] > 0) {
+            buf[j] = buf[i];
+            continue;
+        }
+        char* nx = strchr(&buf[i], ';');
+        int lg = MIN(8, nx - &buf[i]);
+        memcpy(tmp, &buf[i + 1], lg);
+        tmp[lg - 1] = '\0';
+        if (strcmp(tmp, "nbsp") == 0) {
+
+        } else if (lg == 6 && tmp[0] == 'x') {
+            // Parse unicode value !
+            int v = strtol(&tmp[1], NULL, 16);
+            int mb = uctomb(&buf[i], v);
+            j += mb;
+            i += lg;
+        }
+    }
+}
+
 /* ---------------------------- */
 
 /* Parse XML attribute sub-strings,
@@ -299,6 +331,7 @@ void xml_parse_attributes(XML_node *node, const char *buf, int lg)
                 // We can create the attribute
                 key[kp] = '\0';
                 value[vp] = '\0';
+                xml_parse_text(value, XML_BUF_XS_SIZE);
                 xml_add_attribute(node, key, value);
                 kp = vp = 0;
                 scope = '\0';

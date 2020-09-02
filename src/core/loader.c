@@ -18,8 +18,8 @@
  *   - - - - - - - - - - - - - - -
  */
 #include <gum/cells.h>
-#include <kora/xml.h>
-#include <kora/css.h>
+#include <gum/xml.h>
+#include <gum/css.h>
 
 struct GUM_cellbuilder {
     GUM_cell *root;

@@ -17,8 +17,8 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_XML_H
-#define _KORA_XML_H 1
+#ifndef _GUM_XML_H
+#define _GUM_XML_H 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,4 +106,12 @@ void xml_write_file(FILE *stream, XML_node *node, int opt);
 void xml_free_node(XML_node *node);
 
 
-#endif  /* _KORA_XML_H */
+
+// returns the number of bytes in the next multibyte character
+int umblen(const char* str, size_t lg);
+// Converts the next multibyte character to wide character
+int mbtouc(int* pwc, const char* str, size_t lg);
+// converts a wide character to its multibyte representation
+int uctomb(char* str, wchar_t wc);
+
+#endif  /* _GUM_XML_H */

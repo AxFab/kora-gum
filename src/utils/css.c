@@ -17,7 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include <kora/css.h>
+#include <gum/css.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

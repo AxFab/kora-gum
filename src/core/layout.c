@@ -18,9 +18,9 @@
  *   - - - - - - - - - - - - - - -
  */
 #include <gum/cells.h>
-#include <kora/css.h>
+#include <gum/css.h>
 #include <stdlib.h>
-
+#include <kora/mcrs.h>
 
 /* Condensed algorithm: absolute position */
 static void gum_layout_absolute_part(struct GUM_absolruler *pos, int minimum,

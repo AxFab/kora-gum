@@ -272,3 +272,43 @@ void gum_cell_set_text(GUM_cell *cell, const char *text)
     gum_invalid_visual(cell);
 }
 
+#ifndef NDEBUG
+
+void gum_debug_show_tree(GUM_cell *cell, int depth)
+{
+    char* indent = malloc(depth * 2 + 1);
+    memset(indent, ' ', depth * 2);
+    indent[depth * 2] = '\0';
+    printf("%s> Cell [%s: %s] %p\n", indent, cell->name, cell->id, cell);
+    GUM_cell* child = cell->first;
+    if (child == NULL) {
+        if (cell->last != NULL)
+            printf("%s  | Error children linked are corrupted\n", indent);
+    }
+    else {
+
+        for (child = cell->first; child; child = child->next) {
+            if (child->parent != cell)
+                printf("%s  | Error child is not linked to parent\n", indent);
+            if (child->previous == NULL && child != cell->first)
+                printf("%s  | Error on a children\n", indent);
+            if (child->next == NULL && child != cell->last)
+                printf("%s  | Error on a children\n", indent);
+            if (child == cell->first && child->previous != NULL)
+                printf("%s  | Error on first children\n", indent);
+            if (child == cell->last && child->next != NULL)
+                printf("%s  | Error on last children\n", indent);
+            if (child->previous != NULL && child->previous->next != child)
+                printf("%s  | Link Error on a children\n", indent);
+            if (child->next != NULL && child->next->previous != child)
+                printf("%s  | Link Error on a children\n", indent);
+        }
+        // Check all
+    }
+
+    for (child = cell->first; child; child = child->next)
+        gum_debug_show_tree(child, depth + 1);
+    free(indent);
+}
+
+#endif

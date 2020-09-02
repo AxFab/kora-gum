@@ -17,10 +17,9 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#ifndef _KORA_CSS_H
-#define _KORA_CSS_H 1
+#ifndef _GUM_CSS_H
+#define _GUM_CSS_H 1
 
-#include <kora/mcrs.h>
 #include <stdio.h>
 
 typedef void(*css_setter)(void *, const char *, const char *, const char *);
@@ -63,4 +62,4 @@ enum {
 
 };
 
-#endif  /* _KORA_CSS_H */
+#endif  /* _GUM_CSS_H */

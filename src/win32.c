@@ -284,7 +284,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
 
 void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, void *data)
 {
-    PostMessage(win->hwnd, WM_USER + type, param1, param0);
+    // PostMessage(win->hwnd, WM_USER + type, param1, param0);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

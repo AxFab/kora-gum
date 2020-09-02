@@ -58,13 +58,20 @@ struct GUM_event {
 };
 
 enum {
-    GUM_EV_DESTROY,
-    GUM_EV_EXPOSE,
-    GUM_EV_KEY_PRESS,
-    GUM_EV_KEY_RELEASE,
+    // From 0 to 127, those are GFX_EV_*.
+    GUM_EV_DESTROY = 0, //
     GUM_EV_MOTION,
     GUM_EV_BTN_PRESS,
     GUM_EV_BTN_RELEASE,
+    GUM_EV_KEY_PRESS,
+    GUM_EV_KEY_RELEASE,
+    GUM_EV_KEY_ENTER,
+    GUM_EV_MOUSEWHEEL,
+    GUM_EV_TIMER,
+    GUM_EV_RESIZE,
+    // GUM_EV_PAINT,
+    GUM_EV_EXPOSE,
+    GUM_EV_DELAY = 127,
 
     GUM_EV_OUT,
     GUM_EV_OVER,
@@ -84,7 +91,7 @@ enum {
     GUM_EV_WHEEL_DOWN,
     GUM_EV_WHEEL_CLICK,
 
-    GUM_EV_RESIZE,
+    // GUM_EV_RESIZE,
 
     GUM_EV_TICK,
     GUM_EV_ASYNC,

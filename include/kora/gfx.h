@@ -68,7 +68,7 @@ enum gfx_event {
     GFX_EV_TIMER,
     GFX_EV_RESIZE,
     GFX_EV_PAINT,
-    GFX_EV_UNICODE,
+    GFX_EV_KEYPRESS,
     GFX_EV_DELAY = 128,
 };
 

@@ -22,7 +22,6 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include <kora/mcrs.h>
 
 #if defined(WIN32) || defined(_WIN32)
 # define LIBAPI __declspec(dllexport)

@@ -276,16 +276,15 @@ void gum_cell_set_text(GUM_cell *cell, const char *text)
 
 void gum_debug_show_tree(GUM_cell *cell, int depth)
 {
-    char* indent = malloc(depth * 2 + 1);
+    char *indent = malloc(depth * 2 + 1);
     memset(indent, ' ', depth * 2);
     indent[depth * 2] = '\0';
     printf("%s> Cell [%s: %s] %p\n", indent, cell->name, cell->id, cell);
-    GUM_cell* child = cell->first;
+    GUM_cell *child = cell->first;
     if (child == NULL) {
         if (cell->last != NULL)
             printf("%s  | Error children linked are corrupted\n", indent);
-    }
-    else {
+    } else {
 
         for (child = cell->first; child; child = child->next) {
             if (child->parent != cell)

@@ -147,7 +147,7 @@ struct GUM_cell {
     void *gradient;
     GUM_skin *cachedSkin;
     GUM_window *surface;
-    void* font;
+    void *font;
 
     // Cell hierarchy into the rendering tree
     GUM_cell *parent;

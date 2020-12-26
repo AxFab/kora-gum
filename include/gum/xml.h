@@ -108,10 +108,10 @@ void xml_free_node(XML_node *node);
 
 
 // returns the number of bytes in the next multibyte character
-int umblen(const char* str, size_t lg);
+int umblen(const char *str, size_t lg);
 // Converts the next multibyte character to wide character
-int mbtouc(int* pwc, const char* str, size_t lg);
+int mbtouc(int *pwc, const char *str, size_t lg);
 // converts a wide character to its multibyte representation
-int uctomb(char* str, wchar_t wc);
+int uctomb(char *str, wchar_t wc);
 
 #endif  /* _GUM_XML_H */

@@ -41,12 +41,12 @@ struct GUM_window {
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void* memrchr(const void* buf, int byte, size_t len)
+void *memrchr(const void *buf, int byte, size_t len)
 {
-    const char* ptr = (const char*)buf + len;
-    while (ptr-- > (const char*)buf)
+    const char *ptr = (const char *)buf + len;
+    while (ptr-- > (const char *)buf)
         if (*ptr == byte)
-            return (void*)ptr;
+            return (void *)ptr;
     return NULL;
 }
 
@@ -64,7 +64,7 @@ bool ftLibraryInitialized = false;
 
 
 
-GUM_window* gum_open_surface(gfx_t *gfx)
+GUM_window *gum_open_surface(gfx_t *gfx)
 {
     if (!ftLibraryInitialized) {
 
@@ -74,7 +74,7 @@ GUM_window* gum_open_surface(gfx_t *gfx)
     }
 
 
-    GUM_window* win = (GUM_window*)malloc(sizeof(GUM_window));
+    GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
     win->gfx = gfx;
     win->redraw = true;
     memset(&win->seat, 0, sizeof(win->seat));
@@ -84,7 +84,7 @@ GUM_window* gum_open_surface(gfx_t *gfx)
 
 GUM_window *gum_create_surface(int width, int height)
 {
-    gfx_t * gfx = gfx_create_window(NULL, width, height, 0);
+    gfx_t *gfx = gfx_create_window(NULL, width, height, 0);
     return gum_open_surface(gfx);
 }
 
@@ -107,7 +107,7 @@ void gum_destroy_surface(GUM_window *win)
 uint32_t gfx_alpha_blend(uint32_t low, uint32_t upr);
 uint32_t gfx_upper_alpha_blend(uint32_t low, uint32_t upr);
 
-void gfx_copy_glyph(gfx_t* gfx, gfx_clip_t* clip, FT_Bitmap* glyph, int x, int y, uint32_t fontcolor)
+void gfx_copy_glyph(gfx_t *gfx, gfx_clip_t *clip, FT_Bitmap *glyph, int x, int y, uint32_t fontcolor)
 {
     int i, j;
     int minx = MAX(x, clip->left);
@@ -119,7 +119,7 @@ void gfx_copy_glyph(gfx_t* gfx, gfx_clip_t* clip, FT_Bitmap* glyph, int x, int y
         for (i = minx; i < maxx; ++i) {
             uint8_t val = glyph->buffer[(j - y) * glyph->pitch + (i - x)];
             uint32_t color = (fontcolor & 0xffffff) | (val  << 24);
-            uint32_t* dst = &gfx->pixels4[j * gfx->pitch / 4 + i];
+            uint32_t *dst = &gfx->pixels4[j * gfx->pitch / 4 + i];
             uint32_t nw = gfx_upper_alpha_blend(*dst, color);
             *dst = nw;
         }
@@ -155,7 +155,7 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     //    gum_draw_path(ctx, cell, skin);
 
     if (cell->image) {
-        gfx_blit(win->gfx, (gfx_t*)cell->image, GFX_NOBLEND, &clip, NULL);
+        gfx_blit(win->gfx, (gfx_t *)cell->image, GFX_NOBLEND, &clip, NULL);
         //        cairo_surface_t *img = (cairo_surface_t *)cell->image;
         //        int img_sz = MAX(cairo_image_surface_get_width(img), cairo_image_surface_get_height(img));
         //        double rt = (double)MAX(cell->box.w, cell->box.h) / (double)img_sz;
@@ -199,9 +199,8 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
             char buf[64];
             snprintf(buf, 64, "./resx/%s.ttf", skin->font_family);
             error = FT_New_Face(ftLibrary, buf, 0, &face);
-            if (error) {
+            if (error)
                 return;
-            }
             cell->font = face;
         }
 
@@ -286,32 +285,32 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
             pen_y += slot->advance.y >> 6;
         }
 
-    //    cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
-    //                         ((skin->txcolor >> 16) & 255) / 255.0,
-    //                         ((skin->txcolor >> 8) & 255) / 255.0,
-    //                         ((skin->txcolor >> 0) & 255) / 255.0);
+        //    cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
+        //                         ((skin->txcolor >> 16) & 255) / 255.0,
+        //                         ((skin->txcolor >> 8) & 255) / 255.0,
+        //                         ((skin->txcolor >> 0) & 255) / 255.0);
 
-    //    cairo_text_extents_t extents;
+        //    cairo_text_extents_t extents;
 
-    //    const char *ffamily = skin->font_family ? skin->font_family : "Sans";
-    //    cairo_select_font_face(ctx, ffamily, CAIRO_FONT_SLANT_NORMAL, 0);
-    //    cairo_set_font_size(ctx, (float)skin->font_size);
-    //    cairo_text_extents(ctx, cell->text, &extents);
-    //    int tx = cell->box.x;
-    //    int ty = cell->box.y;
+        //    const char *ffamily = skin->font_family ? skin->font_family : "Sans";
+        //    cairo_select_font_face(ctx, ffamily, CAIRO_FONT_SLANT_NORMAL, 0);
+        //    cairo_set_font_size(ctx, (float)skin->font_size);
+        //    cairo_text_extents(ctx, cell->text, &extents);
+        //    int tx = cell->box.x;
+        //    int ty = cell->box.y;
 
-    //    if (skin->align == 2)
-    //        tx += cell->box.w - (extents.width + extents.x_bearing);
-    //    else if (skin->align == 0)
-    //        tx += cell->box.w / 2 - (extents.width / 2 + extents.x_bearing);
+        //    if (skin->align == 2)
+        //        tx += cell->box.w - (extents.width + extents.x_bearing);
+        //    else if (skin->align == 0)
+        //        tx += cell->box.w / 2 - (extents.width / 2 + extents.x_bearing);
 
-    //    if (skin->valign == 2)
-    //        ty += cell->box.h - (extents.height + extents.y_bearing);
-    //    else if (skin->valign == 0)
-    //        ty += cell->box.h / 2 - (extents.height / 2 + extents.y_bearing);
+        //    if (skin->valign == 2)
+        //        ty += cell->box.h - (extents.height + extents.y_bearing);
+        //    else if (skin->valign == 0)
+        //        ty += cell->box.h / 2 - (extents.height / 2 + extents.y_bearing);
 
-    //    cairo_move_to(ctx, tx, ty);
-    //    cairo_show_text(ctx, cell->text);
+        //    cairo_move_to(ctx, tx, ty);
+        //    cairo_show_text(ctx, cell->text);
 
     }
 }
@@ -322,9 +321,8 @@ void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 {
     FT_Face face;
     FT_Error error = FT_New_Face(ftLibrary, "./resx/arial.ttf", 0, &face);
-    if (error) {
+    if (error)
         return;
-    }
 
     /* char_height in 1/64th of points  */
     error = FT_Set_Char_Size(face, 0, skin->font_size * 64, 96, 96);
@@ -486,7 +484,7 @@ int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
                 event->type = GUM_EV_KEY_ENTER;
                 event->param0 = msg.param1;
                 break;
-             case GFX_EV_TIMER:
+            case GFX_EV_TIMER:
                 event->type = GUM_EV_TICK;
                 break;
             case GFX_EV_RESIZE:
@@ -557,7 +555,7 @@ void gum_resize_win(GUM_window *win, int width, int height)
 
 void *gum_load_image(const char *name)
 {
-    gfx_t* img = gfx_load_image(name);
+    gfx_t *img = gfx_load_image(name);
     //cairo_surface_t *img = cairo_image_surface_create_from_png(name);
     //if (cairo_surface_status(img) != 0)
     //    return NULL;

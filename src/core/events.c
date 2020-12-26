@@ -389,16 +389,15 @@ static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
     if (unicode == KEY_CODE_BACKSPACE) {
         if (evm->edit->text_pen == 0)
             return;
-        
+
         cursor--;
         while ((evm->edit->text[cursor] & 0xc0) == 0x80)
             cursor--;
 
         memmove(&evm->edit->text[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
         evm->edit->text_pen = cursor;
-    }
-    else {
-        char* buf = malloc(len + 8);
+    } else {
+        char *buf = malloc(len + 8);
         memcpy(buf, evm->edit->text, evm->edit->text_pen);
         cursor += uctomb(&buf[evm->edit->text_pen], unicode);
         memcpy(&buf[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
@@ -626,7 +625,7 @@ void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell)
 
 #ifndef NDEBUG
 
-GUM_cell* gum_debug_root(GUM_event_manager* evm)
+GUM_cell *gum_debug_root(GUM_event_manager *evm)
 {
     return evm->root;
 }

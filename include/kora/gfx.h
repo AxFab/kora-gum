@@ -84,10 +84,10 @@ struct gfx {
     long fd;
     long fi;
     union {
-        uint8_t* pixels;
-        uint32_t* pixels4;
+        uint8_t *pixels;
+        uint32_t *pixels4;
     };
-    uint8_t* backup;
+    uint8_t *backup;
     int flags;
 };
 
@@ -122,8 +122,8 @@ This surface can be a fix image, or a video stream (in/out) or a window (event),
 
 /* Surface operations
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-LIBAPI gfx_t* gfx_open(const char* name, int flags);
-LIBAPI gfx_t* gfx_create_window(void *ctx, int width, int height, int flags);
+LIBAPI gfx_t *gfx_open(const char *name, int flags);
+LIBAPI gfx_t *gfx_create_window(void *ctx, int width, int height, int flags);
 LIBAPI void gfx_close(gfx_t *gfx);
 LIBAPI int gfx_map(gfx_t *gfx);
 LIBAPI int gfx_unmap(gfx_t *gfx);
@@ -131,12 +131,12 @@ LIBAPI int gfx_unmap(gfx_t *gfx);
 
 /* Drawing operations
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-LIBAPI void gfx_fill(gfx_t *dest, uint32_t color, gfx_blendmode_t blend, gfx_clip_t* clip);
-LIBAPI void gfx_blit(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t* clip);
-LIBAPI void gfx_blitmask(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_t* mask);
-LIBAPI void gfx_transform(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t* clip, float* matrix);
+LIBAPI void gfx_fill(gfx_t *dest, uint32_t color, gfx_blendmode_t blend, gfx_clip_t *clip);
+LIBAPI void gfx_blit(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t *clip);
+LIBAPI void gfx_blitmask(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_t *mask);
+LIBAPI void gfx_transform(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t *clip, float *matrix);
 
-LIBAPI void gfx_stretch(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t* clip, float scalex, float scaley);
+LIBAPI void gfx_stretch(gfx_t *dest, gfx_t *src, gfx_blendmode_t blend, gfx_clip_t *clip, float scalex, float scaley);
 
 
 /* Event operations
@@ -152,17 +152,17 @@ LIBAPI int gfx_resize(gfx_t *gfx, int width, int height);
 
 /* Helpers
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
-LIBAPI void clipboard_copy(const char* buf, int len);
-LIBAPI int clipboard_paste(char* buf, int len);
+LIBAPI void clipboard_copy(const char *buf, int len);
+LIBAPI int clipboard_paste(char *buf, int len);
 
-LIBAPI int keyboard_down(int key, int* status, int* key2);
-LIBAPI int keyboard_up(int key, int* status);
+LIBAPI int keyboard_down(int key, int *status, int *key2);
+LIBAPI int keyboard_up(int key, int *status);
 
-LIBAPI int gfx_handle(gfx_t* gfx, gfx_msg_t* msg, gfx_seat_t* seat);
-LIBAPI gfx_t* gfx_opend(int fd, int fi);
-LIBAPI int gfx_push_msg(gfx_t* gfx, int type, int param);
-LIBAPI void gfx_invalid(gfx_t* gfx);
+LIBAPI int gfx_handle(gfx_t *gfx, gfx_msg_t *msg, gfx_seat_t *seat);
+LIBAPI gfx_t *gfx_opend(int fd, int fi);
+LIBAPI int gfx_push_msg(gfx_t *gfx, int type, int param);
+LIBAPI void gfx_invalid(gfx_t *gfx);
 
-LIBAPI gfx_t* gfx_load_image(const char* name);
+LIBAPI gfx_t *gfx_load_image(const char *name);
 
 #endif  /* _KORA_GFX_H */

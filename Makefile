@@ -36,10 +36,10 @@ include $(topdir)/make/build.mk
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-SRCS-y += $(wildcard $(srcdir)/core/*.c)
-SRCS-y += $(wildcard $(srcdir)/utils/*.c)
-SRCS-y += $(wildcard $(srcdir)/widgets/*.c)
-SRCS-y += $(srcdir)/$(DISTO).c
+SRCS += $(wildcard $(srcdir)/core/*.c)
+SRCS += $(wildcard $(srcdir)/utils/*.c)
+SRCS += $(wildcard $(srcdir)/widgets/*.c)
+SRCS += $(srcdir)/$(DISTO).c
 
 ifeq ($(DISTO),kora)
 endif
@@ -58,6 +58,6 @@ $(eval $(call link_bin,widgets,widgets_SRCS,widgets_LFLGS))
 
 
 ifeq ($(NODEPS),)
--include $(call fn_deps,SRCS-y)
+-include $(call fn_deps,SRCS)
 endif
 

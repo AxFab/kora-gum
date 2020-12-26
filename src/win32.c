@@ -486,11 +486,10 @@ void *gum_load_image(const char *name)
     mbstowcs(szBuf, name, 64);
     for (int i = 0; i < 64; ++i)
         if (szBuf[i] == '/')
-            ((char*)name)[i/2] = szBuf[i] = '\\';
+            ((char *)name)[i / 2] = szBuf[i] = '\\';
     HBITMAP bmp = (HBITMAP)LoadImage(NULL, szBuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    if (bmp == NULL) {
+    if (bmp == NULL)
         bmp = (HBITMAP)LoadImage(NULL, name, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    }
     return bmp;
 }
 

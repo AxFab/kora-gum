@@ -278,7 +278,7 @@ void xml_remove_node(XML_node *node)
     node->next_sibling = NULL;
 }
 
-void xml_parse_text(char* buf, int len)
+void xml_parse_text(char *buf, int len)
 {
     int i, j;
     char tmp[8];
@@ -291,7 +291,7 @@ void xml_parse_text(char* buf, int len)
             buf[j] = buf[i];
             continue;
         }
-        char* nx = strchr(&buf[i], ';');
+        char *nx = strchr(&buf[i], ';');
         int lg = MIN(8, nx - &buf[i]);
         memcpy(tmp, &buf[i + 1], lg);
         tmp[lg - 1] = '\0';

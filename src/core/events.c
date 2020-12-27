@@ -36,7 +36,7 @@ struct GUM_event_manager {
     int menu_sp;
     GUM_window *win;
 
-    HMP_map actions;
+    hmap_t actions;
 
     GUM_cell *over;
     GUM_cell *down;

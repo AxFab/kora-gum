@@ -25,7 +25,7 @@
 #include <string.h>
 
 struct GUM_skins {
-    HMP_map map;
+    hmap_t map;
 };
 
 GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value)

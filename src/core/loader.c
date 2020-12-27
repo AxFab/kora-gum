@@ -252,7 +252,7 @@ GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins)
 
 #include <kora/hmap.h>
 
-HMP_map img_map;
+hmap_t img_map;
 int is_map_init = 0;
 void *gum_image(const char *name)
 {

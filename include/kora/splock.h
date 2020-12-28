@@ -21,11 +21,8 @@
 #define _KORA_SPLOCK_H 1
 
 #include <bits/cdefs.h>
-#include <stdatomic.h>
+#include <kora/atomic.h>
 #include <stdbool.h>
-
-#define atomic_inc(v)  (++(*(v)))
-#define atomic_dec(v)  (--(*(v)))
 
 extern void irq_reset(bool enable);
 extern bool irq_enable();
@@ -41,18 +38,18 @@ typedef atomic_int splock_t;
 /* Initialize and reset a spin-lock structure */
 static inline void splock_init(splock_t *lock)
 {
-    atomic_init(lock, 0);
+    atomic_store(lock, 0);
 }
 
 /* Block the cpu until the lock might be taken */
 static inline void splock_lock(splock_t *lock)
 {
-    THROW_OFF;
+    __asm_irq_off_;
     for (;;) {
         if (atomic_exchange(lock, 1) == 0)
             return;
         while (*lock != 0)
-            RELAX;
+            __asm_pause_;
     }
 }
 
@@ -60,16 +57,16 @@ static inline void splock_lock(splock_t *lock)
 static inline void splock_unlock(splock_t *lock)
 {
     atomic_store(lock, 0);
-    THROW_ON;
+    __asm_irq_on_;
 }
 
 /* Try to grab the lock but without blocking. */
 static inline bool splock_trylock(splock_t *lock)
 {
-    THROW_OFF;
+    __asm_irq_off_;
     if (atomic_exchange(lock, 1) == 0)
         return true;
-    THROW_ON;
+    __asm_irq_on_;
     return false;
 }
 

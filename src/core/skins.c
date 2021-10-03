@@ -28,14 +28,26 @@ struct GUM_skins {
     hmap_t map;
 };
 
-GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value)
+LIBAPI gum_skin_t *gum_skin_open(gum_skin_t* skin)
 {
-    if (skin->read_only) {
-        GUM_skin *tmp = (GUM_skin *)calloc(1, sizeof(GUM_skin));
+    if (skin == NULL) {
+        skin = (GUM_skin*)calloc(1, sizeof(GUM_skin));
+        skin->font_size = 10;
+    }
+    if (skin->read_only != 0) {
+        GUM_skin* tmp = (GUM_skin*)calloc(1, sizeof(GUM_skin));
         memcpy(tmp, skin, sizeof(*tmp));
+        if (skin->font_family)
+            tmp->font_family = strdup(skin->font_family);
         skin = tmp;
         skin->read_only = 0;
     }
+    return skin;
+}
+
+GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const char *value)
+{
+    skin = gum_skin_open(skin);
 
     if (!strcmp("background", property))
         skin->bgcolor = css_parse_color(value);
@@ -47,6 +59,8 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
         skin->txcolor = css_parse_color(value);
     else if (!strcmp("border-color", property))
         skin->brcolor = css_parse_color(value);
+    else if (!strcmp("border-size", property))
+        skin->brsize = css_parse_usize(value);
     else if (!strcmp("gradient-angle", property))
         skin->grad_angle = strtol(value, NULL, 10);
 
@@ -71,7 +85,7 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
     else if (!strcmp("font-family", property))
         skin->font_family = strdup(value);
     else if (!strcmp("font-size", property))
-        skin->font_size = strtol(value, NULL, 10);
+        skin->font_size = strtod(value, NULL);
 
     else if (!strcmp("text-align", property)) {
         if (!strcmp("left", value))
@@ -150,7 +164,7 @@ unsigned gum_mix(unsigned src, unsigned dest, float mx)
 }
 
 
-void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
+void gum_reset_style(GUM_skins *skins, gum_cell_t*cell, const char *name)
 {
     char sname[50];
     strcpy(sname, name);
@@ -162,7 +176,7 @@ void gum_reset_style(GUM_skins *skins, GUM_cell *cell, const char *name)
     strcat(sname, ":down");
     cell->skin_down = gum_style_find(skins, sname);
     cell->cachedSkin = NULL;
-    gum_invalid_visual(cell);
+    gum_invalid_visual(gum_fetch_window(cell), cell);
 }
 
 void gum_skin_close(GUM_skin *skin)

@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<panel min-width="320px" min-height="220px" width="wrap" height="wrap">
+<panel min-width="320px" min-height="220px" width="fill" height="fill">
 
     <!-- Onglets
-    <group width="wrap" top="0dp" height="40dp">
-        <label left="0" width="40dp" height="wrap" image="@logo" />
+    <group width="fill" top="0dp" height="40dp">
+        <label left="0" width="40dp" height="fill" image="@logo" />
 
-        <labelLinkFa left="40dp" height="wrap" top="0" text="&lg;" />
+        <labelLinkFa left="40dp" height="fill" top="0" text="&lg;" />
         <group left="80dp" right="180dp" bottom="0" height="30dp" layout="HGroupExtend">
-            <onglet width="120dp" height="wrap" text="File Browser"/>
+            <onglet width="120dp" height="fill" text="File Browser"/>
         </group>
-        <labelLinkFa right="140dp" height="wrap" text="&rg;" />
-        <labelLinkFa right="100dp" height="wrap" text="+" />
+        <labelLinkFa right="140dp" height="fill" text="&rg;" />
+        <labelLinkFa right="100dp" height="fill" text="+" />
 
-        <labelLinkFa right="40dp" height="wrap" text="_" />
-        <labelLinkFa right="0" height="wrap" text="x" />
+        <labelLinkFa right="40dp" height="fill" text="_" />
+        <labelLinkFa right="0" height="fill" text="x" />
     </group> -->
 
     <!-- Toolbar -->
-    <toolBar width="wrap" top="0" height="40px" padding="5px">
-        <group left="0" height="wrap" width="120px" gap="5px" layout="HGroupMiddle">
+    <toolBar width="fill" top="0" height="40px" padding="5px">
+        <group left="0" height="fill" width="120px" gap="5px" layout="HGroupMiddle">
             <toolBtn width="26px" height="26px" image="@previous" text="P" solid="true" id="btn-prev" />
             <toolBtn width="26px" height="26px" image="@next" text="N" solid="true" id="btn-next" />
             <toolBtn width="26px" height="26px" image="@parent" text="T" solid="true" id="btn-top" />
             <toolBtn width="26px" height="26px" image="@refresh" text="R" solid="true" id="btn-refr" />
         </group>
         <input left="125px" top="5px" height="20px" right="155px" text="/home/fabien" editable="true" padding="2px" solid="true" />
-        <group right="0" height="wrap" width="150px" gap="5px" layout="HGroupMiddle">
+        <group right="0" height="fill" width="150px" gap="5px" layout="HGroupMiddle">
             <toolBtn width="26px" height="26px" image="@newFolder" text="F" solid="true" />
             <toolBtn width="26px" height="26px" image="@fileOperation" text="O" solid="true" />
             <toolBtn width="26px" height="26px" image="@properties" text="P" solid="true" />
@@ -54,11 +54,11 @@
 
         <menu left="100px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-file">
             <menuVRuler left="25px" top="0" bottom="0" width="1px" />
-            <group width="wrap" height="wrap" layout="VGroupExtend" >
+            <group width="fill" height="fill" layout="VGroupExtend" >
 
                 <menuItem height="20px" padding="2px" solid="true">
-                    <menuIco left="3px" width="16px" height="wrap" />
-                    <menuLabel left="28px" right="0" height="wrap" text="New"/>
+                    <menuIco left="3px" width="16px" height="fill" />
+                    <menuLabel left="28px" right="0" height="fill" text="New"/>
                 </menuItem>
 
                 <menuSeparator height="5px">
@@ -182,10 +182,10 @@
 
         <menu left="300px" top="20px" width="180px" padding-top="3px" padding-bottom="3px" padding-left="1px" padding-right="1px" id="ctx-menu-view">
             <menuVRuler left="25px" top="0" bottom="0" width="1px" />
-            <group width="wrap" height="wrap" layout="VGroupExtend">
+            <group width="fill" height="fill" layout="VGroupExtend">
 
                 <menuItem height="20px" padding="2px" solid="true">
-                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuIco left="3px" width="16px" height="fill" solid="false" />
                     <menuLabel left="28px" top="0" right="2px" height="16px" text="Open"  solid="false"/>
                     <menuLabel2 left="28px" top="0" right="2px" height="16px" text="Ctrl + O" solid="false"/>
                 </menuItem>
@@ -195,12 +195,12 @@
                 </menuSeparator>
 
                 <menuItem height="20px" padding="2px" solid="true">
-                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuIco left="3px" width="16px" height="fill" solid="false" />
                     <menuLabel left="28px" top="0" right="2px" height="16px" text="Edit" solid="false"/>
                 </menuItem>
 
                 <menuItem height="20px" padding="2px" solid="true">
-                    <menuIco left="3px" width="16px" height="wrap" solid="false" />
+                    <menuIco left="3px" width="16px" height="fill" solid="false" />
                     <menuLabel left="28px" top="0" right="2px" height="16px" text="History" solid="false"/>
                 </menuItem>
 

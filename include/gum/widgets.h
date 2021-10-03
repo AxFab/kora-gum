@@ -30,13 +30,13 @@ typedef union GUM_variant {
 } GUM_variant;
 
 typedef struct GUM_widget {
-    GUM_cell box;
-    GUM_cell ico;
-    GUM_cell txt;
-    GUM_cell bup;
-    GUM_cell bdw;
-    GUM_cell trk;
-    GUM_cell tra;
+    gum_cell_t box;
+    gum_cell_t ico;
+    gum_cell_t txt;
+    gum_cell_t bup;
+    gum_cell_t bdw;
+    gum_cell_t trk;
+    gum_cell_t tra;
 
     GUM_skins *skins;
     GUM_variant value;
@@ -46,8 +46,8 @@ typedef struct GUM_widget {
 } GUM_widget;
 
 typedef struct GUM_container {
-    GUM_cell box;
-    GUM_cell *group;
+    gum_cell_t box;
+    gum_cell_t*group;
 } GUM_container;
 
 LIBAPI void gum_initialize();

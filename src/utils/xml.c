@@ -198,6 +198,28 @@ static void xml_write(FILE *stream, XML_node *node, int depth)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
+
+static void xml_fix_text(char* buf, int len)
+{
+    for (int i = 0; buf[i]; ++i) {
+        if (buf[i] != '&')
+            continue;
+        char* p = strchr(&buf[i], ';');
+        if (p == NULL)
+            continue;
+        if (buf[i+1] == 'u') {
+            char* q; 
+            int unicode = strtol(&buf[i + 2], &q, 16);
+            if (q == p) {
+                int len = uctomb(&buf[i], unicode);
+                strcpy(&buf[i + len], q + 1);
+                i += len - 1;
+                // This was unicode !
+            }
+        }
+    }
+}
+
 /* Add a new attribute to a XML node, XML_ELEMENT or XML_DECLARATION */
 void xml_add_attribute(XML_node *node, const char *key, const char *value)
 {
@@ -207,6 +229,7 @@ void xml_add_attribute(XML_node *node, const char *key, const char *value)
     XML_attribute *attribute = (XML_attribute *)malloc(sizeof(XML_attribute));
     attribute->key = strdup(key);
     attribute->value = strdup(value);
+    xml_fix_text(attribute->value, 0);
     attribute->next = NULL;
     if (node->first_attribute == NULL) {
         attribute->previous = NULL;

@@ -19,6 +19,7 @@
  */
 #include <gum/events.h>
 #include <gum/cells.h>
+#include <gum/xml.h>
 #include <kora/hmap.h>
 #include <kora/keys.h>
 #include <stdlib.h>
@@ -27,137 +28,61 @@
 #include <time.h>
 #include <threads.h>
 
-#define GUM_MAX_MCTX  8
-
-struct GUM_event_manager {
-    int mouse_x, mouse_y;
-    GUM_cell *root;
-    GUM_cell *menus[GUM_MAX_MCTX];
-    int menu_sp;
-    GUM_window *win;
-
-    hmap_t actions;
-
-    GUM_cell *over;
-    GUM_cell *down;
-    GUM_cell *focus;
-    GUM_cell *click;
-    GUM_cell *edit;
-
-    int click_cnt;
-    int spec_btn;
-
-    long long last_click;
-
-    bool measure;
-    GUM_cell *layout;
-    GUM_gctx ctx;
-    GUM_rect inval;
-
-    GUM_cell *grab;
-    int grab_x, grab_y;
-};
 
 typedef struct GUM_async {
-    void *res;
     void *arg;
-    void *(*worker)(GUM_event_manager *, void *);
-    void (*callback)(GUM_event_manager *, void *);
-    GUM_event_manager *evm;
+    GUM_async_worker worker;
+    GUM_async_worker callback;
+    gum_window_t* win;
 } GUM_async;
 
-GUM_gctx *gum_graphic_context(GUM_cell *cell)
+
+
+LIBAPI gum_window_t* gum_new_window(gum_cell_t *root)
 {
-    return &gum_fetch_manager(cell)->ctx;
+    gum_window_t* win = (gum_window_t*)calloc(1, sizeof(gum_window_t));
+    win->ctx.dpi_x = 96;
+    win->ctx.dpi_y = 96;
+    win->ctx.dsp_x = 0.75;
+    win->ctx.dsp_y = 0.75;
+    win->ctx.width = 680;
+    win->ctx.height = 425;
+    hmp_init(&win->actions, 16);
+
+    win->root = root;
+    win->layout = root;
+    root->win = win;
+    win->measure = true;
+    return win;
 }
+
+LIBAPI void gum_close_window(gum_window_t* win)
+{
+    // TODO - Free every binded actions
+    hmp_destroy(&win->actions);
+    free(win);
+}
+
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_invalid_properties(GUM_cell *cell)
-{
-}
-
-void gum_invalid_measure(GUM_cell *cell)
-{
-    GUM_event_manager *evm = gum_fetch_manager(cell);
-    cell->state |= GUM_CELL_MEASURE;
-    if (evm != NULL)
-        evm->measure = true;
-}
-void gum_invalid_layout(GUM_cell *cell)
-{
-    GUM_event_manager *evm = gum_fetch_manager(cell);
-    if (evm != NULL)
-        evm->layout = gum_baseof(cell, evm->layout);
-}
-
-void gum_invalid_visual(GUM_cell *cell)
-{
-    GUM_cell *ancestors;
-    int x = cell->box.x;
-    int y = cell->box.y;
-
-    for (ancestors = cell->parent; ancestors; ancestors = ancestors->parent) {
-        x += ancestors->box.cx;
-        y += ancestors->box.cy;
-    }
-
-    GUM_event_manager *evm = gum_fetch_manager(cell);
-    if (evm != NULL) {
-        // TODO -- For each region on invalid,
-        // look for MIN px sum (union / split)
-        // if ratio > 1.8 - Add a new rectangle
-        // else merge
-        if (evm->inval.right == 0) {
-            evm->inval.left = x;
-            evm->inval.right = x + cell->box.w;
-        } else {
-            evm->inval.left = MIN(x, evm->inval.left);
-            evm->inval.right = MAX(x + cell->box.w, evm->inval.right);
-        }
-        if (evm->inval.bottom == 0) {
-            evm->inval.top = y;
-            evm->inval.bottom = y + cell->box.h;
-        } else {
-            evm->inval.top = MIN(y, evm->inval.top);
-            evm->inval.bottom = MAX(y + cell->box.h, evm->inval.bottom);
-        }
-    }
-}
-
-void gum_invalid_all_(GUM_cell *cell)
-{
-    GUM_cell *child;
-    for (child = cell->first; child; child = child->next)
-        gum_invalid_all_(child);
-    cell->state |= GUM_CELL_MEASURE;
-}
-
-void gum_invalid_all(GUM_cell *cell)
-{
-    GUM_event_manager *evm = gum_fetch_manager(cell);
-    gum_invalid_all_(cell);
-    if (evm != NULL)
-        evm->measure = true;
-}
-
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-static void gum_emit_event(GUM_event_manager *evm, GUM_cell *cell, int event)
+// Trigger an UI event on a cell
+static void gum_emit_event(gum_window_t* win, gum_cell_t*cell, int event)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
-    GUM_handler_record *action = (void *)hmp_get(&evm->actions, key, lg);
+    GUM_handler_record *action = (void *)hmp_get(&win->actions, key, lg);
     if (action != NULL)
-        action->handler(evm, cell, event, action->data);
+        action->handler(win, cell, event, action->data);
 
     lg = snprintf(key, 32, "%p]%4x", NULL, event);
-    action = (void *)hmp_get(&evm->actions, key, lg);
+    action = (void *)hmp_get(&win->actions, key, lg);
     if (action != NULL)
-        action->handler(evm, cell, event, action->data);
+        action->handler(win, cell, event, action->data);
 }
 
-static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags, int set, int event)
+// Change the status of a cell
+static void gum_cell_chstatus(gum_window_t* win, gum_cell_t *cell, int flags, int set, int event)
 {
     if (cell == NULL)
         return;
@@ -169,249 +94,263 @@ static void gum_cell_chstatus(GUM_event_manager *evm, GUM_cell *cell, int flags,
         cell->state &= ~flags;
 
     if (skin != gum_skin(cell))
-        gum_invalid_visual(cell);
+        gum_invalid_visual(win, cell);
     else {
-        GUM_cell *child;
+        gum_cell_t*child;
         for (child = cell->first; child; child = child->next) {
             // TODO -- Is there a better way to ensure childs are changing too?
             if (child->state & GUM_CELL_SUBSTYLE)
-                gum_invalid_visual(child);
+                gum_invalid_visual(win, child);
         }
     }
 
-    gum_emit_event(evm, cell, event);
+    gum_emit_event(win, cell, event);
 }
 
-
-void gum_event_bind(GUM_event_manager *evm, GUM_cell *cell, int event, GUM_event_handler handler, void *data)
+// Register an handler to a cell event (erase the previous one)
+void gum_event_bind(gum_window_t* win, gum_cell_t*cell, int event, GUM_event_handler handler, void *data)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);
     GUM_handler_record *record = malloc(sizeof(GUM_handler_record));
     record->handler = handler;
     record->data = data;
-    hmp_put(&evm->actions, key, lg, record);
+    hmp_put(&win->actions, key, lg, record);
 }
 
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-void gum_set_focus(GUM_event_manager *evm, GUM_cell *cell)
+// Give focus to a new cell
+void gum_set_focus(gum_window_t* win, gum_cell_t* cell)
 {
-    gum_cell_chstatus(evm, evm->focus, GUM_CELL_FOCUS, 0, GUM_EV_FOCUS_OUT);
-    gum_cell_chstatus(evm, cell, GUM_CELL_FOCUS, 1, GUM_EV_FOCUS);
-    evm->focus = cell;
-    if (evm->edit != NULL) {
-        evm->edit->text_pen = -1;
-        evm->edit = NULL;
+    gum_cell_chstatus(win, win->focus, GUM_CELL_FOCUS, 0, GUM_EV_FOCUS_OUT);
+    gum_cell_chstatus(win, cell, GUM_CELL_FOCUS, 1, GUM_EV_FOCUS);
+    win->focus = cell;
+    if (win->edit != NULL) {
+        win->edit->text_pen = -1;
+        win->edit = NULL;
         // TODO redraw for cursor remove
     }
     if (cell && cell->state & GUM_CELL_EDITABLE) {
         printf("Enter edit test mode: %s\n", cell->text);
-        evm->edit = cell;
-        evm->edit->text_pen = 0;
+        win->edit = cell;
+        win->edit->text_pen = 0;
         if (cell->text == NULL)
             cell->text = strdup("");
         // TODO set cursor in place -- Handle UTF-8
     }
 }
 
-static void gum_remove_context(GUM_event_manager *evm)
+// Remove all opened context menu
+LIBAPI void gum_remove_context(gum_window_t* win)
 {
     int i;
-    for (i = 0; i < evm->menu_sp; ++i)
-        gum_invalid_visual(evm->menus[i]);
-    evm->menu_sp = 0;
+    for (i = 0; i < win->menu_sp; ++i)
+        gum_invalid_visual(win, win->menus[i]);
+    win->menu_sp = 0;
 }
 
-static void gum_event_motion(GUM_event_manager *evm, int x, int y)
+LIBAPI void gum_show_context(gum_window_t* win, gum_cell_t* menu)
 {
-    evm->mouse_x = x;
-    evm->mouse_y = y;
+    int width = win->ctx.width;
+    int height = win->ctx.height; 
+    // TODO -- Might use another or larger window !?
+    gum_resize_px(menu, 0, 0);
+    menu->rulerx.before.len = win->mouse_x;
+    menu->rulery.before.len = win->mouse_y;
+    if (menu->rulerx.before.len + menu->box.w > width && menu->rulerx.before.len >= menu->box.w)
+        menu->rulerx.before.len -= menu->box.w;
+    if (menu->rulery.before.len + menu->box.h > height) {
+        if (menu->rulery.before.len >= menu->box.h)
+            menu->rulery.before.len -= menu->box.h;
+        else
+            menu->rulery.before.len = height - menu->box.h;
+    }
+
+    if (win->menu_sp > GUM_MAX_MCTX) {
+        gum_remove_context(win);
+        return;
+    }
+
+    win->menus[win->menu_sp] = menu;
+    win->menu_sp++;
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+// Mouse motion event, call with absolute coords to windows
+void gum_event_motion(gum_window_t* win, int x, int y)
+{
+    win->mouse_x = x;
+    win->mouse_y = y;
     // TODO Cursor ?
-    GUM_cell *target = gum_cell_hit(evm->root, x, y);
-    if (evm->over != target) {
-        evm->click_cnt = 0;
-        evm->spec_btn = 0;
-        gum_cell_chstatus(evm, evm->over, GUM_CELL_OVER, 0, GUM_EV_OUT);
-        gum_cell_chstatus(evm, target, GUM_CELL_OVER, 1, GUM_EV_OVER);
+    gum_cell_t*target = gum_cell_hit(win->root, x, y);
+    if (win->over != target) {
+        win->click_cnt = 0;
+        win->spec_btn = 0;
+        gum_cell_chstatus(win, win->over, GUM_CELL_OVER, 0, GUM_EV_OUT);
+        gum_cell_chstatus(win, target, GUM_CELL_OVER, 1, GUM_EV_OVER);
         // if (evm->over)
         // fprintf(stderr, "Out %s\n", evm->over->id);
         // if (target)
         // fprintf(stderr, "Over %s\n", target->id);
-        evm->over = target;
+        win->over = target;
         /* If we live a down cell, it's like a release */
-        if (target == evm->down) {
-            gum_cell_chstatus(evm, evm->down, GUM_CELL_DOWN, 0, GUM_EV_UP);
-            evm->down = NULL;
+        if (target == win->down) {
+            gum_cell_chstatus(win, win->down, GUM_CELL_DOWN, 0, GUM_EV_UP);
+            win->down = NULL;
         }
     }
-    if (evm->grab != NULL) {
+    if (win->grab != NULL) {
         // drop request !?
-        gum_invalid_visual(evm->grab);
-        evm->grab->box.x -= evm->grab->box.dx;
-        evm->grab->box.y -= evm->grab->box.dy;
-        evm->grab->box.dx = evm->mouse_x - evm->grab_x;
-        evm->grab->box.dy = evm->mouse_y - evm->grab_y;
+        gum_invalid_visual(win, win->grab);
+        win->grab->box.x -= win->grab->box.dx;
+        win->grab->box.y -= win->grab->box.dy;
+        win->grab->box.dx = win->mouse_x - win->grab_x;
+        win->grab->box.dy = win->mouse_y - win->grab_y;
 
         /* BEGIN: drag limit */
-        if (evm->grab->box.dx < 0)
-            evm->grab->box.dx = 0;
-        else if (evm->grab->box.dx > evm->grab->parent->box.cw - evm->grab->box.w)
-            evm->grab->box.dx = evm->grab->parent->box.cw - evm->grab->box.w;
-        evm->grab->box.dy = 0;
+        if (win->grab->box.dx < 0)
+            win->grab->box.dx = 0;
+        else if (win->grab->box.dx > win->grab->parent->box.cw - win->grab->box.w)
+            win->grab->box.dx = win->grab->parent->box.cw - win->grab->box.w;
+        win->grab->box.dy = 0;
         /* END */
 
-        evm->grab->box.x += evm->grab->box.dx;
-        evm->grab->box.y += evm->grab->box.dy;
-        gum_invalid_visual(evm->grab);
+        win->grab->box.x += win->grab->box.dx;
+        win->grab->box.y += win->grab->box.dy;
+        gum_invalid_visual(win, win->grab);
     }
 }
 
-static void gum_event_left_press(GUM_event_manager *evm)
+// Mouse primary button press event
+void gum_event_left_press(gum_window_t* win)
 {
-    GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
+    gum_cell_t*target = gum_cell_hit(win->root, win->mouse_x, win->mouse_y);
     /* Change focus */
-    if (evm->focus != target)
-        gum_set_focus(evm, target);
+    if (win->focus != target)
+        gum_set_focus(win, target);
     /* Cell is down */
-    gum_cell_chstatus(evm, target, GUM_CELL_DOWN, 1, GUM_EV_DOWN);
-    evm->down = target;
+    gum_cell_chstatus(win, target, GUM_CELL_DOWN, 1, GUM_EV_DOWN);
+    win->down = target;
     if (target && target->state & GUM_CELL_DRAGABLE) {
-        evm->grab = target;
-        evm->grab_x = evm->mouse_x - evm->grab->box.dx;
-        evm->grab_y = evm->mouse_y - evm->grab->box.dy;
+        win->grab = target;
+        win->grab_x = win->mouse_x - win->grab->box.dx;
+        win->grab_y = win->mouse_y - win->grab->box.dy;
     }
 }
 
-static void gum_event_left_release(GUM_event_manager *evm)
+// Mouse primary button release event
+void gum_event_left_release(gum_window_t* win)
 {
-    GUM_cell *target = gum_cell_hit(evm->root, evm->mouse_x, evm->mouse_y);
-    if (evm->menu_sp > 0)
-        gum_remove_context(evm);
+    gum_cell_t*target = gum_cell_hit(win->root, win->mouse_x, win->mouse_y);
+    if (win->menu_sp > 0)
+        gum_remove_context(win);
     /* if cell grabbed, drop-it */
-    if (evm->grab)
-        evm->grab = NULL;
+    if (win->grab)
+        win->grab = NULL;
     /* Translate into click */
-    if (target && evm->down == target) {
+    if (target && win->down == target) {
         long long now = gum_system_time();
-        if (evm->click != target || evm->click_cnt >= 3 || now - evm->last_click > CLICK_TIMEOUT) {
-            evm->click = target;
-            evm->click_cnt = 0;
+        if (win->click != target || win->click_cnt >= 3 || now - win->last_click > CLICK_TIMEOUT) {
+            win->click = target;
+            win->click_cnt = 0;
         }
 
         // printf("Click %d, %p\n", evm->click_cnt+1, target);
-        gum_emit_event(evm, target, evm->click_cnt == 0 ? GUM_EV_CLICK :
-                       (evm->click_cnt == 1 ? GUM_EV_DOUBLECLICK : GUM_EV_TRIPLECLICK));
-        evm->click_cnt++;
+        gum_emit_event(win, target, win->click_cnt == 0 ? GUM_EV_CLICK :
+                       (win->click_cnt == 1 ? GUM_EV_DOUBLECLICK : GUM_EV_TRIPLECLICK));
+        win->click_cnt++;
     }
     /* Invalid down */
-    if (evm->down) {
-        gum_cell_chstatus(evm, evm->down, GUM_CELL_DOWN, 0, GUM_EV_UP);
-        evm->down = NULL;
+    if (win->down) {
+        gum_cell_chstatus(win, win->down, GUM_CELL_DOWN, 0, GUM_EV_UP);
+        win->down = NULL;
     }
 
-    evm->last_click = gum_system_time();
+    win->last_click = gum_system_time();
 }
 
-static void gum_event_button_press(GUM_event_manager *evm, int btn)
+// Mouse button press event
+void gum_event_button_press(gum_window_t* win, int btn)
 {
-    evm->click_cnt = 0;
-    evm->spec_btn = btn;
+    win->click_cnt = 0;
+    win->spec_btn = btn;
 }
 
-static void gum_event_button_release(GUM_event_manager *evm, int btn)
+// Mouse button release event
+void gum_event_button_release(gum_window_t* win, int btn)
 {
-    evm->click_cnt = 0;
-    if (evm->menu_sp > 0)
-        gum_remove_context(evm);
-    if (evm->spec_btn == btn) {
+    win->click_cnt = 0;
+    if (win->menu_sp > 0)
+        gum_remove_context(win);
+    if (win->spec_btn == btn) {
         if (btn == 3) // Right button
-            gum_emit_event(evm, evm->over, GUM_EV_RIGHTCLICK);
+            gum_emit_event(win, win->over, GUM_EV_RIGHTCLICK);
         else if (btn == 8) // Previous button
-            gum_emit_event(evm, evm->focus, GUM_EV_PREVIOUS);
+            gum_emit_event(win, win->focus, GUM_EV_PREVIOUS);
         else if (btn == 9) // Next button
-            gum_emit_event(evm, evm->focus, GUM_EV_NEXT);
+            gum_emit_event(win, win->focus, GUM_EV_NEXT);
         else if (btn == 4) // Wheel up
-            gum_emit_event(evm, evm->over, GUM_EV_WHEEL_UP);
+            gum_emit_event(win, win->over, GUM_EV_WHEEL_UP);
         else if (btn == 5) // Wheel down
-            gum_emit_event(evm, evm->over, GUM_EV_WHEEL_DOWN);
+            gum_emit_event(win, win->over, GUM_EV_WHEEL_DOWN);
         else if (btn == 2) // Wheel button
-            gum_emit_event(evm, evm->over, GUM_EV_WHEEL_CLICK);
+            gum_emit_event(win, win->over, GUM_EV_WHEEL_CLICK);
     }
 }
 
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-static void gum_event_wheel_up(GUM_event_manager *evm)
+// Mouse wheel event
+void gum_event_wheel(gum_window_t* win, int move)
 {
-    GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
+    gum_cell_t* container = gum_cell_hit_ex(win->root, win->mouse_x, win->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
     if (container != NULL) {
-        // fprintf(stderr, "wheel_up %s\n", evm->over->id);
-        if (container->state & GUM_CELL_OVERFLOW_Y) {
-            container->box.sy = MAX(0, container->box.sy - 20);
-            gum_invalid_visual(container);
-        } else if (container->state & GUM_CELL_OVERFLOW_X) {
-            container->box.sx = MAX(0, container->box.sx - 20);
-            gum_invalid_visual(container);
-        }
-    }
-}
-
-static void gum_event_wheel_down(GUM_event_manager *evm)
-{
-    GUM_cell *container = gum_cell_hit_ex(evm->root, evm->mouse_x, evm->mouse_y, GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y);
-    if (container != NULL) {
-        // fprintf(stderr, "wheel_down %s\n", evm->over->id);
         if (container->state & GUM_CELL_OVERFLOW_Y) {
             int st = container->box.ch_h - container->box.ch;
-            // fprintf(stderr, "Down : %d - %d - %d\n", evm->over->box.sy, evm->over->box.minch, evm->over->box.ch);
-            container->box.sy = MIN(st, container->box.sy + 20);
-            gum_invalid_visual(container);
-        } else if (container->state & GUM_CELL_OVERFLOW_X) {
+            container->box.sy = MAX(0, MIN(st, container->box.sy + move));
+            gum_invalid_visual(win, container);
+        }
+        else if (container->state & GUM_CELL_OVERFLOW_X) {
             int st = container->box.ch_w - container->box.cw;
-            container->box.sx = MIN(st, container->box.sx + 20);
-            gum_invalid_visual(container);
+            container->box.sx = MAX(0, MIN(st, container->box.sx + move));
+            gum_invalid_visual(win, container);
         }
     }
 }
 
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-static void gum_event_key_press(GUM_event_manager *evm, int unicode, int key)
+void gum_event_key_press(gum_window_t* win, int unicode, int key)
 {
-    if (evm->edit == NULL)
+    if (win->edit == NULL)
         return;
     if (unicode <= 0)
         return;
 
-    int len = strlen(evm->edit->text);
-    int cursor = evm->edit->text_pen;
+    int len = strlen(win->edit->text);
+    int cursor = win->edit->text_pen;
     if (unicode == KEY_CODE_BACKSPACE) {
-        if (evm->edit->text_pen == 0)
+        if (win->edit->text_pen == 0)
             return;
 
         cursor--;
-        while ((evm->edit->text[cursor] & 0xc0) == 0x80)
+        while ((win->edit->text[cursor] & 0xc0) == 0x80)
             cursor--;
 
-        memmove(&evm->edit->text[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
-        evm->edit->text_pen = cursor;
+        memmove(&win->edit->text[cursor], &win->edit->text[win->edit->text_pen], len - win->edit->text_pen + 1);
+        win->edit->text_pen = cursor;
     } else {
         char *buf = malloc(len + 8);
-        memcpy(buf, evm->edit->text, evm->edit->text_pen);
-        cursor += uctomb(&buf[evm->edit->text_pen], unicode);
-        memcpy(&buf[cursor], &evm->edit->text[evm->edit->text_pen], len - evm->edit->text_pen + 1);
-        evm->edit->text_pen = cursor;
-        free(evm->edit->text);
-        evm->edit->text = strdup(buf);
+        memcpy(buf, win->edit->text, win->edit->text_pen);
+        cursor += uctomb(&buf[win->edit->text_pen], unicode);
+        memcpy(&buf[cursor], &win->edit->text[win->edit->text_pen], len - win->edit->text_pen + 1);
+        win->edit->text_pen = cursor;
+        free(win->edit->text);
+        win->edit->text = strdup(buf);
         free(buf);
     }
 
-    gum_invalid_measure(evm->edit);
-    gum_invalid_visual(evm->edit);
+    gum_invalid_measure(win, win->edit);
+    gum_invalid_visual(win, win->edit);
 }
 
-static void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
+void gum_event_key_release(gum_window_t* win, int unicode, int key)
 {
 
 }
@@ -419,215 +358,169 @@ static void gum_event_key_release(GUM_event_manager *evm, int unicode, int key)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void gum_refresh(GUM_event_manager *evm)
+static void gum_async_job(GUM_async* async)
 {
-    gum_resize_px(evm->root, evm->ctx.width, evm->ctx.height);
-    gum_invalid_all(evm->root);
+    async->worker(async->win, async->arg);
+    gum_push_event(async->win, GUM_EV_ASYNC, (size_t)async);
 }
 
-GUM_event_manager *gum_event_manager(GUM_cell *root, GUM_window *win)
+void gum_event_async(gum_window_t* win, void* data)
 {
-    GUM_event_manager *evm = (GUM_event_manager *)calloc(1, sizeof(GUM_event_manager));
-    gum_fill_context(win, &evm->ctx);
-    evm->root = root;
-    evm->win = win;
-    evm->measure = true;
-
-    root->manager = evm;
-    hmp_init(&evm->actions, 16);
-
-    gum_refresh(evm);
-    return evm;
+    GUM_async* async = data;
+    async->callback(async->win, async->arg);
+    free(async);
 }
 
-void gum_close_manager(GUM_event_manager *evm)
+LIBAPI void gum_async_worker(gum_window_t* win, GUM_async_worker worker, GUM_async_worker callback, void* arg)
 {
-    // TODO - Free every binded actions
-    hmp_destroy(&evm->actions, 0);
-    free(evm);
-}
-
-void gum_handle_event(GUM_event_manager *evm, GUM_event *event)
-{
-    int i;
-    GUM_async *async;
-    fprintf(stderr, "Event %d enter\n", event->type);
-    switch (event->type) {
-    case GUM_EV_RESIZE:
-        // fprintf(stderr, "W %d - H %d\n", event->param0, event->param1);
-        gum_resize_win(evm->win, event->param0, event->param1);
-        evm->ctx.width = event->param0;
-        evm->ctx.height = event->param1;
-        gum_refresh(evm);
-        break;
-
-    case GUM_EV_MOTION:
-        gum_event_motion(evm, event->param0, event->param1);
-        break;
-
-    case GUM_EV_BTN_PRESS:
-        if (event->param0 == 1)
-            gum_event_left_press(evm);
-        else
-            gum_event_button_press(evm, event->param0);
-        break;
-
-    case GUM_EV_WHEEL_UP:
-        gum_event_wheel_up(evm);
-        break;
-
-    case GUM_EV_WHEEL_DOWN:
-        gum_event_wheel_down(evm);
-        break;
-
-    case GUM_EV_BTN_RELEASE:
-        if (event->param0 == 1)
-            gum_event_left_release(evm);
-        else
-            gum_event_button_release(evm, event->param0);
-        break;
-
-    case GUM_EV_KEY_ENTER:
-        gum_event_key_press(evm, event->param0, event->param1);
-        break;
-    case GUM_EV_KEY_PRESS:
-        // gum_event_key_press(evm, event->param0, event->param1);
-        break;
-    case GUM_EV_KEY_RELEASE:
-        // gum_event_key_release(evm, event->param0, event->param1);
-        break;
-    case GUM_EV_EXPOSE:
-        gum_start_paint(evm->win);
-        gum_paint(evm->win, evm->root);
-        for (i = 0; i < evm->menu_sp; ++i)
-            gum_paint(evm->win, evm->menus[i]);
-        gum_end_paint(evm->win);
-        break;
-    case GUM_EV_TICK:
-        gum_emit_event(evm, NULL, GUM_EV_TICK);
-        // TODO properties
-        if (evm->measure) {
-            evm->measure = false;
-            printf("do measure\n");
-            gum_do_measure(evm->root, &evm->ctx);
-            for (i = 0; i < evm->menu_sp; ++i) {
-                gum_do_measure(evm->menus[i], &evm->ctx);
-                // TODO -- Each menu have an anchor point
-                evm->menus[i]->box.w = evm->menus[i]->box.minw;
-                evm->menus[i]->box.h = evm->menus[i]->box.minh;
-                gum_do_layout(evm->menus[i], &evm->ctx);
-                gum_invalid_visual(evm->menus[i]);
-            }
-        }
-        if (evm->layout) {
-            printf("do layout\n");
-            GUM_cell *cell_layout = evm->layout;
-            evm->layout = NULL;
-            if (cell_layout == evm->root) {
-                cell_layout->box.x = 0;
-                cell_layout->box.y = 0;
-                cell_layout->box.w = evm->ctx.width;
-                cell_layout->box.h = evm->ctx.height;
-            }
-            gum_do_layout(cell_layout, &evm->ctx);
-        }
-        if (evm->inval.left != evm->inval.right || evm->inval.top != evm->inval.bottom) {
-            gum_do_visual(evm->root, evm->win, &evm->inval);
-            fprintf(stderr, "do Visual\n");
-            memset(&evm->inval, 0, sizeof(evm->inval));
-        }
-        break;
-    case GUM_EV_ASYNC:
-        async = (GUM_async *)(size_t)event->param0;
-        async->callback(evm, async->res);
-        break;
-    }
-    // fprintf(stderr, "Event %d leave\n", event->type);
-}
-
-void gum_event_loop(GUM_event_manager *evm)
-{
-    GUM_event event;
-    for (;;) {
-        if (gum_event_poll(evm->win, &event, -1) != 0)
-            continue;
-
-        if (event.type == GUM_EV_DESTROY)
-            break;
-
-        gum_handle_event(evm, &event);
-    }
-}
-
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-void gum_show_context(GUM_event_manager *evm, GUM_cell *menu)
-{
-    gum_resize_px(menu, 0, 0);
-    menu->rulerx.before.len = evm->mouse_x;
-    menu->rulery.before.len = evm->mouse_y;
-    if (menu->rulerx.before.len + menu->box.w > evm->ctx.width && menu->rulerx.before.len >= menu->box.w)
-        menu->rulerx.before.len -= menu->box.w;
-    if (menu->rulery.before.len + menu->box.h > evm->ctx.height) {
-        if (menu->rulery.before.len >= menu->box.h)
-            menu->rulery.before.len -= menu->box.h;
-        else
-            menu->rulery.before.len = evm->ctx.height - menu->box.h;
-    }
-
-    if (evm->menu_sp > GUM_MAX_MCTX) {
-        gum_remove_context(evm);
-        return;
-    }
-
-    evm->menus[evm->menu_sp] = menu;
-    evm->menu_sp++;
-    gum_refresh(evm);
-}
-
-static void gum_async_job(GUM_async *async)
-{
-    async->res = async->worker(async->evm, async->arg);
-    gum_push_event(async->evm->win, GUM_EV_ASYNC, (size_t)async, 0, NULL);
-}
-
-void gum_async_worker(GUM_event_manager *evm, void *(*worker)(GUM_event_manager *, void *), void (*callback)(GUM_event_manager *, void *), void *arg)
-{
-    GUM_async *async = calloc(sizeof(GUM_async), 1);
+    GUM_async* async = calloc(sizeof(GUM_async), 1);
     async->worker = worker;
     async->callback = callback;
     async->arg = arg;
-    async->evm = evm;
+    async->win = win;
 
     thrd_t thrd;
     thrd_create(&thrd, gum_async_job, async);
-    // gum_async_job(async);
 }
 
-void gum_dereference_cell(GUM_event_manager *evm, GUM_cell *cell)
-{
-    if (evm->over == cell)
-        evm->over = NULL;
-    if (evm->down == cell)
-        evm->down = NULL;
-    if (evm->focus == cell)
-        evm->focus = NULL;
-    if (evm->click == cell)
-        evm->click = NULL;
-    if (evm->edit == cell)
-        evm->edit = NULL;
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-    if (evm->layout == cell)
-        evm->layout = cell->parent;
+void gum_dereference_cell(gum_window_t *win, gum_cell_t *cell)
+{
+    if (win->over == cell)
+        win->over = NULL;
+    if (win->down == cell)
+        win->down = NULL;
+    if (win->focus == cell)
+        win->focus = NULL;
+    if (win->click == cell)
+        win->click = NULL;
+    if (win->edit == cell)
+        win->edit = NULL;
+
+    if (win->layout == cell) //  TODO if any parent is layout
+        win->layout = cell->parent;
     if (cell->parent)
-        gum_invalid_measure(cell->parent);
+        gum_invalid_measure(win, cell->parent);
 }
 
-#ifndef NDEBUG
 
-GUM_cell *gum_debug_root(GUM_event_manager *evm)
+
+
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+void gum_invalid_measure(gum_window_t* win, gum_cell_t* cell)
 {
-    return evm->root;
+    cell->state |= GUM_CELL_MEASURE;
+    if (win != NULL)
+        win->measure = true;
 }
 
-#endif
+void gum_invalid_layout(gum_window_t* win, gum_cell_t* cell)
+{
+    if (win != NULL)
+        win->layout = gum_baseof(cell, win->layout);
+}
+
+void gum_invalid_visual(gum_window_t* win, gum_cell_t* cell)
+{
+    gum_cell_t* ancestors;
+    int x = cell->box.x;
+    int y = cell->box.y;
+
+    for (ancestors = cell->parent; ancestors; ancestors = ancestors->parent) {
+        x += ancestors->box.cx;
+        y += ancestors->box.cy;
+    }
+
+    if (win != NULL) {
+        // TODO -- For each region on invalid,
+        // look for MIN px sum (union / split)
+        // if ratio > 1.8 - Add a new rectangle
+        // else merge
+        if (win->inval.right == 0) {
+            win->inval.left = x;
+            win->inval.right = x + cell->box.w;
+        }
+        else {
+            win->inval.left = MIN(x, win->inval.left);
+            win->inval.right = MAX(x + cell->box.w, win->inval.right);
+        }
+        if (win->inval.bottom == 0) {
+            win->inval.top = y;
+            win->inval.bottom = y + cell->box.h;
+        }
+        else {
+            win->inval.top = MIN(y, win->inval.top);
+            win->inval.bottom = MAX(y + cell->box.h, win->inval.bottom);
+        }
+    }
+}
+
+void gum_invalid_all(gum_window_t* win, gum_cell_t* cell)
+{
+    gum_cell_t* child;
+    for (child = cell->first; child; child = child->next)
+        gum_invalid_all(win, child);
+    cell->state |= GUM_CELL_MEASURE;
+    win->measure = true;
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+void gum_update_mesure(gum_window_t* win)
+{
+    if (!win->measure)
+        return;
+    win->measure = false;
+    gum_do_measure(win->root, &win->ctx);
+    for (int i = 0; i < win->menu_sp; ++i) {
+        gum_do_measure(win->menus[i], &win->ctx);
+        // TODO -- Each menu have an anchor point
+        win->menus[i]->box.w = win->menus[i]->box.minw;
+        win->menus[i]->box.h = win->menus[i]->box.minh;
+        gum_do_layout(win->menus[i], &win->ctx);
+        gum_invalid_visual(win, win->menus[i]);
+    }
+}
+
+void gum_update_layout(gum_window_t* win)
+{
+    if (!win->layout)
+        return;
+
+    gum_cell_t* cell_layout = win->layout;
+    win->layout = NULL;
+    if (cell_layout == win->root) {
+        cell_layout->box.x = 0;
+        cell_layout->box.y = 0;
+        cell_layout->box.w = win->ctx.width;
+        cell_layout->box.h = win->ctx.height;
+    }
+    gum_do_layout(cell_layout, &win->ctx);
+}
+
+bool gum_update_visual(gum_window_t* win)
+{
+    if (win->inval.left != win->inval.right || win->inval.top != win->inval.bottom) {
+        // fprintf(stderr, "Paint <%d, %d, %d, %d>\n", win->inval.left, win->inval.top, win->inval.right - win->inval.left, win->inval.bottom - win->inval.top);
+        gum_start_paint(win);
+        gum_paint(win, win->root);
+       for (int i = 0; i < win->menu_sp; ++i)
+           gum_paint(win, win->menus[i]);
+        gum_end_paint(win);
+        memset(&win->inval, 0, sizeof(win->inval));
+        return true;
+    }
+    return false;
+}
+
+LIBAPI bool gum_update(gum_window_t* win)
+{
+    gum_update_mesure(win);
+    gum_update_layout(win);
+    return gum_update_visual(win);
+}
+

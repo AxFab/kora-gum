@@ -22,17 +22,18 @@
 #include <gum/css.h>
 
 struct GUM_cellbuilder {
-    GUM_cell *root;
-    GUM_cell *cursor;
+    gum_cell_t *root;
+    gum_cell_t *cursor;
     GUM_skins *skins;
 };
+
 
 GUM_layout_algo gum_fetch_layout(const char *value)
 {
     if (!strcmp("Absolute", value))
         return gum_layout_absolute;
-    else if (!strcmp("Wrap", value))
-        return gum_layout_wrap;
+    else if (!strcmp("Fill", value))
+        return gum_layout_fill;
     else if (!strcmp("VGroupExtend", value))
         return gum_layout_vgroup_extend;
     else if (!strcmp("HGroupExtend", value))
@@ -58,7 +59,7 @@ GUM_layout_algo gum_fetch_layout(const char *value)
     return NULL;
 }
 
-static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *value)
+LIBAPI void gum_cell_attribute(gum_cell_t *cell, const char *key, const char *value)
 {
     if (!strcmp("id", key))
         cell->id = strdup(value);
@@ -66,15 +67,15 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     else if (!strcmp("left", key)) {
         if (value[0] == '{') {
             CSS_SET_PX(cell->rulerx.before, 0);
-            cell->rell = strdup(&value[1]);
-            strchr(cell->rell, '}') [0] = '\0';
+            // cell->rell = strdup(&value[1]);
+            // strchr(cell->rell, '}') [0] = '\0';
         } else
             cell->rulerx.before = css_parse_size(value);
     } else if (!strcmp("right", key)) {
         if (value[0] == '{') {
             CSS_SET_PX(cell->rulerx.after, 0);
-            cell->relr = strdup(&value[1]);
-            strchr(cell->relr, '}') [0] = '\0';
+            // cell->relr = strdup(&value[1]);
+            // strchr(cell->relr, '}') [0] = '\0';
         } else
             cell->rulerx.after = css_parse_size(value);
     } else if (!strcmp("horizontal-center", key))
@@ -82,7 +83,7 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     else if (!strcmp("min-width", key))
         cell->rulerx.min = css_parse_usize(value);
     else if (!strcmp("width", key)) {
-        if (!strcmp("wrap", value)) {
+        if (!strcmp("fill", value)) {
             CSS_SET_PX(cell->rulerx.before, 0);
             cell->rulerx.after = cell->rulerx.before;
         } else
@@ -98,7 +99,7 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
     else if (!strcmp("min-height", key))
         cell->rulery.min = css_parse_usize(value);
     else if (!strcmp("height", key)) {
-        if (!strcmp("wrap", value)) {
+        if (!strcmp("fill", value)) {
             CSS_SET_PX(cell->rulery.before, 0);
             cell->rulery.after = cell->rulery.before;
         } else
@@ -173,12 +174,46 @@ static void gum_cell_xmlattribute(GUM_cell *cell, const char *key, const char *v
             cell->state |= GUM_CELL_DRAGABLE;
         else if (!strcmp("false", value))
             cell->state &= ~GUM_CELL_DRAGABLE;
-    }
 
-    else {
-        // TODO - Avoid copy is not necessary, - how to change over/down skins
-        // cell->skin = gum_skin_property_setter(cell->skin, key, value);
+
+    } else {
+        char tmp[64];
+        strcpy(tmp, key);
+        char *dot = strchr(tmp, '.');
+        if (dot != NULL) {
+            dot[0] = '\0';
+            dot++;
+        }
+        if (dot != NULL && strcmp(dot, "over") == 0)
+            cell->skin_over = gum_skin_property_setter(cell->skin_over, tmp, value);
+        else if (dot != NULL && strcmp(dot, "down") == 0)
+            cell->skin_down = gum_skin_property_setter(cell->skin_down, tmp, value);
+        else
+            cell->skin = gum_skin_property_setter(cell->skin, tmp, value);
     }
+}
+
+LIBAPI void gum_cell_style(gum_cell_t* cell, GUM_skins* skins, const char* name)
+{
+    char buf[50];
+    cell->skin = gum_style_find(skins, name);
+    strcpy(buf, name);
+    strcat(buf, ":over");
+    cell->skin_over = gum_style_find(skins, buf);
+    strcpy(buf, name);
+    strcat(buf, ":down");
+    cell->skin_down = gum_style_find(skins, buf);
+}
+
+LIBAPI gum_cell_t* gum_create_cell(const char *name, gum_cell_t *parent)
+{
+    gum_cell_t* cell = (gum_cell_t*)calloc(1, sizeof(gum_cell_t));
+    cell->state = GUM_CELL_MEASURE;
+    cell->name = strdup(name);
+    cell->depth = parent ? parent->depth + 1 : 0;
+    if (parent)
+        gum_cell_pushback(parent, cell);
+    return cell;
 }
 
 static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_cellbuilder *builder)
@@ -197,30 +232,15 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
     }
 
     // Create a new cell and attach it to the tree
-    GUM_cell *cell = (GUM_cell *)calloc(1, sizeof(GUM_cell));
-    cell->name = strdup(node->node_name);
-    cell->depth = builder->cursor ? builder->cursor->depth + 1 : 0;
-    if (builder->cursor)
-        gum_cell_pushback(builder->cursor, cell);
-
-    else
+    gum_cell_t* cell = gum_create_cell(node->node_name, builder->cursor);
+    gum_cell_style(cell, builder->skins, node->node_name);
+    if (!builder->cursor)
         builder->root = cell;
-
-    // TODO -- Find a skin for this cell
-    char name[50];
-    cell->skin = gum_style_find(builder->skins, node->node_name);
-    strcpy(name, node->node_name);
-    strcat(name, ":over");
-    cell->skin_over = gum_style_find(builder->skins, name);
-    strcpy(name, node->node_name);
-    strcat(name, ":down");
-    cell->skin_down = gum_style_find(builder->skins, name);
-
 
     // Read attributes
     XML_attribute *att = node->first_attribute;
     while (att) {
-        gum_cell_xmlattribute(cell, att->key, att->value);
+        gum_cell_attribute(cell, att->key, att->value);
         att = att->next;
     }
 
@@ -233,7 +253,7 @@ static XML_node *gum_cell_xmlnode(XML_node *cursor, XML_node *node, struct GUM_c
     return node;
 }
 
-GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins)
+LIBAPI gum_cell_t*gum_cell_loadxml(const char *filename, GUM_skins *skins)
 {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
@@ -253,13 +273,20 @@ GUM_cell *gum_cell_loadxml(const char *filename, GUM_skins *skins)
 #include <kora/hmap.h>
 
 hmap_t img_map;
+hmap_t face_map;
 int is_map_init = 0;
+
+void gum_map_init()
+{
+    hmp_init(&img_map, 16);
+    hmp_init(&face_map, 16);
+    is_map_init = 1;
+}
+
 void *gum_image(const char *name)
 {
-    if (!is_map_init) {
-        hmp_init(&img_map, 16);
-        is_map_init = 1;
-    }
+    if (!is_map_init)
+        gum_map_init();
     int lg = strlen(name);
     void *img = hmp_get(&img_map, name, lg);
     if (img != NULL)
@@ -270,3 +297,20 @@ void *gum_image(const char *name)
         hmp_put(&img_map, name, lg, img);
     return img;
 }
+
+void* gum_face(const char* name)
+{
+    if (!is_map_init)
+        gum_map_init();
+    int lg = strlen(name);
+    void* face = hmp_get(&img_map, name, lg);
+    if (face != NULL)
+        return face;
+
+    face = gum_load_fontface(name);
+    if (face != NULL)
+        hmp_put(&img_map, name, lg, face);
+    return face;
+}
+
+

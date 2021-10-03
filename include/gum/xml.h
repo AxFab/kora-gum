@@ -107,11 +107,14 @@ void xml_free_node(XML_node *node);
 
 
 
+typedef int uchar_t;
+
+#define UC_LEN_MAX 6
 // returns the number of bytes in the next multibyte character
-int umblen(const char *str, size_t lg);
+int uclen(const char* str, size_t lg);
 // Converts the next multibyte character to wide character
-int mbtouc(int *pwc, const char *str, size_t lg);
+int mbtouc(uchar_t* unicode, const char* str, size_t lg);
 // converts a wide character to its multibyte representation
-int uctomb(char *str, wchar_t wc);
+int uctomb(char* str, uchar_t unicode);
 
 #endif  /* _GUM_XML_H */

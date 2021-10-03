@@ -27,26 +27,44 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
-#include <ft2build.h>
-#include <freetype/freetype.h>
 #include <kora/mcrs.h>
 
 
-struct GUM_window {
-    bool redraw;
-    gfx_t *gfx;
-    gfx_clip_t clip;
-    gfx_seat_t seat;
-};
+#define __USE_CAIRO 1
+#define __USE_FT 1
+
+#define MIN_ALPHA 0x1000000
+#define MAX_ALPHA 0xFF000000
+#define M_PI 3.141592653589793
+#define GET_X_LPARAM(s)   ((int)(short)((int32_t)(s) & 0xffff))
+#define GET_Y_LPARAM(s)   ((int)(short)(((int32_t)(s) >> 16) & 0xffff))
+
+#define RESX "C:/Users/Aesga/develop/kora-disto/sources/desktop/resx"
+
+
+#ifdef __USE_CAIRO
+#include <cairo.h>
+#include <cairo-lgfx.h>
+#endif
+
+#ifdef __USE_FT
+#include <ft2build.h>
+#include <freetype/freetype.h>
+#ifndef FT_LOAD_DEFAULT
+# define FT_LOAD_DEFAULT 0
+#endif
+#endif
+
+
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-void *memrchr(const void *buf, int byte, size_t len)
+void* memrchr(const void* buf, int byte, size_t len)
 {
-    const char *ptr = (const char *)buf + len;
-    while (ptr-- > (const char *)buf)
+    const char* ptr = (const char*)buf + len;
+    while (ptr-- > (const char*)buf)
         if (*ptr == byte)
-            return (void *)ptr;
+            return (void*)ptr;
     return NULL;
 }
 
@@ -58,56 +76,24 @@ long long gum_system_time()
     return ticks;
 }
 
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+bool timerActive = false;
+
+#ifdef __USE_FT
 
 FT_Library ftLibrary;
 bool ftLibraryInitialized = false;
 
+typedef struct gfx_text gfx_text_t;
+struct gfx_text {
+    int width;
+    int height;
+    int x_bearing;
+    int y_bearing;
+};
 
-
-GUM_window *gum_open_surface(gfx_t *gfx)
-{
-    if (!ftLibraryInitialized) {
-
-        FT_Error error = FT_Init_FreeType(&ftLibrary);
-        if (!error)
-            ftLibraryInitialized = true;
-    }
-
-
-    GUM_window *win = (GUM_window *)malloc(sizeof(GUM_window));
-    win->gfx = gfx;
-    win->redraw = true;
-    memset(&win->seat, 0, sizeof(win->seat));
-
-    return win;
-}
-
-GUM_window *gum_create_surface(int width, int height)
-{
-    gfx_t *gfx = gfx_create_window(NULL, width, height, 0);
-    return gum_open_surface(gfx);
-}
-
-void gum_destroy_surface(GUM_window *win)
-{
-    //cairo_destroy(win->ctx);
-    //Display *dsp = cairo_xlib_surface_get_display(win->srf);
-    //cairo_surface_destroy(win->srf);
-    //XCloseDisplay(dsp);
-    gfx_destroy(win->gfx);
-    free(win);
-}
-
-/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
-
-#define MIN_ALPHA 0x1000000
-#define M_PI 3.141592653589793
-
-
-uint32_t gfx_alpha_blend(uint32_t low, uint32_t upr);
-uint32_t gfx_upper_alpha_blend(uint32_t low, uint32_t upr);
-
-void gfx_copy_glyph(gfx_t *gfx, gfx_clip_t *clip, FT_Bitmap *glyph, int x, int y, uint32_t fontcolor)
+void gfx_copy_glyph(gfx_t* gfx, gfx_clip_t* clip, FT_Bitmap* glyph, int x, int y, uint32_t fontcolor)
 {
     int i, j;
     int minx = MAX(x, clip->left);
@@ -118,19 +104,606 @@ void gfx_copy_glyph(gfx_t *gfx, gfx_clip_t *clip, FT_Bitmap *glyph, int x, int y
     for (j = miny; j < maxy; ++j) {
         for (i = minx; i < maxx; ++i) {
             uint8_t val = glyph->buffer[(j - y) * glyph->pitch + (i - x)];
-            uint32_t color = (fontcolor & 0xffffff) | (val  << 24);
-            uint32_t *dst = &gfx->pixels4[j * gfx->pitch / 4 + i];
+            uint32_t color = (fontcolor & 0xffffff) | (val << 24);
+            uint32_t* dst = &gfx->pixels4[j * gfx->width + i];
             uint32_t nw = gfx_upper_alpha_blend(*dst, color);
             *dst = nw;
         }
     }
 }
 
+void gfx_ft_size_text(FT_Face face, const char* text, gfx_text_t* measures)
+{
+    if (face == NULL)
+        return;
+    int i;
+    memset(measures, 0, sizeof(*measures));
+    FT_GlyphSlot  slot = face->glyph;
+    int miny = 0, maxy = 0;
+    for (i = 0; ; ++i) {
+        int ch;
+        int len = mbtouc(&ch, &text[i], 6);
+        i += len - 1;
+        if (ch == 0)
+            break;
 
-void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
+        FT_UInt  glyph_index;
+        glyph_index = FT_Get_Char_Index(face, ch);
+        FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+        if (error)
+            continue;
+
+        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+        if (error)
+            continue;
+
+        measures->width += slot->bitmap_left + slot->advance.x >> 6;
+        if (miny > -slot->bitmap_top)
+            miny = -slot->bitmap_top;
+        if (maxy < slot->bitmap.rows - slot->bitmap_top)
+            maxy = slot->bitmap.rows - slot->bitmap_top;
+    }
+    measures->height = maxy - miny;
+    measures->y_bearing = miny;
+}
+
+void gfx_ft_write_text(gfx_t* gfx, FT_Face face, const char* text, gfx_clip_t* clip, uint32_t txcolor, int align, int valign)
+{
+    if (face == NULL)
+        return;
+    FT_Error error;
+    gfx_text_t measures;
+
+    int i;
+    int pen_x = clip->left;
+    int pen_y = clip->top;
+    int box_w = clip->right - clip->left;
+    int box_h = clip->bottom - clip->top;
+
+    FT_GlyphSlot  slot = face->glyph;
+    gfx_ft_size_text(face, text, &measures);
+
+    if (align == 2)
+        pen_x += box_w - (measures.width + measures.x_bearing);
+    else if (align == 0)
+        pen_x += box_w / 2 - (measures.width / 2 + measures.x_bearing);
+
+    if (valign == 2)
+        pen_y += box_h - (measures.height + measures.y_bearing);
+    else if (valign == 0)
+        pen_y += box_h / 2 - (measures.height / 2 + measures.y_bearing);
+
+    for (i = 0; ; ++i) {
+        int ch;
+        int len = mbtouc(&ch, &text[i], 6);
+        i += len - 1;
+        if (ch == 0)
+            break;
+        if (len > 1)
+            len++;
+
+        FT_UInt  glyph_index;
+        glyph_index = FT_Get_Char_Index(face, ch);
+        error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+        if (error)
+            continue;
+
+        /* convert to an anti-aliased bitmap */
+        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+        if (error)
+            continue;
+
+        // COPY !!!
+        gfx_copy_glyph(gfx, clip, &slot->bitmap, pen_x + slot->bitmap_left, pen_y - slot->bitmap_top, txcolor);
+
+
+        /* increment pen position */
+        pen_x += slot->advance.x >> 6;
+        pen_y += slot->advance.y >> 6;
+    }
+}
+
+#endif
+
+
+
+typedef struct gum_gfx_data gum_gfx_data_t;
+
+struct gum_gfx_data {
+    int x, y;
+    int px, py;
+    gfx_t* gfx;
+    // gfx_clip_t clip;
+    cairo_t* cr;
+    cairo_surface_t* srf;
+};
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+LIBAPI void gum_lgfx_setup(gum_window_t* win, gfx_t* gfx, gfx_clip_t* vw)
+{
+    gum_gfx_data_t* ctx = malloc(sizeof(gum_gfx_data_t));
+    ctx->gfx = gfx;
+    ctx->x = vw ? vw->left : 0;
+    ctx->y = vw ? vw->top : 0;
+
+    win->ctx.width = vw ? vw->right - vw->left : gfx->width;
+    win->ctx.height = vw ? vw->bottom - vw->top : gfx->height;
+
+#ifdef __USE_CAIRO
+    ctx->srf = cairo_lgfx_surface(gfx, vw);
+    ctx->cr = cairo_create(ctx->srf);
+#endif
+#ifdef __USE_FT
+    if (!ftLibraryInitialized) {
+        FT_Error err = FT_Init_FreeType(&ftLibrary);
+        if (!err)
+            ftLibraryInitialized = true;
+    }
+#endif
+    win->data = ctx;
+}
+
+void gum_lgfx_destroy(gum_window_t* win)
+{
+    gum_gfx_data_t* ctx = win->data;
+#ifdef __USE_CAIRO
+    cairo_destroy(ctx->cr);
+    cairo_surface_destroy(ctx->srf);
+#endif
+    free(ctx);
+}
+
+
+LIBAPI void gum_gfx_handle(gum_window_t* win, gfx_msg_t* msg)
+{
+    gum_gfx_data_t* ctx = win->data;
+    switch (msg->message) {
+    case GFX_EV_MOUSEMOVE:
+        gum_event_motion(win, GET_X_LPARAM(msg->param1) - ctx->x, GET_Y_LPARAM(msg->param1) - ctx->y);
+        break;
+    case GFX_EV_BTNDOWN:
+        if (msg->param1 == 1)
+            gum_event_left_press(win);
+        else
+            gum_event_button_press(win, msg->param1);
+        break;
+    case GFX_EV_BTNUP:
+        if (msg->param1 == 1)
+            gum_event_left_release(win);
+        else
+            gum_event_button_release(win, msg->param1);
+        break;
+    case GFX_EV_MOUSEWHEEL:
+        gum_event_wheel(win, msg->param1 > 0 ? 20 : -20);
+        break;
+
+    case GFX_EV_KEYDOWN:
+    case GFX_EV_KEYUP:
+    case GFX_EV_KEYPRESS:
+    case GFX_EV_RESIZE:
+    case GFX_EV_QUIT:
+        break;
+
+    case GUM_EV_ASYNC:
+        gum_event_async(win, (void*)msg->param1);
+        break;
+
+    default:
+        printf("Unsupported\n");
+        break;
+    }
+}
+
+void gum_push_event(gum_window_t* win, int type, size_t param)
+{
+    gum_gfx_data_t* ctx = win->data;
+    gfx_push(ctx->gfx, type, param);
+}
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+#if 0
+
+void gum_start_paint(gum_window_t* win)
+{
+}
+
+void gum_end_paint(gum_window_t* win) {}
+
+void gum_push_clip(gum_window_t* win, GUM_box* box)
+{
+    gum_gfx_data_t* ctx = win->data;
+    ctx->clip.left += box->cx - box->sx;
+    ctx->clip.top += box->cy - box->sy;
+}
+
+void gum_pop_clip(gum_window_t* win, GUM_box* box, GUM_box* prev)
+{
+    gum_gfx_data_t* ctx = win->data;
+    ctx->clip.left -= box->cx - box->sx;
+    ctx->clip.top -= box->cy - box->sy;
+}
+
+void gum_draw_cell(gum_window_t* win, gum_cell_t* cell)
+{
+    gum_gfx_data_t* ctx = win->data;
+    GUM_skin* skin = gum_skin(cell);
+    if (skin == NULL)
+        return;
+
+    if (cell->cachedSkin != skin) {
+        cell->path = NULL;
+        cell->gradient = NULL;
+        cell->cachedSkin = skin;
+        cell->font = NULL;
+    }
+
+    if (cell->image == NULL && cell->img_src != NULL)
+        cell->image = gum_load_image(cell->img_src);
+
+    gfx_clip_t clip;
+    clip.left = cell->box.x + ctx->clip.left;
+    clip.top = cell->box.y + ctx->clip.top;
+    clip.right = clip.left + cell->box.w;
+    clip.bottom = clip.top + cell->box.h;
+
+    if (cell->image)
+        gfx_blit(ctx->gfx, (gfx_t*)cell->image, GFX_NOBLEND, &clip, NULL);
+    else if (skin->bgcolor >= MIN_ALPHA)
+        gfx_fill(ctx->gfx, skin->bgcolor, GFX_NOBLEND, &clip);
+}
+#endif
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+#if __USE_CAIRO
+
+
+static void gum_clear_cache(gum_gfx_data_t* ctx, gum_cell_t* cell)
+{
+    if (cell->image)
+        cairo_surface_destroy((cairo_surface_t*)cell->image);
+    if (cell->gradient)
+        cairo_pattern_destroy((cairo_pattern_t*)cell->gradient);
+    if (cell->path)
+        cairo_path_destroy((cairo_path_t*)cell->path);
+    if (cell->font)
+        cairo_font_face_destroy((cairo_font_face_t*)cell->font);
+
+    cell->image = NULL;
+    cell->gradient = NULL;
+    cell->path = NULL;
+    cell->font = NULL;
+}
+
+static void gum_draw_path(gum_gfx_data_t* ctx, gum_cell_t* cell, GUM_skin* skin, GUM_gctx* gctx)
+{
+    if (cell->path) {
+        cairo_new_path(ctx->cr);
+        cairo_append_path(ctx->cr, (cairo_path_t*)cell->path);
+        return;
+    }
+
+    float sz = MIN(cell->box.w, cell->box.h);
+    float r_top_left = CSS_GET_SIZE(skin->r_top_left, gctx->dpi_x, gctx->dsp_x, sz);
+    float r_top_right = CSS_GET_SIZE(skin->r_top_right, gctx->dpi_x, gctx->dsp_x, sz);
+    float r_bottom_right = CSS_GET_SIZE(skin->r_bottom_right, gctx->dpi_x, gctx->dsp_x, sz);
+    float r_bottom_left = CSS_GET_SIZE(skin->r_bottom_left, gctx->dpi_x, gctx->dsp_x, sz);
+
+    cairo_new_path(ctx->cr);
+    cairo_move_to(ctx->cr, cell->box.x + r_top_left, cell->box.y);
+    cairo_line_to(ctx->cr, cell->box.x + cell->box.w - r_top_right, cell->box.y);
+    if (r_top_right != 0)
+        cairo_arc(ctx->cr, cell->box.x + cell->box.w - r_top_right, cell->box.y + r_top_right, r_top_right, -M_PI / 2.0, 0.0);
+    cairo_line_to(ctx->cr, cell->box.x + cell->box.w, cell->box.y + cell->box.h - r_bottom_right);
+    if (r_bottom_right != 0)
+        cairo_arc(ctx->cr, cell->box.x + cell->box.w - r_bottom_right, cell->box.y + cell->box.h - r_bottom_right, r_bottom_right, 0.0, M_PI / 2.0);
+    cairo_line_to(ctx->cr, cell->box.x + r_bottom_left, cell->box.y + cell->box.h);
+    if (r_bottom_left != 0)
+        cairo_arc(ctx->cr, cell->box.x + r_bottom_left, cell->box.y + cell->box.h - r_bottom_left, r_bottom_left, M_PI / 2.0, M_PI);
+    cairo_line_to(ctx->cr, cell->box.x, cell->box.y + r_top_left);
+    if (r_top_left != 0)
+        cairo_arc(ctx->cr, cell->box.x + r_top_left, cell->box.y + r_top_left, r_top_left, M_PI, 3 * M_PI / 2.0);
+
+    cell->path = cairo_copy_path(ctx->cr);
+}
+
+static cairo_pattern_t* gum_build_gradient(gum_gfx_data_t* ctx, gum_cell_t* cell, GUM_skin* skin)
+{
+    if (cell->gradient)
+        return cell->gradient;
+
+    cairo_pattern_t* grad;
+
+    if (skin->grad_angle == 90)
+        grad = cairo_pattern_create_linear(cell->box.x + cell->box.w, 0, cell->box.x, 0);
+    else if (skin->grad_angle == 270)
+        grad = cairo_pattern_create_linear(cell->box.x, 0, cell->box.x + cell->box.w, 0);
+    else
+        grad = cairo_pattern_create_linear(0, cell->box.y, 0, cell->box.y + cell->box.h);
+
+    cairo_pattern_add_color_stop_rgba(grad, 0.0, //0, 0.5, 0.5, 0);
+        ((skin->bgcolor >> 16) & 255) / 255.0,
+        ((skin->bgcolor >> 8) & 255) / 255.0,
+        ((skin->bgcolor >> 0) & 255) / 255.0,
+        ((skin->bgcolor >> 24) & 255) / 255.0);
+    // cairo_pattern_add_color_stop_rgba(grad, 0.25, 0.5, 0.5, 0);
+    // ((skin->grcolor >> 16) & 255) / 255.0,
+    // ((skin->grcolor >> 8) & 255) / 255.0,
+    // ((skin->grcolor >> 0) & 255) / 255.0,
+    // ((skin->grcolor >> 24) & 255) / 255.0);
+    cairo_pattern_add_color_stop_rgba(grad, 1.0, //0, 0.5, 0.5, 0);
+        ((skin->grcolor >> 16) & 255) / 255.0,
+        ((skin->grcolor >> 8) & 255) / 255.0,
+        ((skin->grcolor >> 0) & 255) / 255.0,
+        ((skin->grcolor >> 24) & 255) / 255.0);
+
+    cell->gradient = grad;
+    return grad;
+}
+
+#ifdef __USE_FT
+
+void *gum_load_fontface(const char *family)
+{
+    char buf[256];
+    char* exts[] = {
+        "ttf", "otf",
+    };
+    for (int i = 0; i < 2; ++i) {
+        snprintf(buf, 256, "%s/%s.%s", RESX "/fonts", family, exts[i]);
+        FT_Face face;
+        FT_Error err = FT_New_Face(ftLibrary, buf, 0, &face);
+        // FT_Set_Pixel_Sizes(face, 0, fontsize);
+        // FT_Set_Char_Size();
+        if (!err)
+            return face;
+    }
+    return NULL;
+}
+
+static FT_Face gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family)
+{
+    if (cell->font)
+        return cell->font;
+    cell->font = gum_face(family ? family :  "arial");
+    return cell->font;
+}
+
+void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
+{
+    /* char_height in 1/64th of points  */
+    cell->font = gum_load_font(NULL, cell, skin->font_family);
+    FT_Error err = FT_Set_Char_Size(cell->font, 0, skin->font_size * 64, 96, 96);
+    gfx_text_t mesures;
+    gfx_ft_size_text(cell->font, cell->text, &mesures);
+    *w = mesures.width;
+    *h = mesures.height;
+}
+
+void gum_text_paint(gum_gfx_data_t * ctx, gum_cell_t * cell, gum_skin_t * skin)
+{
+    // cairo_pop_group_to_source(ctx->cr);
+    // cairo_paint(ctx->cr);
+    cairo_surface_flush(ctx->srf);
+
+    void *data = cairo_image_surface_get_data(ctx->srf);
+    FT_Face face = gum_load_font(ctx, cell, skin->font_family);
+    /* char_height in 1/64th of points  */
+    FT_Error err = FT_Set_Char_Size(face, 0, skin->font_size * 64, 96, 96);
+    if (err) {
+        fprintf(stderr, "Error with set face size: %d\n", err);
+    }
+
+
+    gfx_clip_t clip;
+    clip.left = ctx->px + cell->box.cx;
+    clip.top = ctx->py + cell->box.cy;
+    clip.right = clip.left + cell->box.cw;
+    clip.bottom = clip.top + cell->box.ch;
+    gfx_ft_write_text(ctx->gfx, face, cell->text, &clip, skin->txcolor, skin->align, skin->valign);
+    // cairo_surface_mark_dirty(ctx->srf);
+    // cairo_push_group(ctx->cr);
+    // cairo_paint(ctx->cr);
+    // cairo_surface_mark_dirty_rectangle(ctx->srf, clip.left, clip.top, cell->box.cw, cell->box.ch);
+}
+
+#else
+
+static cairo_font_face_t* gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family)
+{
+    if (cell->font)
+        return cell->font;
+    cairo_font_face_t* face = cairo_toy_font_face_create(family ? family : "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cell->font = face;
+    return face;
+}
+
+void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
+{
+    gum_window_t* win = gum_fetch_window(cell);
+    gum_gfx_data_t* ctx = win->data;
+    cairo_text_extents_t extents;
+    if (skin == NULL) {
+        *w = 0;
+        *h = 0;
+        return;
+    }
+
+    cairo_font_face_t* face = gum_load_font(ctx, cell, skin->font_family);
+    cairo_set_font_face(ctx->cr, face);
+    cairo_set_font_size(ctx->cr, skin->font_size * 96.0 / 64.0);
+    cairo_text_extents(ctx->cr, cell->text, &extents);
+    *w = extents.width;
+    *h = extents.height;
+}
+
+void gum_text_paint(gum_gfx_data_t* ctx, gum_cell_t* cell, gum_skin_t* skin)
+{
+    int tx = cell->box.cx;
+    int ty = cell->box.cy;
+    cairo_font_face_t* face = gum_load_font(ctx, cell, skin->font_family);
+    cairo_set_font_face(ctx->cr, face);
+    cairo_set_font_size(ctx->cr, skin->font_size * 96.0 / 64.0);
+    cairo_set_source_rgb(ctx->cr, GFX_RED(skin->txcolor) / 255.0, GFX_GREEN(skin->txcolor) / 255.0, GFX_BLUE(skin->txcolor) / 255.0);
+
+    cairo_text_extents_t extents;
+    cairo_text_extents(ctx->cr, cell->text, &extents);
+
+    if (skin->align == 2)
+        tx += cell->box.cw - (extents.width + extents.x_bearing);
+    else if (skin->align == 0)
+        tx += cell->box.cw / 2 - (extents.width / 2 + extents.x_bearing);
+
+    if (skin->valign == 2)
+        ty += cell->box.ch - (extents.height + extents.y_bearing);
+    else if (skin->valign == 0)
+        ty += cell->box.ch / 2 - (extents.height / 2 + extents.y_bearing);
+
+
+    cairo_move_to(ctx->cr, tx, ty);
+    cairo_show_text(ctx->cr, cell->text);
+}
+#endif
+
+
+void* gum_load_image(const char* source)
+{
+    // gfx_t* img = gfx_load_image(source);
+    cairo_surface_t* img = cairo_image_surface_create_from_png(source);
+    return img;
+}
+
+void gum_start_paint(gum_window_t* win)
+{
+    gum_gfx_data_t* ctx = win->data;
+    // cairo_push_group(ctx->cr);
+    // cairo_set_source_rgb(ctx->cr, 1, 1, 1);
+    // cairo_paint(ctx->cr);
+    cairo_reset_clip(ctx->cr);
+    ctx->px = ctx->x;
+    ctx->py = ctx->y;
+}
+
+void gum_end_paint(gum_window_t* win)
+{
+    gum_gfx_data_t* ctx = win->data;
+    // cairo_pop_group_to_source(ctx->cr);
+    // cairo_paint(ctx->cr);
+    cairo_surface_flush(ctx->srf);
+}
+
+void gum_push_clip(gum_window_t* win, GUM_box* box)
+{
+    gum_gfx_data_t* ctx = win->data;
+    cairo_save(ctx->cr);
+    cairo_new_path(ctx->cr);
+    cairo_rectangle(ctx->cr, box->cx, box->cy, box->cw, box->ch);
+    cairo_clip(ctx->cr);
+    cairo_translate(ctx->cr, box->cx - box->sx, box->cy - box->sy);
+    ctx->px += box->cx - box->sx;
+    ctx->py += box->cy - box->sy;
+}
+
+void gum_pop_clip(gum_window_t* win, GUM_box* box, GUM_box* prev)
+{
+    gum_gfx_data_t* ctx = win->data;
+    cairo_translate(ctx->cr, box->sx - box->cx, box->sy - box->cy);
+    cairo_restore(ctx->cr);
+    ctx->px -= box->cx - box->sx;
+    ctx->py -= box->cy - box->sy;
+}
+
+
+void gum_draw_cell(gum_window_t* win, gum_cell_t* cell)
+{
+    gum_gfx_data_t* ctx = win->data;
+    GUM_skin* skin = gum_skin(cell);
+    if (skin == NULL)
+        return;
+
+    if (cell->cachedSkin != skin) {
+        gum_clear_cache(ctx, cell);
+        cell->cachedSkin = skin;
+    }
+    if (cell->image == NULL && cell->img_src != NULL)
+        cell->image = gum_image(cell->img_src);
+
+    // Draw path
+    gum_draw_path(ctx, cell, skin, &win->ctx);
+
+    if (cell->image) {
+        cairo_surface_t* img = (cairo_surface_t*)cell->image;
+        if (cairo_surface_status(img) == 0) {
+            int img_sz = MAX(cairo_image_surface_get_width(img), cairo_image_surface_get_height(img));
+            double rt = (double)MAX(cell->box.w, cell->box.h) / (double)img_sz;
+            cairo_save(ctx->cr);
+            cairo_translate(ctx->cr, cell->box.x, cell->box.y);
+            cairo_scale(ctx->cr, rt, rt);
+            cairo_set_source_surface(ctx->cr, img, 0, 0);
+            cairo_fill_preserve(ctx->cr);
+            cairo_restore(ctx->cr);
+        }
+    } else if (skin->grcolor >= MIN_ALPHA) {
+        cairo_pattern_t* grad = gum_build_gradient(ctx, cell, skin);
+        cairo_set_source(ctx->cr, grad);
+        cairo_fill_preserve(ctx->cr);
+    } else if (skin->bgcolor >= MAX_ALPHA) {
+        cairo_set_source_rgb(ctx->cr,
+            ((skin->bgcolor >> 16) & 255) / 255.0,
+            ((skin->bgcolor >> 8) & 255) / 255.0,
+            ((skin->bgcolor >> 0) & 255) / 255.0);
+        cairo_fill_preserve(ctx->cr);
+    } else if (skin->bgcolor >= MIN_ALPHA) {
+        cairo_set_source_rgba(ctx->cr,
+            ((skin->bgcolor >> 16) & 255) / 255.0,
+            ((skin->bgcolor >> 8) & 255) / 255.0,
+            ((skin->bgcolor >> 0) & 255) / 255.0,
+            ((skin->bgcolor >> 24) & 255) / 255.0);
+        cairo_fill_preserve(ctx->cr);
+    }
+
+    if (skin->brcolor >= MAX_ALPHA) {
+        double size = skin->brsize.unit == 0 ? 1.0 : CSS_GET_SIZE(skin->brsize, win->ctx.dpi_x, win->ctx.dsp_x, cell->box.w);
+        cairo_set_line_width(ctx->cr, size);
+        cairo_set_source_rgb(ctx->cr,
+            ((skin->brcolor >> 16) & 255) / 255.0,
+            ((skin->brcolor >> 8) & 255) / 255.0,
+            ((skin->brcolor >> 0) & 255) / 255.0);
+        cairo_stroke(ctx->cr);
+
+    } else if (skin->brcolor >= MIN_ALPHA) {
+        double size = skin->brsize.unit == 0 ? 1.0 : CSS_GET_SIZE(skin->brsize, win->ctx.dpi_x, win->ctx.dsp_x, cell->box.w);
+        cairo_set_line_width(ctx->cr, size);
+        cairo_set_source_rgba(ctx->cr,
+            ((skin->brcolor >> 16) & 255) / 255.0,
+            ((skin->brcolor >> 8) & 255) / 255.0,
+            ((skin->brcolor >> 0) & 255) / 255.0,
+            ((skin->brcolor >> 24) & 255) / 255.0);
+        cairo_stroke(ctx->cr);
+    }
+
+
+    if (cell->text)
+        gum_text_paint(ctx, cell, skin);
+}
+
+#endif
+
+/* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
+
+
+#if 0
+
+
+uint32_t gfx_alpha_blend(uint32_t low, uint32_t upr);
+uint32_t gfx_upper_alpha_blend(uint32_t low, uint32_t upr);
+
+void gum_draw_cell(GUM_window* win, GUM_cell* cell, bool top)
 {
     //cairo_t *ctx = win->ctx;
-    GUM_skin *skin = gum_skin(cell);
+    GUM_skin* skin = gum_skin(cell);
     if (skin == NULL)
         return;
 
@@ -149,13 +722,10 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     clip.right = clip.left + cell->box.w;
     clip.bottom = clip.top + cell->box.h;
 
-    if (skin->bgcolor >= MIN_ALPHA)
-        gfx_fill(win->gfx, skin->bgcolor, GFX_NOBLEND, &clip);
-
     //    gum_draw_path(ctx, cell, skin);
 
     if (cell->image) {
-        gfx_blit(win->gfx, (gfx_t *)cell->image, GFX_NOBLEND, &clip, NULL);
+        gfx_blit(win->gfx, (gfx_t*)cell->image, GFX_NOBLEND, &clip, NULL);
         //        cairo_surface_t *img = (cairo_surface_t *)cell->image;
         //        int img_sz = MAX(cairo_image_surface_get_width(img), cairo_image_surface_get_height(img));
         //        double rt = (double)MAX(cell->box.w, cell->box.h) / (double)img_sz;
@@ -165,12 +735,17 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
         //        cairo_set_source_surface(ctx, img, 0, 0);
         //        cairo_fill_preserve(ctx);
         //        cairo_restore(ctx);
-    }
+
     //    } else if (skin->grcolor >= MIN_ALPHA) {
 
     //        cairo_pattern_t *grad = gum_build_gradient(cell, skin);
     //        cairo_set_source(ctx, grad);
     //        cairo_fill_preserve(ctx);
+
+    }
+    else if (skin->bgcolor >= MIN_ALPHA) {
+        gfx_fill(win->gfx, skin->bgcolor, GFX_NOBLEND, &clip);
+    }
 
     //    } else if (skin->bgcolor >= MIN_ALPHA) {
     //        cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
@@ -191,13 +766,14 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
     //}
 
     //// fprintf(stderr, " -- %s\n", cell->text);
-    if (cell->text && ftLibraryInitialized) {
 
+    if (cell->text) {
+#ifdef __USE_FT
         FT_Error error;
         FT_Face face = (FT_Face)cell->font;
         if (face == NULL) {
-            char buf[64];
-            snprintf(buf, 64, "./resx/%s.ttf", skin->font_family);
+            char buf[128];
+            snprintf(buf, 128, RESX "/fonts/%s.ttf", skin->font_family);
             error = FT_New_Face(ftLibrary, buf, 0, &face);
             if (error)
                 return;
@@ -209,81 +785,9 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
         /* char_height in 1/64th of points  */
         error = FT_Set_Char_Size(face, 0, skin->font_size * 64, ctx.dpi_x, ctx.dpi_y);
 
+        gfx_ft_write_text(win->gfx, cell->font, cell->text, &clip, skin->txcolor, skin->align, skin->valign);
+#endif
 
-        int pen_x = clip.left; // +cell->box.x;
-        int pen_y = clip.top; // cell->box.y;
-
-        int text_width = 0;
-        int text_x_bearing = 0;
-        int text_height = 0;
-        int text_y_bearing = 0;
-
-
-        int i;
-        FT_GlyphSlot  slot = face->glyph;
-        int miny = 0, maxy = 0;
-        for (i = 0; ; ++i) {
-            int ch;
-            int len = mbtouc(&ch, &cell->text[i], 6);
-            i += len - 1;
-            if (ch == 0)
-                break;
-
-            FT_UInt  glyph_index;
-            glyph_index = FT_Get_Char_Index(face, ch);
-            error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
-            if (error)
-                continue;
-
-            error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-            if (error)
-                continue;
-
-            text_width += slot->bitmap_left + slot->advance.x >> 6;
-            if (miny > -slot->bitmap_top)
-                miny = -slot->bitmap_top;
-            if (maxy < slot->bitmap.rows - slot->bitmap_top)
-                maxy = slot->bitmap.rows - slot->bitmap_top;
-        }
-        text_height = maxy - miny;
-        text_y_bearing = miny;
-
-        if (skin->align == 2)
-            pen_x += cell->box.w - (text_width + text_x_bearing);
-        else if (skin->align == 0)
-            pen_x += cell->box.w / 2 - (text_width / 2 + text_x_bearing);
-
-        if (skin->valign == 2)
-            pen_y += cell->box.h - (text_height + text_y_bearing);
-        else if (skin->valign == 0)
-            pen_y += cell->box.h / 2 - (text_height / 2 + text_y_bearing);
-
-        for (i = 0; ; ++i) {
-            int ch;
-            int len = mbtouc(&ch, &cell->text[i], 6);
-            i += len - 1;
-            if (ch == 0)
-                break;
-
-            FT_UInt  glyph_index;
-            glyph_index = FT_Get_Char_Index(face, ch);
-            error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
-            if (error)
-                continue;
-
-            /* convert to an anti-aliased bitmap */
-            error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-            if (error)
-                continue;
-
-            // COPY !!!
-            gfx_copy_glyph(win->gfx, &clip, &slot->bitmap, pen_x + slot->bitmap_left, pen_y - slot->bitmap_top, skin->txcolor);
-
-
-            /* increment pen position */
-            pen_x += slot->advance.x >> 6;
-            pen_y += slot->advance.y >> 6;
-        }
 
         //    cairo_set_source_rgb(ctx, //0.8, 0.8, 0.8);
         //                         ((skin->txcolor >> 16) & 255) / 255.0,
@@ -317,55 +821,37 @@ void gum_draw_cell(GUM_window *win, GUM_cell *cell, bool top)
 
 
 
-void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
+void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
 {
-    FT_Face face;
-    FT_Error error = FT_New_Face(ftLibrary, "./resx/arial.ttf", 0, &face);
+#ifdef __USE_FT
+
+    FT_Error error;
+    FT_Face face = (FT_Face)cell->font;
+    if (face == NULL) {
+        char buf[128];
+        snprintf(buf, 128, RESX "/fonts/%s.ttf", skin->font_family);
+        error = FT_New_Face(ftLibrary, buf, 0, &face);
+        if (error)
+            return;
+        cell->font = face;
+    }
+
+    GUM_gctx ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.dpi_x = 96;
+    ctx.dpi_x = 96;
+    // gum_fill_context(win, &ctx);
+    /* char_height in 1/64th of points  */
+    error = FT_Set_Char_Size(face, 0, skin->font_size * 64, ctx.dpi_x, ctx.dpi_y);
     if (error)
         return;
 
-    /* char_height in 1/64th of points  */
-    error = FT_Set_Char_Size(face, 0, skin->font_size * 64, 96, 96);
+    gfx_text_t measures;
+    gfx_ft_size_text(face, cell->text, &measures);
+    *w = measures.width;
+    *h = measures.height;
 
-
-    int text_width = 0;
-    int text_x_bearing = 0;
-    int text_height = 0;
-    int text_y_bearing = 0;
-
-
-    int i;
-    FT_GlyphSlot  slot = face->glyph;
-    int miny = 0, maxy = 0;
-    for (i = 0; ; ++i) {
-        int ch;
-        int len = mbtouc(&ch, &text[i], 6);
-        i += len - 1;
-        if (ch == 0)
-            break;
-
-        FT_UInt  glyph_index;
-        glyph_index = FT_Get_Char_Index(face, ch);
-        error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
-        if (error)
-            continue;
-
-        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-        if (error)
-            continue;
-
-        text_width += slot->bitmap_left + slot->advance.x >> 6;
-        if (miny > -slot->bitmap_top)
-            miny = -slot->bitmap_top;
-        if (maxy < slot->bitmap.rows - slot->bitmap_top)
-            maxy = slot->bitmap.rows - slot->bitmap_top;
-    }
-    text_height = maxy - miny;
-    text_y_bearing = miny;
-
-    *w = text_width;
-    *h = text_height;
-
+#endif
     //if (srf == NULL) {
     //    srf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, 10, 10);
     //    ctx = cairo_create(srf);
@@ -382,195 +868,71 @@ void gum_text_size(const char *text, int *w, int *h, GUM_skin *skin)
 }
 
 
-void gum_draw_scrolls(GUM_window *win, GUM_cell *cell)
-{
-    //cairo_t *ctx = win->ctx;
-    //if (cell->state & GUM_CELL_OVERFLOW_X) {
-    //    cairo_new_path(ctx);
-    //    cairo_rectangle(ctx,
-    //                    cell->box.x,
-    //                    cell->box.y + cell->box.h - 7,
-    //                    cell->box.w - 7, 7);
-    //    cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
-    //    cairo_fill(ctx);
-
-    //    int sz = cell->box.cw * (cell->box.w - 7) / cell->box.ch_w;
-    //    int st = cell->box.sx * (cell->box.w - 7) / cell->box.ch_w;
-
-    //    cairo_new_path(ctx);
-    //    cairo_rectangle(ctx,
-    //                    cell->box.x + st,
-    //                    cell->box.y + cell->box.h - 7,
-    //                    sz, 7);
-    //    cairo_set_source_rgb(ctx, 66.0 / 255.0, 165.0 / 255.0, 245.0 / 255.0);
-    //    cairo_fill(ctx);
-    //}
-
-    //if (cell->state & GUM_CELL_OVERFLOW_Y) {
-    //    cairo_new_path(ctx);
-    //    cairo_rectangle(ctx,
-    //                    cell->box.x + cell->box.w - 7,
-    //                    cell->box.y, 7, cell->box.h - 7);
-    //    cairo_set_source_rgb(ctx, 0.7, 0.7, 0.7);
-    //    cairo_fill(ctx);
-
-    //    int sz = cell->box.ch * (cell->box.h - 7) / cell->box.ch_h;
-    //    int st = cell->box.sy * (cell->box.h - 7) / cell->box.ch_h;
-
-    //    cairo_new_path(ctx);
-    //    cairo_rectangle(ctx,
-    //                    cell->box.x + cell->box.w - 7,
-    //                    cell->box.y + st, 7, sz);
-    //    cairo_set_source_rgb(ctx, 66.0 / 255.0, 165.0 / 255.0, 245.0 / 255.0);
-    //    cairo_fill(ctx);
-    //}
-}
-
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-#include <kora/keys.h>
-
-
-void gum_fill_context(GUM_window *win, GUM_gctx *ctx)
+void gum_handle_event(GUM_event_manager* evm, GUM_event* event)
 {
-    ctx->dpi_x = 96;
-    ctx->dpi_y = 96;
-    ctx->dsp_x = 0.75;
-    ctx->dsp_y = 0.75;
-    ctx->width = win->gfx->width;
-    ctx->height = win->gfx->height;
+    int i;
+    GUM_async* async;
+    fprintf(stderr, "Event %d enter\n", event->type);
+    switch (event->type) {
+    case GUM_EV_RESIZE:
+        // fprintf(stderr, "W %d - H %d\n", event->param0, event->param1);
+        gum_resize_win(evm->win, event->param0, event->param1);
+        evm->ctx.width = event->param0;
+        evm->ctx.height = event->param1;
+        gum_resize_px(evm->root, evm->ctx.width, evm->ctx.height);
+        break;
+
+    case GUM_EV_MOTION:
+        gum_event_motion(evm, event->param0, event->param1);
+        break;
+
+    case GUM_EV_BTN_PRESS:
+        if (event->param0 == 1)
+            gum_event_left_press(evm);
+        else
+            gum_event_button_press(evm, event->param0);
+        break;
+
+    case GUM_EV_WHEEL_UP:
+        gum_event_wheel(evm, -20);
+        break;
+
+    case GUM_EV_WHEEL_DOWN:
+        gum_event_wheel(evm, 20);
+        break;
+
+    case GUM_EV_BTN_RELEASE:
+        if (event->param0 == 1)
+            gum_event_left_release(evm);
+        else
+            gum_event_button_release(evm, event->param0);
+        break;
+
+    case GUM_EV_KEY_ENTER:
+        gum_event_key_press(evm, event->param0, event->param1);
+        break;
+    case GUM_EV_KEY_PRESS:
+        // gum_event_key_press(evm, event->param0, event->param1);
+        break;
+    case GUM_EV_KEY_RELEASE:
+        // gum_event_key_release(evm, event->param0, event->param1);
+        break;
+    case GUM_EV_TICK:
+        gum_emit_event(evm, NULL, GUM_EV_TICK);
+        // TODO properties
+        gum_update_mesure(evm);
+        gum_update_layout(evm);
+        if (gum_update_visual(evm))
+            gfx_flip(ctx->gfx);
+        break;
+    case GUM_EV_ASYNC:
+        async = (GUM_async*)(size_t)event->param0;
+        async->callback(evm, async->res);
+        break;
+    }
+    // fprintf(stderr, "Event %d leave\n", event->type);
 }
 
-#define GET_X_LPARAM(s)   ((int)(short)((int32_t)(s) & 0xffff))
-#define GET_Y_LPARAM(s)   ((int)(short)(((int32_t)(s) >> 16) & 0xffff))
-
-int gum_event_poll(GUM_window *win, GUM_event *event, int timeout)
-{
-    gfx_msg_t msg;
-    do {
-        gfx_poll(win->gfx, &msg);
-        gfx_handle(win->gfx, &msg, &win->seat);
-        event->type = msg.message;
-        event->param0 = msg.param1;
-        if (msg.message < 128) {
-            event->type = -1;
-            switch (msg.message) {
-            case GFX_EV_QUIT:
-                event->type = GUM_EV_DESTROY;
-                break;
-            case GFX_EV_MOUSEMOVE:
-                event->type = GUM_EV_MOTION;
-                event->param0 = GET_X_LPARAM(msg.param1);
-                event->param1 = GET_Y_LPARAM(msg.param1);
-                // printf("Mouse at %dx%d\n", event->param0, event->param1);
-                break;
-            case GFX_EV_BTNDOWN:
-                event->type = GUM_EV_BTN_PRESS;
-                event->param0 = msg.param1;
-                break;
-            case GFX_EV_BTNUP:
-                event->type = GUM_EV_BTN_RELEASE;
-                event->param0 = msg.param1;
-                break;
-            case GFX_EV_MOUSEWHEEL:
-                break;
-            case GFX_EV_KEYDOWN:
-                event->type = GUM_EV_KEY_PRESS;
-                break;
-            case GFX_EV_KEYUP:
-                event->type = GUM_EV_KEY_RELEASE;
-                break;
-            case GFX_EV_KEYPRESS:
-                event->type = GUM_EV_KEY_ENTER;
-                event->param0 = msg.param1;
-                break;
-            case GFX_EV_TIMER:
-                event->type = GUM_EV_TICK;
-                break;
-            case GFX_EV_RESIZE:
-                break;
-            case GFX_EV_PAINT:
-                event->type = GUM_EV_EXPOSE;
-                break;
-            default:
-                printf("Unsupported\n");
-                break;
-            }
-        }
-
-    } while (event->type == -1);
-
-    return 0;
-}
-
-
-void gum_start_paint(GUM_window *win)
-{
-    if (win->gfx->pixels == NULL)
-        gfx_map(win->gfx);
-    //cairo_push_group(win->ctx);
-    //cairo_set_source_rgb(win->ctx, 1, 1, 1);
-    //cairo_paint(win->ctx);
-    //cairo_reset_clip(win->ctx);
-    // cairo_translate(win->ctx, x, y);
-    win->clip.left = 0;
-    win->clip.top = 0;
-}
-
-void gum_end_paint(GUM_window *win)
-{
-    //cairo_pop_group_to_source(win->ctx);
-    //cairo_paint(win->ctx);
-    //cairo_surface_flush(win->srf);
-    win->redraw = false;
-    gfx_flip(win->gfx);
-}
-
-void gum_push_clip(GUM_window *win, GUM_box *box)
-{
-    //cairo_save(win->ctx);
-    //cairo_new_path(win->ctx);
-    //cairo_rectangle(win->ctx, box->cx, box->cy, box->cw, box->ch);
-    //cairo_clip(win->ctx);
-    //cairo_translate(win->ctx, box->cx - box->sx, box->cy - box->sy);
-    win->clip.left += box->cx - box->sx;
-    win->clip.top += box->cy - box->sy;
-}
-
-void gum_pop_clip(GUM_window *win, GUM_box *box, GUM_box *prev)
-{
-    win->clip.left -= box->cx - box->sx;
-    win->clip.top -= box->cy - box->sy;
-    //cairo_translate(win->ctx, box->sx - box->cx, box->sy - box->cy);
-    //cairo_restore(win->ctx);
-}
-
-void gum_resize_win(GUM_window *win, int width, int height)
-{
-    gfx_unmap(win->gfx);
-    // gfx_resize(win->gfx, width, height);
-    //cairo_xlib_surface_set_size(win->srf, width, height);
-}
-
-
-void *gum_load_image(const char *name)
-{
-    gfx_t *img = gfx_load_image(name);
-    //cairo_surface_t *img = cairo_image_surface_create_from_png(name);
-    //if (cairo_surface_status(img) != 0)
-    //    return NULL;
-    return img;
-}
-
-void gum_do_visual(GUM_cell *cell, GUM_window *win, GUM_sideruler *inval)
-{
-    win->redraw = true;
-    gfx_invalid(win->gfx);
-
-}
-
-void gum_push_event(GUM_window *win, int type, size_t param0, size_t param1, void *data)
-{
-    gfx_push(win->gfx, type, param0);
-}
-
+#endif

@@ -25,9 +25,13 @@
 typedef void(*css_setter)(void *, const char *, const char *, const char *);
 
 typedef struct {
-    unsigned unit: 4;
-    int len: 28;
+    unsigned char unit;
+    float len;
 } css_size_t;
+
+typedef struct {
+    css_size_t left, right, top, bottom;
+} css_box_t;
 
 #define CSS_BUF_SIZE 1024
 
@@ -40,14 +44,14 @@ css_size_t css_parse_size(const char *value);
 #define CSS_GET_SIZE(v, dpi, dsp, sz) ( \
     (v).unit == CSS_SIZE_PX ? (v).len : ( \
     (v).unit == CSS_SIZE_PTS ? (v).len * (dpi) / 100 : ( \
-    (v).unit == CSS_SIZE_DP ? (int)((v).len * (dsp)) : ( \
+    (v).unit == CSS_SIZE_DP ? ((v).len * (dsp)) : ( \
     (v).unit == CSS_SIZE_PERC ? (v).len * (sz) / 1000 : ( \
       0 )))))
 
 #define CSS_GET_SIZE_R(v, dpi, dsp, sz) ( \
     (v).unit == CSS_SIZE_PX ? (v).len : ( \
     (v).unit == CSS_SIZE_PTS ? (v).len * (dpi) / 100 : ( \
-    (v).unit == CSS_SIZE_DP ? (int)((v).len * (dsp)) : ( \
+    (v).unit == CSS_SIZE_DP ? ((v).len * (dsp)) : ( \
     (v).unit == CSS_SIZE_PERC ? ((v).len ? 1000 * (sz) / (v).len : 0) : ( \
       0 )))))
 

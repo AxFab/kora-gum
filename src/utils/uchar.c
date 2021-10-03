@@ -1,11 +1,11 @@
 #include <stddef.h>
-
+#include <gum/xml.h>
 // Multibyte/wide character conversions
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Defined in header <stdlib.h>
 
-static int mblen_(const char *str, size_t lg)
+static int uclen_(const char *str, size_t lg)
 {
     int len = 1;
     unsigned s = (unsigned char)(*str);
@@ -28,10 +28,12 @@ static int mblen_(const char *str, size_t lg)
     return len;
 }
 
+
+
 // returns the number of bytes in the next multibyte character
-int umblen(const char *str, size_t lg)
+int uclen(const char* str, size_t lg)
 {
-    int i, len = mblen_(str, lg);
+    int i, len = uclen_(str, lg);
     for (i = 1; i < len; ++i) {
         if ((str[i] & 0xc0) != 0x80)
             return -1;
@@ -41,13 +43,13 @@ int umblen(const char *str, size_t lg)
 
 
 // Converts the next multibyte character to wide character
-int mbtouc(int *pwc, const char *str, size_t lg)
+int mbtouc(uchar_t* unicode, const char* str, size_t lg)
 {
     // mbstate_t ps;
     // return mbrtowc(pwc, str, lg, &ps);
-    int len = umblen(str, lg);
+    int len = uclen(str, lg);
     if (len == 1) {
-        *pwc = *str;
+        *unicode = *str;
         return 1;
     }
     if (len < 1)
@@ -57,47 +59,47 @@ int mbtouc(int *pwc, const char *str, size_t lg)
     while (i-- > 1)
         wc |= (((unsigned char)str[i] & 0x3f) << (6 * l++));
     wc |= (((unsigned char)str[0]) & ((1 << (6 - l)) - 1)) << (6 * l);
-    *pwc = wc;
+    *unicode = wc;
     return len;
 }
 
 // converts a wide character to its multibyte representation
-int uctomb(char *str, wchar_t wc)
+int uctomb(char* str, uchar_t unicode)
 {
-    if (wc < 0)
+    if (unicode < 0)
         return -1;
-    else if (wc < 0x80) {
-        str[0] = wc & 0x7f;
+    else if (unicode < 0x80) {
+        str[0] = unicode & 0x7f;
         return 1;
-    } else if (wc < 0x800) {
-        str[0] = 0xc0 | ((wc >> 6) & 0x1f);
-        str[1] = 0x80 | (wc & 0x3f);
+    } else if (unicode < 0x800) {
+        str[0] = 0xc0 | ((unicode >> 6) & 0x1f);
+        str[1] = 0x80 | (unicode & 0x3f);
         return 2;
-    } else if (wc < 0x10000) {
-        str[0] = 0xe0 | ((wc >> 12) & 0x0f);
-        str[1] = 0x80 | ((wc >> 6) & 0x3f);
-        str[2] = 0x80 | (wc & 0x3f);
+    } else if (unicode < 0x10000) {
+        str[0] = 0xe0 | ((unicode >> 12) & 0x0f);
+        str[1] = 0x80 | ((unicode >> 6) & 0x3f);
+        str[2] = 0x80 | (unicode & 0x3f);
         return 3;
-    } else if (wc < 0x400000) {
-        str[0] = 0xf0 | ((wc >> 18) & 0x07);
-        str[1] = 0x80 | ((wc >> 12) & 0x3f);
-        str[2] = 0x80 | ((wc >> 6) & 0x3f);
-        str[3] = 0x80 | (wc & 0x3f);
+    } else if (unicode < 0x400000) {
+        str[0] = 0xf0 | ((unicode >> 18) & 0x07);
+        str[1] = 0x80 | ((unicode >> 12) & 0x3f);
+        str[2] = 0x80 | ((unicode >> 6) & 0x3f);
+        str[3] = 0x80 | (unicode & 0x3f);
         return 4;
-    } else if (wc < 0x4000000) {
-        str[0] = 0xf8 | ((wc >> 24) & 0x03);
-        str[1] = 0x80 | ((wc >> 18) & 0x3f);
-        str[2] = 0x80 | ((wc >> 12) & 0x3f);
-        str[3] = 0x80 | ((wc >> 6) & 0x3f);
-        str[4] = 0x80 | (wc & 0x3f);
+    } else if (unicode < 0x4000000) {
+        str[0] = 0xf8 | ((unicode >> 24) & 0x03);
+        str[1] = 0x80 | ((unicode >> 18) & 0x3f);
+        str[2] = 0x80 | ((unicode >> 12) & 0x3f);
+        str[3] = 0x80 | ((unicode >> 6) & 0x3f);
+        str[4] = 0x80 | (unicode & 0x3f);
         return 5;
     } else {
-        str[0] = 0xfc | ((wc >> 30) & 0x01);
-        str[1] = 0x80 | ((wc >> 24) & 0x3f);
-        str[2] = 0x80 | ((wc >> 18) & 0x3f);
-        str[3] = 0x80 | ((wc >> 12) & 0x3f);
-        str[4] = 0x80 | ((wc >> 6) & 0x3f);
-        str[5] = 0x80 | (wc & 0x3f);
+        str[0] = 0xfc | ((unicode >> 30) & 0x01);
+        str[1] = 0x80 | ((unicode >> 24) & 0x3f);
+        str[2] = 0x80 | ((unicode >> 18) & 0x3f);
+        str[3] = 0x80 | ((unicode >> 12) & 0x3f);
+        str[4] = 0x80 | ((unicode >> 6) & 0x3f);
+        str[5] = 0x80 | (unicode & 0x3f);
         return 6;
     }
 }

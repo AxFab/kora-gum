@@ -17,6 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
+#include <kora/mcrs.h>
 #include <gum/css.h>
 #include <stdlib.h>
 #include <string.h>
@@ -117,8 +118,10 @@ unsigned int css_parse_color(const char *value)
         return 0xFF000000 | color;
     } else if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') {
         if (value[3] == 'a') {
-            sscanf(value, "rgba(%hhd,%hhd,%hhd,%hhd)",
-                   &((char *)&color)[2], &((char *)&color)[1], &((char *)&color)[0], &((char *)&color)[3]);
+            float alpha;
+            sscanf(value, "rgba(%hhd,%hhd,%hhd,%f)",
+                   &((char *)&color)[2], &((char *)&color)[1], &((char *)&color)[0], &alpha);
+            ((unsigned char*)&color)[3] = MIN(255, MAX(0, alpha * 255));
             return color;
         } else {
             sscanf(value, "rgb(%hhd,%hhd,%hhd)",
@@ -149,30 +152,30 @@ css_size_t css_parse_size(const char *value)
 {
     css_size_t size = { 0, 0 };
     char *unit;
-    float sz = strtof(value, &unit);
+    double sz = strtod(value, &unit);
     if (*unit == '\0') {
-        size.len = (short)sz;
+        size.len = sz;
         size.unit = CSS_SIZE_PX;
     } else if (!strcmp(unit, "px")) {
-        size.len = (short)sz;
+        size.len = sz;
         size.unit = CSS_SIZE_PX;
     } else if (!strcmp(unit, "pt")) {
-        size.len = (short)(sz * 100 / 72);
+        size.len = sz * 100 / 72;
         size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "mm")) {
-        size.len = (short)(sz * 100 / 25.4f);
+        size.len = sz * 100 / 25.4f;
         size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "in")) {
-        size.len = (short)(sz * 100);
+        size.len = sz * 100;
         size.unit = CSS_SIZE_PTS;
     } else if (!strcmp(unit, "dp")) {
-        size.len = (short)sz;
+        size.len = sz;
         size.unit = CSS_SIZE_DP;
     } else if (!strcmp(unit, "%")) {
-        size.len = (short)(sz * 10);
+        size.len = sz * 10;
         size.unit = CSS_SIZE_PERC;
     } else {
-        size.len = (short)sz;
+        size.len = sz;
         size.unit = CSS_SIZE_PX;
     }
     return size;

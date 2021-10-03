@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
+gum_cell_t *gum_cell_hit_ex(gum_cell_t *cell, float x, float y, int mask)
 {
     if (cell->state & GUM_CELL_HIDDEN)
         return NULL;
@@ -30,7 +30,7 @@ GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
         x >= cell->box.x + cell->box.w || y >= cell->box.y + cell->box.h)
         return NULL;
 
-    GUM_cell *child, *hit;
+    gum_cell_t *child, *hit;
     for (child = cell->last; child; child = child->previous) {
         hit = gum_cell_hit_ex(child,
                               x - cell->box.cx + cell->box.sx,
@@ -42,22 +42,21 @@ GUM_cell *gum_cell_hit_ex(GUM_cell *cell, int x, int y, int mask)
     return cell->state & mask ? cell : NULL;
 }
 
-GUM_cell *gum_cell_hit(GUM_cell *cell, int x, int y)
+gum_cell_t *gum_cell_hit(gum_cell_t *cell, float x, float y)
 {
     return gum_cell_hit_ex(cell, x, y, GUM_CELL_SOLID);
 }
 
-void gum_paint(GUM_window *win, GUM_cell *root)
+void gum_paint(gum_window_t *win, gum_cell_t *root)
 {
-    GUM_cell *cell = root;
+    gum_cell_t *cell = root;
     char pad[50];
     for (;;) {
         memset(pad, ' ', cell->depth * 2);
         pad[cell->depth * 2] = '\0';
-        // fprintf(stderr, "%sPaint <%s.%s> [%d, %d, %d, %d]\n", pad,
-        //         cell->id, cell->name, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
+        // fprintf(stderr, "%sPaint <%s.%s> [%3.1f, %3.1f, %3.1f, %3.1f]\n", pad, cell->id, cell->name, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
         if (!(cell->state & GUM_CELL_HIDDEN))
-            gum_draw_cell(win, cell, cell == root);
+            gum_draw_cell(win, cell);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
             // TODO - prune if cell is outside drawing clip
             if (cell->first && !(cell->state & GUM_CELL_HIDDEN)) {
@@ -74,17 +73,18 @@ void gum_paint(GUM_window *win, GUM_cell *root)
 
             cell = cell->parent;
             gum_pop_clip(win, &cell->box, cell->parent ? &cell->parent->box : NULL);
-            if (cell->state & (GUM_CELL_OVERFLOW_X | GUM_CELL_OVERFLOW_Y) && !(cell->state & GUM_CELL_HIDDEN))  // TODO
-                gum_draw_scrolls(win, cell);
+            //if (cell->state & (gum_cell_t_OVERFLOW_X | gum_cell_t_OVERFLOW_Y) && !(cell->state & gum_cell_t_HIDDEN)) {
+            //    gum_draw_scrolls(win, cell);
+            //}
         }
         if (cell)
             cell = cell->next;
     }
 }
 
-GUM_skin *gum_skin(GUM_cell *cell)
+GUM_skin *gum_skin(gum_cell_t *cell)
 {
-    GUM_cell *ref = cell;
+    gum_cell_t *ref = cell;
     while (ref->state & GUM_CELL_SUBSTYLE)
         ref = ref->parent;
 
@@ -97,7 +97,7 @@ GUM_skin *gum_skin(GUM_cell *cell)
 }
 
 
-GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
+gum_cell_t *gum_get_by_id(gum_cell_t *cell, const char *id)
 {
     while (cell) {
         if (cell->id && !strcmp(id, cell->id))
@@ -115,7 +115,7 @@ GUM_cell *gum_get_by_id(GUM_cell *cell, const char *id)
     return NULL;
 }
 
-void gum_cell_detach(GUM_cell *cell)
+void gum_cell_detach(gum_cell_t *cell)
 {
     if (cell == NULL || cell->parent == NULL)
         return;
@@ -133,11 +133,11 @@ void gum_cell_detach(GUM_cell *cell)
     cell->parent = NULL;
 }
 
-void gum_cell_destroy(GUM_event_manager *evm, GUM_cell *cell)
+static void gum_cell_destroy(gum_window_t* win, gum_cell_t *cell)
 {
-    gum_cell_destroy_children(evm, cell);
-    if (evm)
-        gum_dereference_cell(evm, cell);
+    gum_cell_destroy_children(win, cell);
+    if (win)
+        gum_dereference_cell(win, cell);
     if (cell->skin)
         gum_skin_close(cell->skin);
     if (cell->skin_down)
@@ -158,23 +158,24 @@ void gum_cell_destroy(GUM_event_manager *evm, GUM_cell *cell)
     free(cell);
 }
 
-void gum_cell_destroy_children(GUM_event_manager *evm, GUM_cell *cell)
+void gum_cell_destroy_children(gum_window_t* win, gum_cell_t *cell)
 {
+    gum_invalid_visual(win, cell);
     while (cell->first) {
-        GUM_cell *child = cell->first;
+        gum_cell_t *child = cell->first;
         cell->first = child->next;
-        gum_cell_destroy(evm, child);
+        gum_cell_destroy(win, child);
     }
     cell->last = NULL;
 }
 
-void gum_destroy_cells(GUM_event_manager *evm, GUM_cell *cell)
+void gum_destroy_cells(gum_window_t* win, gum_cell_t *cell)
 {
-    gum_cell_destroy_children(evm, cell);
-    gum_cell_destroy(evm, cell);
+    gum_cell_destroy_children(win, cell);
+    gum_cell_destroy(win, cell);
 }
 
-void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
+void gum_cell_pushback(gum_cell_t *cell, gum_cell_t *child)
 {
     if (child->parent != NULL)
         gum_cell_detach(child);
@@ -187,17 +188,20 @@ void gum_cell_pushback(GUM_cell *cell, GUM_cell *child)
     else
         cell->first = child;
     cell->last = child;
-    gum_invalid_all(cell);
+    gum_window_t* win = gum_fetch_window(cell);
+    gum_invalid_measure(win, cell);
+    gum_invalid_layout(win, cell);
 }
 
-static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
+static gum_cell_t *gum_cell_copy_one(gum_cell_t *cell)
 {
-    GUM_cell *cpy = (GUM_cell *)calloc(sizeof(GUM_cell), 1);
-    memcpy(cpy, cell, sizeof(GUM_cell));
+    gum_cell_t *cpy = (gum_cell_t *)calloc(sizeof(gum_cell_t), 1);
+    memcpy(cpy, cell, sizeof(gum_cell_t));
     cpy->id = cell->id ? strdup(cell->id) : NULL;
     cpy->name = cell->name ? strdup(cell->name) : NULL;
     cpy->text = cell->text ? strdup(cell->text) : NULL;
     cpy->img_src = cell->img_src ? strdup(cell->img_src) : NULL;
+    cell->state |= GUM_CELL_MEASURE;
     // TODO -- COPY IMAGE !?
     cpy->parent = NULL;
     cpy->previous = NULL;
@@ -208,12 +212,12 @@ static GUM_cell *gum_cell_copy_one(GUM_cell *cell)
     return cpy;
 }
 
-GUM_cell *gum_cell_copy(GUM_cell *cell)
+gum_cell_t *gum_cell_copy(gum_cell_t *cell)
 {
-    GUM_cell *root = NULL;
-    GUM_cell *cursor = NULL;
+    gum_cell_t *root = NULL;
+    gum_cell_t *cursor = NULL;
     while (cell) {
-        GUM_cell *cpy = gum_cell_copy_one(cell);
+        gum_cell_t *cpy = gum_cell_copy_one(cell);
         if (cursor)
             gum_cell_pushback(cursor, cpy);
         else
@@ -239,12 +243,12 @@ GUM_cell *gum_cell_copy(GUM_cell *cell)
 }
 
 
-GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2)
+gum_cell_t *gum_baseof(gum_cell_t *cell1, gum_cell_t *cell2)
 {
     if (cell2 == NULL)
         return cell1;
     while (cell1) {
-        GUM_cell *cell = cell2;
+        gum_cell_t *cell = cell2;
         while (cell) {
             if (cell == cell1)
                 return cell;
@@ -256,31 +260,34 @@ GUM_cell *gum_baseof(GUM_cell *cell1, GUM_cell *cell2)
 }
 
 
-GUM_event_manager *gum_fetch_manager(GUM_cell *cell)
+gum_window_t * gum_fetch_window(gum_cell_t *cell)
 {
     while (cell->parent)
         cell = cell->parent;
-    return cell->manager;
+    return cell->win;
 }
 
-void gum_cell_set_text(GUM_cell *cell, const char *text)
+void gum_cell_set_text(gum_cell_t *cell, const char *text)
 {
     if (cell->text)
         free(cell->text);
     cell->text = text ? strdup(text) : NULL;
-    gum_invalid_measure(cell);
-    gum_invalid_visual(cell);
+    gum_window_t* win = gum_fetch_window(cell);
+    if (win) {
+        gum_invalid_measure(win, cell);
+        gum_invalid_visual(win, cell);
+    }
 }
 
 #ifndef NDEBUG
 
-void gum_debug_show_tree(GUM_cell *cell, int depth)
+void gum_debug_show_tree(gum_cell_t *cell, int depth)
 {
     char *indent = malloc(depth * 2 + 1);
     memset(indent, ' ', depth * 2);
     indent[depth * 2] = '\0';
     printf("%s> Cell [%s: %s] %p\n", indent, cell->name, cell->id, cell);
-    GUM_cell *child = cell->first;
+    gum_cell_t *child = cell->first;
     if (child == NULL) {
         if (cell->last != NULL)
             printf("%s  | Error children linked are corrupted\n", indent);

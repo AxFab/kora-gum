@@ -27,7 +27,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
-#include <kora/mcrs.h>
+#include "mcrs.h"
 #include "win.h"
 
 // #define __USE_CAIRO 1

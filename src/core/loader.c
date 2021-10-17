@@ -20,7 +20,7 @@
 #include <gum/cells.h>
 #include <gum/xml.h>
 #include <gum/css.h>
-#include "../hmap.h"
+#include "../utils/hmap.h"
 
 struct GUM_cellbuilder {
     gum_cell_t *root;

@@ -22,7 +22,7 @@
 
 #include <gum/cells.h>
 #include <gum/events.h>
-#include "hmap.h"
+#include "utils/hmap.h"
 
 
 struct gum_window {

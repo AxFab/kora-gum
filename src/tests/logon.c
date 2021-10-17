@@ -20,7 +20,7 @@
 #include <gum/core.h>
 #include <gum/cells.h>
 #include <gum/events.h>
-#include <kora/xml.h>
+#include <gum/xml.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

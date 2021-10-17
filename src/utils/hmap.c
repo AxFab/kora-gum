@@ -17,7 +17,7 @@
  *
  *   - - - - - - - - - - - - - - -
  */
-#include "../hmap.h"
+#include "hmap.h"
 #include <string.h>
 #include <assert.h>
 

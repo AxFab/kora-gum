@@ -18,7 +18,7 @@
  *   - - - - - - - - - - - - - - -
  */
 #include <gum/cells.h>
-#include "../hmap.h"
+#include "../utils/hmap.h"
 #include <gum/css.h>
 #include <stdlib.h>
 #include <stdio.h>

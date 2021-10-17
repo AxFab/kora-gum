@@ -21,7 +21,7 @@
 #include <gum/cells.h>
 #include <gum/xml.h>
 #include "../win.h"
-#include "../hmap.h"
+#include "../utils/hmap.h"
 #include "../mcrs.h"
 #include <keycodes.h>
 #include <stdlib.h>

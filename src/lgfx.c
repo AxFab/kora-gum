@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -28,10 +28,10 @@
 #include <time.h>
 #include <signal.h>
 #include <kora/mcrs.h>
+#include "win.h"
 
-
-#define __USE_CAIRO 1
-#define __USE_FT 1
+// #define __USE_CAIRO 1
+// #define __USE_FT 1
 
 #define MIN_ALPHA 0x1000000
 #define MAX_ALPHA 0xFF000000
@@ -214,8 +214,10 @@ struct gum_gfx_data {
     int px, py;
     gfx_t* gfx;
     // gfx_clip_t clip;
+#ifdef __USE_CAIRO
     cairo_t* cr;
     cairo_surface_t* srf;
+#endif
 };
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

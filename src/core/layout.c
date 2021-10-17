@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015-2018  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,8 @@
 #include <gum/events.h>
 #include <gum/css.h>
 #include <stdlib.h>
-#include <kora/mcrs.h>
+#include "../mcrs.h"
+#include "../win.h"
 
 /* Condensed algorithm: absolute position */
 static void gum_layout_absolute_part(struct GUM_absolruler *pos, float minimum, float container, short dpi, float dsp, float*pPos, float*pSz)
@@ -534,4 +535,3 @@ void gum_resize_px(gum_cell_t *cell, int width, int height)
     css_size_t h = { CSS_SIZE_PX, height };
     gum_resize(cell, w, h);
 }
-

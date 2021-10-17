@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015-2018  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@
 #include <gum/cells.h>
 #include <gum/xml.h>
 #include <gum/css.h>
+#include "../hmap.h"
 
 struct GUM_cellbuilder {
     gum_cell_t *root;
@@ -270,8 +271,6 @@ LIBAPI gum_cell_t*gum_cell_loadxml(const char *filename, GUM_skins *skins)
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */
 
-#include <kora/hmap.h>
-
 hmap_t img_map;
 hmap_t face_map;
 int is_map_init = 0;
@@ -312,5 +311,3 @@ void* gum_face(const char* name)
         hmp_put(&img_map, name, lg, face);
     return face;
 }
-
-

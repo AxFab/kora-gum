@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015-2018  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -20,8 +20,10 @@
 #include <gum/events.h>
 #include <gum/cells.h>
 #include <gum/xml.h>
-#include <kora/hmap.h>
-#include <kora/keys.h>
+#include "../win.h"
+#include "../hmap.h"
+#include "../mcrs.h"
+#include <keycodes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -325,7 +327,7 @@ void gum_event_key_press(gum_window_t* win, int unicode, int key)
 
     int len = strlen(win->edit->text);
     int cursor = win->edit->text_pen;
-    if (unicode == KEY_CODE_BACKSPACE) {
+    if (unicode == KEY_BACKSPACE) {
         if (win->edit->text_pen == 0)
             return;
 
@@ -523,4 +525,3 @@ LIBAPI bool gum_update(gum_window_t* win)
     gum_update_layout(win);
     return gum_update_visual(win);
 }
-

@@ -1,5 +1,5 @@
 #      This file is part of the KoraOS project.
-#  Copyright (C) 2018  <Fabien Bavent>
+#  Copyright (C) 2015-2021  <Fabien Bavent>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -21,43 +21,53 @@ include $(topdir)/make/global.mk
 srcdir = $(topdir)/src
 
 all: libgum
+
 install: $(prefix)/lib/libgum.so
 
-
-DISTO ?= cairo
-
-# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-CFLAGS ?= -Wall -Wextra -Wno-unused-parameter  -ggdb
-CFLAGS += -I$(topdir)/include
-CFLAGS += -fPIC
-
 include $(topdir)/make/build.mk
+include $(topdir)/make/check.mk
+# include $(topdir)/make/targets.mk
+
+CFLAGS ?= -Wall -Wextra -ggdb
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-SRCS += $(wildcard $(srcdir)/core/*.c)
-SRCS += $(wildcard $(srcdir)/utils/*.c)
-SRCS += $(wildcard $(srcdir)/widgets/*.c)
-SRCS += $(srcdir)/$(DISTO).c
+DISTO ?= lgfx
 
-ifeq ($(DISTO),kora)
+CFLAGS_g += $(CFLAGS) -I$(topdir)/include -fPIC
+
+ifneq ($(sysdir),)
+CFLAGS_g += -I$(sysdir)/include
+LFLAGS_g += -L$(sysdir)/lib
 endif
 
 
-$(eval $(call link_shared,gum,SRCS,LFLAGS))
+SRCS_g += $(wildcard $(srcdir)/core/*.c)
+SRCS_g += $(wildcard $(srcdir)/utils/*.c)
+# SRCS_g += $(wildcard $(srcdir)/widgets/*.c)
+SRCS_g += $(srcdir)/$(DISTO).c
 
-logon_SRCS-y += $(srcdir)/tests/logon.c
-logon_LFLGS += -L $(libdir) -lgum -lcairo
-$(eval $(call link_bin,logon,logon_SRCS,logon_LFLGS))
+LFLAGS_g += -lgfx -lpng -lm -lz
+#  -lcairo
+
+$(eval $(call comp_source,g,CFLAGS_g))
+$(eval $(call link_shared,gum,SRCS_g,LFLAGS_g,g))
 
 
-widgets_SRCS-y += $(srcdir)/tests/widgets.c
-widgets_LFLGS += -L $(libdir) -lgum -lcairo
-$(eval $(call link_bin,widgets,widgets_SRCS,widgets_LFLGS))
+SRCS_l += $(srcdir)/tests/logon.c
+LFLAGS_l += $(LFLAGS_g) -L$(libdir) -lgum
+$(eval $(call link_bin,logon,SRCS_l,LFLAGS_l,g))
 
+
+SRCS_w += $(srcdir)/tests/widgets.c
+LFLAGS_w += $(LFLAGS_g) -L $(libdir) -lgum
+$(eval $(call link_bin,widgets,SRCS_w,LFLAGS_w,g))
+
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 ifeq ($(NODEPS),)
--include $(call fn_deps,SRCS)
+-include $(call fn_deps,SRCS_g,g)
+-include $(call fn_deps,SRCS_l,g)
+-include $(call fn_deps,SRCS_w,g)
 endif
-

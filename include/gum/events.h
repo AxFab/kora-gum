@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015-2018  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,6 @@
 #define _GUM_EVENTS_H 1
 
 #include <gum/core.h>
-#include <kora/hmap.h>
 
 #define CLICK_TIMEOUT  (200000LL) /* 200 ms, in us */
 
@@ -86,46 +85,6 @@ void gum_event_async(gum_window_t* win, void* async);
 typedef struct {
     int left, right, top, bottom;
 } GUM_rect;
-
-struct gum_window {
-    //void* pixels;
-    //int width;
-    //int height;
-    //int pitch;
-
-    //int dpi_x;
-    //int dpi_y;
-    //float dsp_x;
-    //float dsp_y;
-
-    gum_cell_t* root;
-    gum_cell_t* menus[GUM_MAX_MCTX];
-    int menu_sp;
-
-    hmap_t actions;
-
-    gum_cell_t* over;
-    gum_cell_t* down;
-    gum_cell_t* focus;
-    gum_cell_t* click;
-    gum_cell_t* edit;
-    gum_cell_t* grab;
-
-    int mouse_x, mouse_y;
-    int grab_x, grab_y;
-    int click_cnt;
-    int spec_btn;
-    long long last_click;
-
-    bool measure;
-    gum_cell_t* layout;
-
-    GUM_rect inval;
-
-    GUM_gctx ctx;
-    void* data;
-};
-
 
 typedef struct GUM_handler_record GUM_handler_record;
 

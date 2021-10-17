@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015-2019  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -318,5 +318,3 @@ GUM_widget *gum_create_widget(GUM_container *parent, const char *type, const cha
 
     return widget;
 }
-
-

@@ -1,6 +1,6 @@
 /*
  *      This file is part of the KoraOS project.
- *  Copyright (C) 2015  <Fabien Bavent>
+ *  Copyright (C) 2015-2021  <Fabien Bavent>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -18,7 +18,7 @@
  *   - - - - - - - - - - - - - - -
  */
 #include <gum/cells.h>
-#include <kora/hmap.h>
+#include "../hmap.h"
 #include <gum/css.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -187,6 +187,5 @@ void gum_skin_close(GUM_skin *skin)
 void gum_destroy_skins(GUM_skins *skins)
 {
     // TODO -- Remove alls
-    hmp_destroy(&skins->map, 0);
+    hmp_destroy(&skins->map);
 }
-

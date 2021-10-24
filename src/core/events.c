@@ -320,6 +320,7 @@ void gum_event_wheel(gum_window_t* win, int move)
 
 void gum_event_key_press(gum_window_t* win, int unicode, int key)
 {
+    (void)key;
     if (win->edit == NULL)
         return;
     if (unicode <= 0)
@@ -354,7 +355,9 @@ void gum_event_key_press(gum_window_t* win, int unicode, int key)
 
 void gum_event_key_release(gum_window_t* win, int unicode, int key)
 {
-
+    (void)win;
+    (void)unicode;
+    (void)key;
 }
 
 
@@ -368,6 +371,7 @@ static void gum_async_job(GUM_async* async)
 
 void gum_event_async(gum_window_t* win, void* data)
 {
+    (void)win;
     GUM_async* async = data;
     async->callback(async->win, async->arg);
     free(async);
@@ -382,7 +386,7 @@ LIBAPI void gum_async_worker(gum_window_t* win, GUM_async_worker worker, GUM_asy
     async->win = win;
 
     thrd_t thrd;
-    thrd_create(&thrd, gum_async_job, async);
+    thrd_create(&thrd, (thrd_start_t)gum_async_job, async);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

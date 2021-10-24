@@ -300,7 +300,7 @@ LIBAPI void gum_gfx_handle(gum_window_t* win, gfx_msg_t* msg)
 void gum_push_event(gum_window_t* win, int type, size_t param)
 {
     gum_gfx_data_t* ctx = win->data;
-    gfx_push(ctx->gfx, type, param);
+    gfx_push(ctx->gfx, type, param, 0);
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= */

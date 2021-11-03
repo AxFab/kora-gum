@@ -39,6 +39,7 @@ CFLAGS_g += $(CFLAGS) -I$(topdir)/include -fPIC
 ifneq ($(sysdir),)
 CFLAGS_g += -I$(sysdir)/include
 LFLAGS_g += -L$(sysdir)/lib
+LFLAGS_g += -Wl,-rpath-link,$(sysdir)/lib
 endif
 
 
@@ -47,7 +48,7 @@ SRCS_g += $(wildcard $(srcdir)/utils/*.c)
 # SRCS_g += $(wildcard $(srcdir)/widgets/*.c)
 SRCS_g += $(srcdir)/$(DISTO).c
 
-LFLAGS_g += -lgfx -lpng -lm -lz
+LFLAGS_g += -lgfx
 #  -lcairo
 
 $(eval $(call comp_source,g,CFLAGS_g))

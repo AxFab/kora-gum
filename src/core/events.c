@@ -43,10 +43,17 @@ typedef struct GUM_async {
 LIBAPI gum_window_t* gum_new_window(gum_cell_t *root)
 {
     gum_window_t* win = (gum_window_t*)calloc(1, sizeof(gum_window_t));
+#if 1
     win->ctx.dpi_x = 96;
     win->ctx.dpi_y = 96;
     win->ctx.dsp_x = 0.75;
     win->ctx.dsp_y = 0.75;
+#else
+    win->ctx.dpi_x = 265;
+    win->ctx.dpi_y = 265;
+    win->ctx.dsp_x = 1.125;
+    win->ctx.dsp_y = 1.125;
+#endif
     win->ctx.width = 680;
     win->ctx.height = 425;
     hmp_init(&win->actions, 16);
@@ -110,7 +117,7 @@ static void gum_cell_chstatus(gum_window_t* win, gum_cell_t *cell, int flags, in
 }
 
 // Register an handler to a cell event (erase the previous one)
-void gum_event_bind(gum_window_t* win, gum_cell_t*cell, int event, GUM_event_handler handler, void *data)
+void gum_event_bind(gum_window_t* win, gum_cell_t* cell, int event, GUM_event_handler handler, void *data)
 {
     char key[32];
     int lg = snprintf(key, 32, "%p]%4x", cell, event);

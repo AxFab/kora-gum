@@ -442,7 +442,7 @@ bool gum_do_measure(gum_cell_t *cell, GUM_gctx *ctx)
         /* Compute content string size */
         float w = 0, h = 0;
         if (cell->text != NULL)
-            gum_text_size(cell, &w, &h, cell->skin);
+            gum_text_size(cell, &w, &h, cell->skin, ctx);
         cell->box.minw = MAX(cell->box.minw, w + pad_left + pad_right);
         cell->box.minh = MAX(cell->box.minh, h + pad_top + pad_bottom);
     }

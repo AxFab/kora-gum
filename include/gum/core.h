@@ -54,7 +54,7 @@ typedef struct GUM_gctx GUM_gctx;
 //int gum_event_poll(GUM_window *win, GUM_event *event, int timeout);
 //void gum_invalid_surface(GUM_window *win, int x, int y, int w, int h);
 
-void gum_text_size(gum_cell_t *cell, float*w, float*h, GUM_skin *skin);
+void gum_text_size(gum_cell_t *cell, float*w, float*h, GUM_skin *skin, GUM_gctx* ctx);
 
 void *gum_image(const char *name);
 void* gum_load_image(const char* source);

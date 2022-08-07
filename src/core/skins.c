@@ -85,7 +85,7 @@ GUM_skin *gum_skin_property_setter(GUM_skin *skin, const char *property, const c
     else if (!strcmp("font-family", property))
         skin->font_family = strdup(value);
     else if (!strcmp("font-size", property))
-        skin->font_size = strtod(value, NULL);
+        skin->font_size = strtod(value, NULL); // TODO !
 
     else if (!strcmp("text-align", property)) {
         if (!strcmp("left", value))
@@ -141,6 +141,8 @@ GUM_skins *gum_skins_loadcss(GUM_skins *skins, const char *filename)
 
 GUM_skin *gum_style_find(GUM_skins *skins, const char *name)
 {
+    if (skins == NULL)
+        return NULL;
     int lg = strlen(name);
     GUM_skin *skin = hmp_get(&skins->map, name, lg);
     return skin;

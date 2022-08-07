@@ -297,17 +297,23 @@ void *gum_image(const char *name)
     return img;
 }
 
-void* gum_face(const char* name)
+void* gfx_font(const char* family, float size, int style);
+void *gum_face(const char *family, float size, int style)
 {
-    if (!is_map_init)
-        gum_map_init();
-    int lg = strlen(name);
-    void* face = hmp_get(&img_map, name, lg);
-    if (face != NULL)
-        return face;
-
-    face = gum_load_fontface(name);
-    if (face != NULL)
-        hmp_put(&img_map, name, lg, face);
-    return face;
+    return gfx_font(family, size, style);
 }
+
+//void* gum_face(const char* name)
+//{
+//    if (!is_map_init)
+//        gum_map_init();
+//    int lg = strlen(name);
+//    void* face = hmp_get(&img_map, name, lg);
+//    if (face != NULL)
+//        return face;
+//
+//    face = gfx_load_fontface(name);
+//    if (face != NULL)
+//        hmp_put(&img_map, name, lg, face);
+//    return face;
+//}

@@ -26,12 +26,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include <signal.h>
 #include "mcrs.h"
 #include "win.h"
 
-// #define __USE_CAIRO 1
+#define __USE_CAIRO 1
 // #define __USE_FT 1
+#define __USE_FT_CAIRO 1
 
 #define MIN_ALPHA 0x1000000
 #define MAX_ALPHA 0xFF000000
@@ -47,7 +49,7 @@
 #include <cairo-lgfx.h>
 #endif
 
-#ifdef __USE_FT
+#if defined(__USE_FT) || defined(__USE_FT_CAIRO)
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #ifndef FT_LOAD_DEFAULT
@@ -112,40 +114,40 @@ void gfx_copy_glyph(gfx_t* gfx, gfx_clip_t* clip, FT_Bitmap* glyph, int x, int y
     }
 }
 
-void gfx_ft_size_text(FT_Face face, const char* text, gfx_text_t* measures)
-{
-    if (face == NULL)
-        return;
-    int i;
-    memset(measures, 0, sizeof(*measures));
-    FT_GlyphSlot  slot = face->glyph;
-    int miny = 0, maxy = 0;
-    for (i = 0; ; ++i) {
-        int ch;
-        int len = mbtouc(&ch, &text[i], 6);
-        i += len - 1;
-        if (ch == 0)
-            break;
-
-        FT_UInt  glyph_index;
-        glyph_index = FT_Get_Char_Index(face, ch);
-        FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
-        if (error)
-            continue;
-
-        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-        if (error)
-            continue;
-
-        measures->width += slot->bitmap_left + slot->advance.x >> 6;
-        if (miny > -slot->bitmap_top)
-            miny = -slot->bitmap_top;
-        if (maxy < slot->bitmap.rows - slot->bitmap_top)
-            maxy = slot->bitmap.rows - slot->bitmap_top;
-    }
-    measures->height = maxy - miny;
-    measures->y_bearing = miny;
-}
+//void gfx_measure_text(FT_Face face, const char* text, gfx_text_t* measures)
+//{
+//    if (face == NULL)
+//        return;
+//    int i;
+//    memset(measures, 0, sizeof(*measures));
+//    FT_GlyphSlot  slot = face->glyph;
+//    int miny = 0, maxy = 0;
+//    for (i = 0; ; ++i) {
+//        int ch;
+//        int len = mbtouc(&ch, &text[i], 6);
+//        i += len - 1;
+//        if (ch == 0)
+//            break;
+//
+//        FT_UInt  glyph_index;
+//        glyph_index = FT_Get_Char_Index(face, ch);
+//        FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+//        if (error)
+//            continue;
+//
+//        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+//        if (error)
+//            continue;
+//
+//        measures->width += slot->bitmap_left + slot->advance.x >> 6;
+//        if (miny > -slot->bitmap_top)
+//            miny = -slot->bitmap_top;
+//        if (maxy < slot->bitmap.rows - slot->bitmap_top)
+//            maxy = slot->bitmap.rows - slot->bitmap_top;
+//    }
+//    measures->height = maxy - miny;
+//    measures->y_bearing = miny;
+//}
 
 void gfx_ft_write_text(gfx_t* gfx, FT_Face face, const char* text, gfx_clip_t* clip, uint32_t txcolor, int align, int valign)
 {
@@ -161,7 +163,7 @@ void gfx_ft_write_text(gfx_t* gfx, FT_Face face, const char* text, gfx_clip_t* c
     int box_h = clip->bottom - clip->top;
 
     FT_GlyphSlot  slot = face->glyph;
-    gfx_ft_size_text(face, text, &measures);
+    gfx_measure_text(face, text, &measures);
 
     if (align == 2)
         pen_x += box_w - (measures.width + measures.x_bearing);
@@ -202,7 +204,6 @@ void gfx_ft_write_text(gfx_t* gfx, FT_Face face, const char* text, gfx_clip_t* c
         pen_y += slot->advance.y >> 6;
     }
 }
-
 #endif
 
 
@@ -281,10 +282,13 @@ LIBAPI void gum_gfx_handle(gum_window_t* win, gfx_msg_t* msg)
         break;
 
     case GFX_EV_KEYDOWN:
+        // gum_event_key_release();
     case GFX_EV_KEYUP:
     case GFX_EV_KEYPRESS:
+        // gum_event_key_press(win, 0, msg->param1);
     case GFX_EV_RESIZE:
     case GFX_EV_QUIT:
+    case GFX_EV_TIMER:
         break;
 
     case GUM_EV_ASYNC:
@@ -371,8 +375,13 @@ static void gum_clear_cache(gum_gfx_data_t* ctx, gum_cell_t* cell)
     if (cell->path)
         cairo_path_destroy((cairo_path_t*)cell->path);
     if (cell->font)
-        cairo_font_face_destroy((cairo_font_face_t*)cell->font);
+#if defined(__USE_FT)
+        gfx_clear_font((gfx_font_t*)cell->font);
+#elif defined(__USE_FT_CAIRO)
 
+#else
+        cairo_font_face_destroy((cairo_font_face_t*)cell->font);
+#endif
     cell->image = NULL;
     cell->gradient = NULL;
     cell->path = NULL;
@@ -465,38 +474,41 @@ void *gum_load_fontface(const char *family)
     return NULL;
 }
 
-static FT_Face gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family)
+static void *gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family, GUM_skin* skin)
 {
     if (cell->font)
         return cell->font;
-    cell->font = gum_face(family ? family :  "arial");
+    int style = 0;
+    if (stricmp("Font Awesome 5 Free", family))
+        style = GFXFT_SOLID;
+    cell->font = gfx_font(family ? family :  "arial", skin->font_size, style);
     return cell->font;
 }
 
 void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
 {
     /* char_height in 1/64th of points  */
-    cell->font = gum_load_font(NULL, cell, skin->font_family);
-    FT_Error err = FT_Set_Char_Size(cell->font, 0, skin->font_size * 64, 96, 96);
+    cell->font = gum_load_font(NULL, cell, skin->font_family, skin);
+    // FT_Error err = FT_Set_Char_Size(cell->font->face, 0, skin->font_size * 64, 96, 96);
     gfx_text_t mesures;
-    gfx_ft_size_text(cell->font, cell->text, &mesures);
+    gfx_measure_text(cell->font, cell->text, &mesures);
     *w = mesures.width;
     *h = mesures.height;
 }
 
-void gum_text_paint(gum_gfx_data_t * ctx, gum_cell_t * cell, gum_skin_t * skin)
+void gum_text_paint(gum_window_t* win, gum_gfx_data_t * ctx, gum_cell_t * cell, gum_skin_t * skin)
 {
     // cairo_pop_group_to_source(ctx->cr);
     // cairo_paint(ctx->cr);
     cairo_surface_flush(ctx->srf);
 
     void *data = cairo_image_surface_get_data(ctx->srf);
-    FT_Face face = gum_load_font(ctx, cell, skin->font_family);
+    void *font = gum_load_font(ctx, cell, skin->font_family, skin);
     /* char_height in 1/64th of points  */
-    FT_Error err = FT_Set_Char_Size(face, 0, skin->font_size * 64, 96, 96);
-    if (err) {
-        fprintf(stderr, "Error with set face size: %d\n", err);
-    }
+    // FT_Error err = FT_Set_Char_Size(face, 0, skin->font_size * 64, 96, 96);
+    // if (err) {
+    //     fprintf(stderr, "Error with set face size: %d\n", err);
+    // }
 
 
     gfx_clip_t clip;
@@ -504,16 +516,61 @@ void gum_text_paint(gum_gfx_data_t * ctx, gum_cell_t * cell, gum_skin_t * skin)
     clip.top = ctx->py + cell->box.cy;
     clip.right = clip.left + cell->box.cw;
     clip.bottom = clip.top + cell->box.ch;
-    gfx_ft_write_text(ctx->gfx, face, cell->text, &clip, skin->txcolor, skin->align, skin->valign);
+    gfx_write(ctx->gfx, font, cell->text, &clip, skin->txcolor, skin->align, skin->valign);
     // cairo_surface_mark_dirty(ctx->srf);
     // cairo_push_group(ctx->cr);
     // cairo_paint(ctx->cr);
     // cairo_surface_mark_dirty_rectangle(ctx->srf, clip.left, clip.top, cell->box.cw, cell->box.ch);
 }
 
+
+
 #else
 
-static cairo_font_face_t* gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family)
+#if defined(__USE_FT_CAIRO)
+
+#include <cairo-ft.h>
+
+hmap_t font_map;
+bool init_font_map = false;
+
+static cairo_font_face_t *gum_load_font(gum_gfx_data_t *ctx, gum_cell_t *cell, const char *family, GUM_skin *skin)
+{
+    if (!init_font_map) {
+        hmp_init(&font_map, 16);
+        init_font_map = true;
+    }
+
+    cairo_font_face_t *ct = hmp_get(&font_map, family, strlen(family));
+    if (ct != NULL) {
+        return ct;
+    }
+
+    FT_Face face;
+    FT_Error err;
+    int style = 0;
+    if (stricmp(family, "Font Awesome 5 free") == 0)
+        style = GFXFT_SOLID;
+    char filename[256];
+    int no = gfx_ft_search_font(family, style, filename, 256);
+    if (no < 0) {
+        fprintf(stderr, "Error unable to find font %s.\n", family);
+        exit(EXIT_FAILURE);
+    }
+    err = FT_New_Face(gfx_ft_libary(), filename, no, &face);
+    if (err != 0) {
+        fprintf(stderr, "Error %d opening %s.\n", err, filename);
+        exit(EXIT_FAILURE);
+    }
+
+    ct = cairo_ft_font_face_create_for_ft_face(face, 0);
+    hmp_put(&font_map, family, strlen(family), ct);
+    return ct;
+}
+
+#else
+
+static cairo_font_face_t* gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, const char* family, GUM_skin *skin)
 {
     if (cell->font)
         return cell->font;
@@ -522,32 +579,34 @@ static cairo_font_face_t* gum_load_font(gum_gfx_data_t* ctx, gum_cell_t* cell, c
     return face;
 }
 
-void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
+#endif
+
+void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin, GUM_gctx* ctx)
 {
     gum_window_t* win = gum_fetch_window(cell);
-    gum_gfx_data_t* ctx = win->data;
+    gum_gfx_data_t* gctx = win->data; 
     cairo_text_extents_t extents;
     if (skin == NULL) {
         *w = 0;
         *h = 0;
         return;
     }
-
-    cairo_font_face_t* face = gum_load_font(ctx, cell, skin->font_family);
-    cairo_set_font_face(ctx->cr, face);
-    cairo_set_font_size(ctx->cr, skin->font_size * 96.0 / 64.0);
-    cairo_text_extents(ctx->cr, cell->text, &extents);
+        
+    cairo_font_face_t* face = gum_load_font(gctx, cell, skin->font_family, skin);
+    cairo_set_font_face(gctx->cr, face);
+    cairo_set_font_size(gctx->cr, skin->font_size * 96.0 * ctx->dsp_y / 64.0);
+    cairo_text_extents(gctx->cr, cell->text, &extents);
     *w = extents.width;
     *h = extents.height;
 }
 
-void gum_text_paint(gum_gfx_data_t* ctx, gum_cell_t* cell, gum_skin_t* skin)
+void gum_text_paint(gum_window_t *win, gum_gfx_data_t* ctx, gum_cell_t* cell, gum_skin_t* skin)
 {
     int tx = cell->box.cx;
     int ty = cell->box.cy;
-    cairo_font_face_t* face = gum_load_font(ctx, cell, skin->font_family);
+    cairo_font_face_t* face = gum_load_font(ctx, cell, skin->font_family, skin);
     cairo_set_font_face(ctx->cr, face);
-    cairo_set_font_size(ctx->cr, skin->font_size * 96.0 / 64.0);
+    cairo_set_font_size(ctx->cr, skin->font_size * 96.0 * win->ctx.dsp_y / 64.0);
     cairo_set_source_rgb(ctx->cr, GFX_RED(skin->txcolor) / 255.0, GFX_GREEN(skin->txcolor) / 255.0, GFX_BLUE(skin->txcolor) / 255.0);
 
     cairo_text_extents_t extents;
@@ -562,7 +621,6 @@ void gum_text_paint(gum_gfx_data_t* ctx, gum_cell_t* cell, gum_skin_t* skin)
         ty += cell->box.ch - (extents.height + extents.y_bearing);
     else if (skin->valign == 0)
         ty += cell->box.ch / 2 - (extents.height / 2 + extents.y_bearing);
-
 
     cairo_move_to(ctx->cr, tx, ty);
     cairo_show_text(ctx->cr, cell->text);
@@ -601,7 +659,9 @@ void gum_push_clip(gum_window_t* win, GUM_box* box)
     gum_gfx_data_t* ctx = win->data;
     cairo_save(ctx->cr);
     cairo_new_path(ctx->cr);
-    cairo_rectangle(ctx->cr, box->cx, box->cy, box->cw, box->ch);
+    float w = ceil(box->cw + box->cx + 0.5) - box->cx;
+    float h = ceil(box->ch + box->cy + 0.5) - box->cy;
+    cairo_rectangle(ctx->cr, box->cx, box->cy, w, h);
     cairo_clip(ctx->cr);
     cairo_translate(ctx->cr, box->cx - box->sx, box->cy - box->sy);
     ctx->px += box->cx - box->sx;
@@ -688,7 +748,7 @@ void gum_draw_cell(gum_window_t* win, gum_cell_t* cell)
 
 
     if (cell->text)
-        gum_text_paint(ctx, cell, skin);
+        gum_text_paint(win, ctx, cell, skin);
 }
 
 #endif
@@ -849,7 +909,7 @@ void gum_text_size(gum_cell_t* cell, float* w, float* h, GUM_skin* skin)
         return;
 
     gfx_text_t measures;
-    gfx_ft_size_text(face, cell->text, &measures);
+    gfx_measure_text(face, cell->text, &measures);
     *w = measures.width;
     *h = measures.height;
 

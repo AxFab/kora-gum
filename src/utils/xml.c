@@ -314,7 +314,7 @@ void xml_parse_text(char *buf, int len)
             buf[j] = buf[i];
             continue;
         }
-        char *nx = strchr(&buf[i], ';');
+        char *nx = strchr(&buf[i], ';'); // TODO -- Might not be found... What about UTF8 files
         int lg = MIN(8, nx - &buf[i]);
         memcpy(tmp, &buf[i + 1], lg);
         tmp[lg - 1] = '\0';
@@ -324,7 +324,7 @@ void xml_parse_text(char *buf, int len)
             // Parse unicode value !
             int v = strtol(&tmp[1], NULL, 16);
             int mb = uctomb(&buf[i], v);
-            j += mb;
+            j += mb - 1;
             i += lg;
         }
     }

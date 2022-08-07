@@ -54,7 +54,7 @@ void gum_paint(gum_window_t *win, gum_cell_t *root)
     for (;;) {
         memset(pad, ' ', cell->depth * 2);
         pad[cell->depth * 2] = '\0';
-        // fprintf(stderr, "%sPaint <%s.%s> [%3.1f, %3.1f, %3.1f, %3.1f]\n", pad, cell->id, cell->name, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
+        fprintf(stderr, "%sPaint <%s.%s> [%3.1f, %3.1f, %3.1f, %3.1f]\n", pad, cell->id, cell->name, cell->box.x, cell->box.y, cell->box.w, cell->box.h);
         if (!(cell->state & GUM_CELL_HIDDEN))
             gum_draw_cell(win, cell);
         if ((cell == root || !(cell->state & GUM_CELL_BUFFERED)) && 1) {
